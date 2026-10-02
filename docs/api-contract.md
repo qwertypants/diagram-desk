@@ -61,6 +61,12 @@ Request body: `{"title": "...", "source": "..."}`
 - `400` `{"error": "..."}` when the body is not valid JSON, is not an object,
   `title` is missing/blank/not a string/over 200 chars, or `source` is
   missing/blank/not a string/over 100000 chars
+- `415` `{"error": "..."}` when the request `content-type` is not
+  `application/json`. This is what stops another web page from writing to the
+  library with a no-preflight simple request: a browser cannot send a
+  cross-origin write without a preflight, this server sends no CORS headers,
+  and refusing the content type rejects the one request shape that arrives
+  anyway
 - `405` `{"error": "..."}` for a non-`POST` method on this path
 
 Unknown extra fields in the request body are ignored, not rejected.
@@ -73,6 +79,7 @@ not supported in this version).
 
 - `200` with the updated `<diagram>` object
 - `400` for invalid JSON or invalid `title`/`source`
+- `415` for a non-`application/json` request `content-type`, as on `POST`
 - `404` `{"error": "Diagram not found"}` for an unknown id
 - `405` for a non-`PUT` method on this path
 
