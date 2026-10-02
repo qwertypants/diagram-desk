@@ -23,6 +23,22 @@ function check(name, cond, detail = '') {
   else { fails++; console.log(`FAIL ${name} ${detail}`); }
 }
 
+/** A control a check cannot run without. A missing one records a failure and
+ *  returns `null`; it never returns quietly, because a section that skips
+ *  itself still reports the run as green - which is exactly how the edit and
+ *  rename checks went missing from this script. */
+async function requireControl(name, locator) {
+  const found = await locator.count();
+  check(name, found > 0, found === 0 ? 'the control this check needs is not on the page' : '');
+  return found === 0 ? null : locator.first();
+}
+
+/** Failure detail, on one line: `check` prints it inline and page text is
+ *  paragraph-shaped. */
+function oneline(text) {
+  return text.replace(/\s+/g, ' ').trim().slice(0, 200);
+}
+
 async function assertSiteIsRunning() {
   let probe;
   try {
@@ -62,9 +78,16 @@ const page = await ctx.newPage();
 
 const consoleErrors = [];
 const badResponses = [];
+const nativeDialogs = [];
 page.on('response', (r) => { if (r.status() >= 400) badResponses.push(`${r.status()} ${r.url()}`); });
 page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
 page.on('pageerror', (e) => consoleErrors.push(`pageerror: ${e.message}`));
+// Recorded and dismissed: the app's confirmations are in-page dialogs, so any
+// native dialog here means a beforeunload guard fired on its own.
+page.on('dialog', (d) => {
+  nativeDialogs.push(`${d.type()}: ${d.message()}`);
+  d.dismiss().catch(() => {});
+});
 
 const externalRequests = [];
 page.on('request', (r) => {
@@ -182,24 +205,60 @@ for (let i = 0; i < 40; i++) {
 }
 check('diagram is reachable by keyboard', reached);
 
-// ---- edit + unsaved-changes warning ----
-const editBtn = page.getByRole('button', { name: /edit/i }).first();
-if (await editBtn.count()) {
+// ---- edit + rename + unsaved-changes warning ----
+// Load-bearing section. `edit saved without a false discard warning` is the only
+// guard on the regression where saving a dirty draft popped the discard prompt,
+// so the flow below is driven from the viewer (where the Edit control lives)
+// instead of from an editor page that has no Edit button at all.
+const diagramId = savedUrl.split('/').pop();
+const EDITED_SOURCE = `${SRC}\n  C --> D[Changed]`;
+const RENAMED_TITLE = 'Renamed in browser';
+
+await page.goto(savedUrl, { waitUntil: 'networkidle' });
+await page.waitForSelector('svg', { timeout: 15000 });
+
+const editBtn = await requireControl('a saved diagram offers an Edit control',
+  page.getByRole('button', { name: /^edit$/i }));
+
+if (editBtn !== null) {
   await editBtn.click();
-  await page.waitForTimeout(700);
-  check('editor opens for editing', await page.locator('.composer textarea, textarea').first().isVisible());
+  await page.waitForURL(`${savedUrl}/edit`, { timeout: 10000 }).catch(() => {});
+  check('Edit opens the editor at its own deep link', page.url() === `${savedUrl}/edit`, page.url());
 
-  await page.locator('.composer textarea, textarea').first().fill(SRC + '\n  C --> D[Changed]');
-  await page.waitForTimeout(500);
+  const sourceField = page.locator('#editor-source-field');
+  const titleField = page.locator('#editor-title-field');
+  // The URL changes on `pushState`, a tick before the editor is mounted, so wait
+  // for it rather than sampling `isVisible()` on the viewer's last frame.
+  const editorShown = await sourceField.waitFor({ state: 'visible', timeout: 10000 })
+    .then(() => true, () => false);
+  check('editor opens for editing', editorShown && await sourceField.isEditable());
+  check('the editor is filled with the saved draft',
+    (await sourceField.inputValue()) === SRC && (await titleField.inputValue()) === 'Browser flow check');
 
-  page.once('dialog', (d) => d.accept());
-  await page.locator('.composer input[type="text"], input[type="text"]').first().fill('Renamed in browser');
-  await page.waitForTimeout(300);
-  const saveInEditor = page.getByRole('button', { name: /save/i }).first();
+  await sourceField.fill(EDITED_SOURCE);
+  await page.waitForTimeout(600);
+  await titleField.fill(RENAMED_TITLE);
+  await page.waitForTimeout(600);
+
+  const saveInEditor = page.getByRole('button', { name: /^save$/i }).first();
+  check('the edited draft keeps Save enabled', await saveInEditor.count() > 0 && !(await saveInEditor.isDisabled()));
+
+  const dialogsBeforeSave = nativeDialogs.length;
   await saveInEditor.click();
-  await page.waitForTimeout(1200);
+  const savedAgain = await page.waitForURL(savedUrl, { timeout: 10000 }).then(() => true, () => false);
+  await page.waitForTimeout(600);
+
   const afterSaveText = await page.locator('body').innerText();
-  check('edit saved without a false discard warning', !/discard|unsaved/i.test(afterSaveText));
+  check('edit saved without a false discard warning', !/discard|unsaved/i.test(afterSaveText),
+    oneline(afterSaveText));
+  check('the edit save returns to the viewer', savedAgain, page.url());
+  check('the edit save raises no native discard dialog',
+    nativeDialogs.length === dialogsBeforeSave, nativeDialogs.slice(dialogsBeforeSave).join(' | '));
+  check('the rename is on screen after saving', afterSaveText.includes(RENAMED_TITLE), oneline(afterSaveText));
+
+  const persisted = await fetch(`${base}/api/diagrams/${diagramId}`).then((r) => r.json());
+  check('the rename persisted to the server', persisted.title === RENAMED_TITLE, JSON.stringify(persisted.title));
+  check('the edited source persisted to the server', persisted.source === EDITED_SOURCE, JSON.stringify(persisted.source));
 }
 
 // ---- narrow layout ----
@@ -267,6 +326,12 @@ check('no failed static or api request across the flow', unexpectedResponses.len
 check('no uncaught page errors across the flow',
   consoleErrors.filter((e) => !/Failed to load resource/.test(e)).length === 0,
   consoleErrors.slice(0, 3).join(' | '));
+
+// The policy is `script-src 'self'` with no `style-src`, so a style restriction
+// here would be a regression; a script one is the whole point of the header.
+const cspViolations = consoleErrors.filter((e) => /content security policy|refused to (execute|load|apply)/i.test(e));
+check('the Content-Security-Policy blocks nothing the app needs', cspViolations.length === 0,
+  cspViolations.slice(0, 3).join(' | '));
 
 for (const n of notes) console.log(`note: ${n}`);
 await browser.close();

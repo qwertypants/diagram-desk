@@ -14,8 +14,8 @@ import { createLibraryPanel } from './library-panel.js';
 import { createViewerPanel } from './viewer-panel.js';
 import { VIEW, composePath, diagramPath, editPath, libraryPath, parsePath } from './routes.js';
 
-export function createApp({ doc, win, fetch: fetchImpl, render }) {
-  const api = createApiClient({ fetch: fetchImpl });
+export function createApp({ doc, win, fetch = globalThis.fetch, render }) {
+  const api = createApiClient({ fetch });
   const dialogs = createDialogHost(doc);
   const stage = doc.getElementById('stage');
 

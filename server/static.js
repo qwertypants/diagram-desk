@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
-import { sendJson } from './http.js';
+import { SECURITY_HEADERS, sendJson } from './http.js';
 
 const CONTENT_TYPES = {
   '.css': 'text/css; charset=utf-8',
@@ -84,7 +84,7 @@ function sendFile(res, filePath, contents, cacheControl) {
   res.writeHead(200, {
     'content-type': CONTENT_TYPES[extname(filePath).toLowerCase()] ?? 'application/octet-stream',
     'content-length': contents.byteLength,
-    'x-content-type-options': 'nosniff',
+    ...SECURITY_HEADERS,
     ...(cacheControl === undefined ? {} : { 'cache-control': cacheControl }),
   });
   res.end(contents);
