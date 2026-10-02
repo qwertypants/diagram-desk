@@ -40,7 +40,17 @@ export function resolveDatabasePath({ env = process.env, repositoryRoot = findRe
 export function openStore(databasePath) {
   mkdirSync(dirname(databasePath), { recursive: true });
   const database = new DatabaseSync(databasePath);
-  database.exec(SCHEMA);
+  try {
+    database.exec(SCHEMA);
+  } catch (error) {
+    database.close();
+    throw new Error(
+      `Could not open the diagram library at ${databasePath}: ${error.message}. ` +
+        'That file already exists with a different shape, so nothing was changed. ' +
+        'Move it aside (or point DIAGRAMS_DB somewhere else) and start again to recreate it.',
+      { cause: error },
+    );
+  }
 
   const statements = {
     insert: database.prepare(

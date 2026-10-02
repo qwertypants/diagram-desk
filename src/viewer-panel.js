@@ -46,7 +46,7 @@ export function createViewerPanel({ doc, render, onEdit, onDelete }) {
     });
     const canvas = el(doc, 'div', {
       class: 'canvas',
-      role: 'img',
+      role: 'group',
       'aria-labelledby': 'viewer-title',
       'aria-describedby': statusId,
     });

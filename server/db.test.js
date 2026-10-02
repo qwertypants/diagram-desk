@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
+import { DatabaseSync } from 'node:sqlite';
 import { findRepositoryRoot, openStore, resolveDatabasePath } from './db.js';
 import { createWorkspace, delay, isTimestamp, isUuid, readStoredDiagram } from './harness.js';
 
@@ -72,6 +73,18 @@ test('DIAGRAMS_DB overrides the default and is resolved against the repository r
 test('the store creates its directory, schema and index on first open', () => {
   const workspace = createWorkspace();
   const store = openStore(workspace.databasePath);
+
+  const schema = new DatabaseSync(workspace.databasePath);
+  const columns = schema.prepare('PRAGMA table_info(diagrams)').all().map((row) => row.name);
+  const indexes = schema.prepare('PRAGMA index_list(diagrams)').all().map((row) => row.name);
+  schema.close();
+
+  assert.deepEqual(columns, ['id', 'title', 'title_lower', 'source', 'created_at', 'updated_at']);
+  assert.equal(
+    indexes.includes('diagrams_recent'),
+    true,
+    `the recent-first index is created, got ${indexes.join(', ')}`,
+  );
 
   const diagram = store.create({ title: 'Order flow', source: SOURCE });
 
@@ -164,5 +177,32 @@ test('updating an unknown id returns null and an update keeps createdAt', () => 
   assert.notEqual(updated.title, diagram.title);
 
   store.close();
+  workspace.cleanup();
+});
+
+test('an existing file with a different shape fails with an actionable message', () => {
+  const workspace = createWorkspace();
+  mkdirSync(join(workspace.root, 'data'), { recursive: true });
+
+  const drifted = new DatabaseSync(workspace.databasePath);
+  drifted.exec('CREATE TABLE diagrams (id TEXT PRIMARY KEY, title TEXT NOT NULL)');
+  drifted.close();
+
+  assert.throws(
+    () => openStore(workspace.databasePath),
+    (error) => {
+      assert.match(error.message, /Could not open the diagram library at/);
+      assert.match(error.message, new RegExp(workspace.databasePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+      assert.match(error.message, /DIAGRAMS_DB/, 'the message says what to do about it');
+      assert.equal(error.cause instanceof Error, true, 'the SQLite error is kept as the cause');
+      return true;
+    },
+  );
+
+  const after = new DatabaseSync(workspace.databasePath);
+  const columns = after.prepare('PRAGMA table_info(diagrams)').all().map((row) => row.name);
+  after.close();
+  assert.deepEqual(columns, ['id', 'title'], 'the existing file is left exactly as it was');
+
   workspace.cleanup();
 });

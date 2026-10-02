@@ -86,7 +86,7 @@ test('the editor labels its controls and announces the preview politely', () => 
   assert.equal(t.status().getAttribute('role'), 'status');
   assert.equal(t.error().getAttribute('role'), 'alert');
   assert.equal(t.error().hidden, true);
-  assert.equal(t.canvas().getAttribute('role'), 'img');
+  assert.equal(t.canvas().getAttribute('role'), 'group');
   assert.equal(t.document.querySelector('#editor-title-field').maxLength, 200);
 });
 
@@ -289,6 +289,81 @@ test('a rejected save leaves the draft intact and shows the server message', asy
   assert.equal(t.document.getElementById('editor-title-field').value, 'Order flow');
   assert.equal(t.panel.isSaving, false, 'the editor returns to a usable state');
 });
+
+test('a save that rejects without saying why still tells the user', async () => {
+  const dom = new JSDOM('<!doctype html><html><body></body></html>');
+  const { document } = dom.window;
+  const panel = createEditorPanel({
+    doc: document,
+    render: async () => ({ status: PREVIEW.OK, svg: '<svg/>', diagramType: 'flowchart' }),
+    onSave: () => Promise.reject(new Error('navigation blew up')),
+    onCancel: () => {},
+    onDirtyChange: () => {},
+  });
+  document.body.append(panel.root);
+
+  const type = (id, value) => {
+    const node = document.getElementById(id);
+    node.value = value;
+    node.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+  };
+
+  panel.mount();
+  type('editor-title-field', 'Order flow');
+  type('editor-source-field', VALID);
+  document.getElementById('editor-source-field').dispatchEvent(new dom.window.FocusEvent('blur'));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  panel.root.dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  const saveError = document.querySelector('.editor__saveerror');
+  assert.equal(saveError.hidden, false, 'an unexplained failure must not be swallowed');
+  assert.match(saveError.textContent, /went wrong while saving/);
+  assert.equal(saveError.getAttribute('role'), 'alert');
+  assert.equal(document.getElementById('editor-source-field').value, VALID);
+  assert.equal(document.getElementById('editor-title-field').value, 'Order flow');
+  assert.equal(panel.isSaving, false);
+  assert.equal(panel.isDirty, true, 'the draft is still unsaved');
+});
+
+test('typing does not re-announce the same preview status', async () => {
+  const t = setup();
+  t.panel.mount({ diagram: { id: 'abc', title: 'Order flow', source: VALID } });
+  await t.settle();
+
+  const status = t.status();
+  const writes = countTextWrites(status);
+  assert.equal(status.textContent, 'Rendered flowchart diagram.');
+
+  for (const character of 'flowchart TD') t.type('editor-source-field', `flowchart TD${character}`);
+
+  assert.equal(writes(), 1, `13 keystrokes announced the same state ${writes()} times`);
+  assert.equal(status.textContent, 'Rendering…');
+
+  t.blur('editor-source-field');
+  await t.settle();
+
+  assert.equal(status.textContent, 'Rendered flowchart diagram.', 'a real outcome still announces');
+  assert.equal(writes(), 2, 'the outcome transition is the only other announcement');
+});
+
+/** Counts writes to `textContent`, which a live region announces on every one. */
+function countTextWrites(node) {
+  const descriptor = Object.getOwnPropertyDescriptor(node.ownerDocument.defaultView.Node.prototype, 'textContent');
+  let writes = 0;
+  Object.defineProperty(node, 'textContent', {
+    configurable: true,
+    get() {
+      return descriptor.get.call(this);
+    },
+    set(value) {
+      writes += 1;
+      descriptor.set.call(this, value);
+    },
+  });
+  return () => writes;
+}
 
 test('a slow render never overwrites the result of a newer one', async () => {
   const dom = new JSDOM('<!doctype html><html><body></body></html>');

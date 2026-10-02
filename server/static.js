@@ -25,6 +25,9 @@ const CONTENT_TYPES = {
 };
 
 const STATIC_METHODS = ['GET', 'HEAD'];
+/** Vite writes content hashes into the file name, so a matching file can never
+ *  change meaning again and may be cached for a year. */
+const HASHED_FILE = /-[0-9A-Za-z_-]{8,}\.[a-z0-9]+$/i;
 
 export function createStaticHandler(distDirectory) {
   const root = resolve(distDirectory);
@@ -37,13 +40,17 @@ export function createStaticHandler(distDirectory) {
 
     const filePath = resolveFilePath(root, url.pathname);
     const contents = filePath === null ? null : await readFileOrNull(filePath);
-    if (contents !== null) return sendFile(res, filePath, contents);
+    if (contents !== null) return sendFile(res, filePath, contents, cacheControlFor(url.pathname));
 
     const fallback = extname(url.pathname) === '' ? await readFileOrNull(fallbackPath) : null;
     if (fallback !== null) return sendFile(res, fallbackPath, fallback, 'no-cache');
 
     return sendJson(res, 404, { error: 'Not found' });
   };
+}
+
+function cacheControlFor(pathname) {
+  return HASHED_FILE.test(pathname) ? 'immutable, max-age=31536000' : undefined;
 }
 
 function resolveFilePath(root, pathname) {
@@ -77,6 +84,7 @@ function sendFile(res, filePath, contents, cacheControl) {
   res.writeHead(200, {
     'content-type': CONTENT_TYPES[extname(filePath).toLowerCase()] ?? 'application/octet-stream',
     'content-length': contents.byteLength,
+    'x-content-type-options': 'nosniff',
     ...(cacheControl === undefined ? {} : { 'cache-control': cacheControl }),
   });
   res.end(contents);

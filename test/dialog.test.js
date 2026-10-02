@@ -129,3 +129,29 @@ test('a second confirmation is queued behind the open one', async () => {
   assert.equal(await second, true);
   assert.equal(t.panel(), null);
 });
+
+test('everything behind an open dialog is inert, and released on close', async () => {
+  const t = setup();
+  const pending = t.host.confirm({ title: 'Delete this diagram?', message: 'There is no undo.' });
+
+  assert.equal(t.trigger.hasAttribute('inert'), true, 'the invoking control cannot be reached');
+  assert.equal(t.document.querySelector('[role="dialog"]').hasAttribute('inert'), false);
+
+  t.press('Escape');
+  await pending;
+
+  assert.equal(t.trigger.hasAttribute('inert'), false);
+  assert.equal(t.document.querySelectorAll('[inert]').length, 0);
+  assert.equal(t.document.activeElement, t.trigger, 'focus is restored once the page is live again');
+});
+
+test('confirming a dialog releases the background too', async () => {
+  const t = setup();
+  const pending = t.host.confirm({ title: 'Delete?', message: 'x', confirmLabel: 'Delete' });
+
+  assert.equal(t.trigger.hasAttribute('inert'), true);
+
+  t.button('Delete').click();
+  assert.equal(await pending, true);
+  assert.equal(t.document.querySelectorAll('[inert]').length, 0);
+});

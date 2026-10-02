@@ -13,6 +13,7 @@ before(async () => {
   workspace.writeDistFile('index.html', INDEX_HTML);
   workspace.writeDistFile('assets/app.js', APP_JS);
   workspace.writeDistFile('assets/app.css', STYLE_CSS);
+  workspace.writeDistFile('assets/index-a1b2c3d4e5.js', APP_JS);
   server = await startTestServer(workspace);
 });
 
@@ -105,5 +106,29 @@ test('a missing dist directory returns the JSON error envelope', async () => {
     await server.close();
   } finally {
     empty.cleanup();
+  }
+});
+
+test('a content-hashed asset is cached forever and other files are not', async () => {
+  const hashed = await fetch(new URL('/assets/index-a1b2c3d4e5.js', server.origin));
+  assert.equal(hashed.status, 200);
+  assert.equal(hashed.headers.get('cache-control'), 'immutable, max-age=31536000');
+
+  const plain = await fetch(new URL('/assets/app.js', server.origin));
+  assert.equal(plain.status, 200);
+  assert.equal(plain.headers.get('cache-control'), null);
+
+  const index = await fetch(new URL('/', server.origin));
+  assert.equal(index.headers.get('cache-control'), 'no-cache', 'the shell must be revalidated');
+});
+
+test('every response declares that it is not content-type sniffed', async () => {
+  const asset = await fetch(new URL('/assets/app.js', server.origin));
+  const index = await fetch(new URL('/', server.origin));
+  const missing = await request(server.origin, 'GET', '/assets/missing.js');
+  const collection = await request(server.origin, 'GET', '/api/diagrams');
+
+  for (const response of [asset, index, missing, collection]) {
+    assert.equal(response.headers.get('x-content-type-options'), 'nosniff', response.url);
   }
 });

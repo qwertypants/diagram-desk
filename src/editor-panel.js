@@ -55,7 +55,7 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
   const status = el(doc, 'p', { class: 'preview__status', id: 'preview-status', role: 'status' });
   const canvas = el(doc, 'div', {
     class: 'canvas',
-    role: 'img',
+    role: 'group',
     'aria-labelledby': 'preview-title',
     'aria-describedby': 'preview-status',
   });
@@ -112,19 +112,27 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
     hint.textContent = saving ? 'Saving…' : (saveBlockedReason({ draft, preview }) ?? 'Ready to save.');
   }
 
+  /** The status line is a live region, so it is only written when the words
+   *  change: re-announcing "Rendering…" on every keystroke talks over typing. */
+  function showStatus(text) {
+    if (status.textContent !== text) status.textContent = text;
+  }
+
   function showPreviewState() {
     status.classList.toggle('is-error', preview.status === PREVIEW.ERROR);
     const isError = preview.status === PREVIEW.ERROR;
     const isPending = preview.status === PREVIEW.PENDING;
     const isOk = preview.status === PREVIEW.OK;
 
-    if (isPending) status.textContent = 'Rendering…';
-    else if (isError) status.textContent = 'Could not render the preview.';
+    if (isPending) showStatus('Rendering…');
+    else if (isError) showStatus('Could not render the preview.');
     else if (isOk) {
-      status.textContent = preview.diagramType
-        ? `Rendered ${preview.diagramType} diagram.`
-        : 'Rendered the diagram.';
-    } else status.textContent = '';
+      showStatus(
+        preview.diagramType
+          ? `Rendered ${preview.diagramType} diagram.`
+          : 'Rendered the diagram.',
+      );
+    } else showStatus('');
 
     setMessage(errorBody, isError ? preview.message : '');
     error.hidden = !isError;
@@ -178,7 +186,13 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
     syncSaveState();
     Promise.resolve()
       .then(() => onSave(draft, diagramId))
-      .catch(() => {})
+      .catch(() => {
+        // A rejected write already put the server's message in the save-error
+        // region; anything that escapes after it must not vanish silently.
+        if (saveError.hidden) {
+          setMessage(saveError, 'Something went wrong while saving. Your draft is still here — try again.');
+        }
+      })
       .then(() => {
         saving = false;
         syncSaveState();

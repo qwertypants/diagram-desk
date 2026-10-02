@@ -25,6 +25,20 @@ function isReachable(node) {
 export function createDialogHost(doc) {
   let active = null;
 
+  /** Everything beside an open dialog is inert, so pointer, focus and assistive
+   *  technology cannot reach behind it while `aria-modal` says they should not. */
+  function claimBackground(scrim) {
+    for (const node of doc.body.children) {
+      if (node !== scrim) node.setAttribute('inert', '');
+    }
+  }
+
+  function releaseBackground(scrim) {
+    for (const node of doc.body.children) {
+      if (node !== scrim) node.removeAttribute('inert');
+    }
+  }
+
   function focusableNodes() {
     if (!active) return [];
     return Array.from(active.panel.querySelectorAll(FOCUSABLE)).filter(isReachable);
@@ -64,6 +78,7 @@ export function createDialogHost(doc) {
     active = null;
     doc.removeEventListener('keydown', onKeyDown, true);
     current.scrim.remove();
+    releaseBackground(current.scrim);
     const restore = current.restore;
     if (restore && typeof restore.focus === 'function' && restore.isConnected) restore.focus();
     current.resolve(value);
@@ -124,6 +139,7 @@ export function createDialogHost(doc) {
 
     active = { panel, scrim, resolve, promise, restore, close };
     doc.body.append(scrim);
+    claimBackground(scrim);
     doc.addEventListener('keydown', onKeyDown, true);
     cancelButton.focus();
     return promise;

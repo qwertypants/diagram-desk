@@ -1,4 +1,4 @@
-import { readJsonBody, sendJson, sendNoContent } from './http.js';
+import { hasJsonContentType, readJsonBody, sendJson, sendNoContent } from './http.js';
 import { validateDiagramBody } from './validate.js';
 
 const COLLECTION_PATH = '/api/diagrams';
@@ -48,12 +48,14 @@ async function route({ req, res, url, store }) {
 }
 
 async function sendNewDiagram(req, res, store) {
+  if (!hasJsonContentType(req)) return sendUnsupportedMediaType(res);
   const input = await readDiagramInput(req);
   if (input.error !== undefined) return sendJson(res, 400, { error: input.error });
   return sendJson(res, 201, store.create(input.diagram));
 }
 
 async function sendUpdatedDiagram(req, res, store, id) {
+  if (!hasJsonContentType(req)) return sendUnsupportedMediaType(res);
   const input = await readDiagramInput(req);
   if (input.error !== undefined) return sendJson(res, 400, { error: input.error });
 
@@ -73,6 +75,10 @@ function sendDiagramList(res, diagrams) {
 
 function sendDiagramNotFound(res) {
   return sendJson(res, 404, { error: 'Diagram not found' });
+}
+
+function sendUnsupportedMediaType(res) {
+  return sendJson(res, 415, { error: 'Request body must be application/json' });
 }
 
 function sendMethodNotAllowed(res, allow) {
