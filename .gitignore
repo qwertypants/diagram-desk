@@ -1,10 +1,36 @@
+# Dependencies and build output
 node_modules/
 dist/
+
+# Local database and any test artifacts
 data/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Logs
+*.log
+npm-debug.log*
+
+# Worktrees and local agent/tool state
 .worktrees/
 .superpowers/
-*.log
-.DS_Store
-
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# Environment and editor files
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Coverage and test output
+coverage/
+.nyc_output/
+test-results/
+playwright-report/

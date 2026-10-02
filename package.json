@@ -1,7 +1,17 @@
 {
-  "name": "mermaid-library",
+  "name": "diagram-desk",
   "version": "1.0.0",
-  "private": true,
+  "description": "A local-first library of Mermaid diagrams: write, preview, search, and edit saved diagrams offline, with a small Node server and SQLite storage.",
+  "keywords": [
+    "mermaid",
+    "diagrams",
+    "flowchart",
+    "sqlite",
+    "local-first",
+    "offline"
+  ],
+  "license": "MIT",
+  "author": "Wilkins Fernandez",
   "type": "module",
   "engines": {
     "node": ">=24"
@@ -13,6 +23,12 @@
     "test": "node --test",
     "test:browser": "node scripts/browser-check.mjs"
   },
+  "files": [
+    "index.html",
+    "src",
+    "server",
+    "dist"
+  ],
   "dependencies": {
     "mermaid": "^12.1.0"
   },

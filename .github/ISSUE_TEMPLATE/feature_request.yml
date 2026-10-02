@@ -1,0 +1,50 @@
+name: Feature request
+
+description: Suggest a capability or improvement to Diagram Desk
+
+labels: ["enhancement", "needs triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Diagram Desk is deliberately small and local-first. Proposals that keep
+        it dependency-light and useful on one machine are the most likely to
+        land — but describe the problem before the solution.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the situation you are in, not the feature you want.
+      placeholder: |
+        When I keep more than about 30 diagrams I cannot tell which of two
+        similarly named ones is the one I need to update.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      placeholder: Let me filter the library by updated date as well as title.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered
+      description: Including the workaround you use today.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - Client UI only
+        - Server or API only
+        - Both
+        - Not sure
+    validations:
+      required: true

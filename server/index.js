@@ -76,7 +76,7 @@ function isEntryPoint() {
 
 if (isEntryPoint()) {
   const server = await startServer();
-  console.log(`mermaid-library listening on ${server.origin}`);
+  console.log(`diagram-desk listening on ${server.origin}`);
   console.log(`database: ${server.databasePath}`);
   if (!existsSync(server.distDirectory)) {
     console.warn(`no built site at ${server.distDirectory} - run "npm run build" first`);

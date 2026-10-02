@@ -1,0 +1,65 @@
+name: Bug report
+
+description: Something in Diagram Desk does not work as documented
+
+labels: ["bug", "needs triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing this. The more exact the reproduction, the faster it
+        gets fixed.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you see? Include the exact wording of any error.
+      placeholder: Clicking Save produced an error banner reading "..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+      placeholder: Save returned me to the diagram view with the new title.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Starting from a fresh clone, what did you do?
+      placeholder: |
+        1. npm start
+        2. Open /new
+        3. Paste the Mermaid source below
+        4. Click Save
+    validations:
+      required: true
+
+  - type: textarea
+    id: mermaid-source
+    attributes:
+      label: Mermaid source
+      description: If the problem involves a diagram, paste the exact source that triggers it.
+      render: mermaid
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console output
+      description: Right-click, Inspect, Console. Paste any errors or red lines.
+      render: shell
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: "Node version (`node -v`), OS, browser and version."
+      placeholder: "Node 24.1.0, macOS 15.0, Chrome 141"
+    validations:
+      required: true
