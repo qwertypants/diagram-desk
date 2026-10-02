@@ -107,6 +107,7 @@ export function createDialogHost(doc) {
         class: destructive ? 'dialog dialog--destructive' : 'dialog',
         role: 'dialog',
         'aria-modal': 'true',
+        tabindex: '-1',
         'aria-labelledby': `${id}-title`,
         'aria-describedby': `${id}-message`,
       },
