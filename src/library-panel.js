@@ -69,18 +69,14 @@ export function createLibraryPanel({ root, api, onOpen, onCompose }) {
   });
 
   function renderList() {
+    const active = list.contains(doc.activeElement) ? doc.activeElement.closest('.library__item') : null;
+    const focusedIndex = itemNodes().indexOf(active);
     clear(list);
     for (const diagram of items) {
-      const selected = diagram.id === selectedId;
       const button = el(
         doc,
         'button',
-        {
-          type: 'button',
-          class: selected ? 'library__item is-selected' : 'library__item',
-          'aria-current': selected ? 'true' : null,
-          onclick: () => onOpen(diagram.id),
-        },
+        { type: 'button', class: 'library__item', onclick: () => onOpen(diagram.id) },
         [
           el(doc, 'span', { class: 'library__item-title', text: diagram.title }),
           el(doc, 'span', { class: 'library__item-time', text: formatTimestamp(diagram.updatedAt) }),
@@ -88,6 +84,19 @@ export function createLibraryPanel({ root, api, onOpen, onCompose }) {
       );
       list.append(el(doc, 'li', {}, [button]));
     }
+    markSelected();
+    if (focusedIndex >= 0) itemNodes()[focusedIndex]?.focus();
+  }
+
+  /** Selection is a class and aria-current, so marking never rebuilds the list
+   *  and never steals keyboard focus from the item the user is on. */
+  function markSelected() {
+    itemNodes().forEach((button, index) => {
+      const selected = items[index]?.id === selectedId;
+      button.classList.toggle('is-selected', selected);
+      if (selected) button.setAttribute('aria-current', 'true');
+      else button.removeAttribute('aria-current');
+    });
   }
 
   function renderStatus(message, withRetry = false) {
@@ -136,7 +145,7 @@ export function createLibraryPanel({ root, api, onOpen, onCompose }) {
     reload,
     setSelected(id) {
       selectedId = id;
-      renderList();
+      markSelected();
     },
   };
 }

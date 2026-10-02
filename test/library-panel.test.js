@@ -217,3 +217,24 @@ test('a slow response for an older query never overwrites a newer one', async ()
   assert.equal(t.items()[0].textContent.includes('Shipping states'), true);
   assert.match(t.status().textContent, /1 saved diagram\./);
 });
+
+test('marking the open diagram keeps keyboard focus on the item', async () => {
+  const t = setup();
+  await t.panel.reload();
+
+  t.items()[1].focus();
+  t.panel.setSelected('id-ship');
+
+  assert.equal(t.document.activeElement, t.items()[1], 'selecting must not steal focus');
+  assert.equal(t.items()[1].getAttribute('aria-current'), 'true');
+});
+
+test('a reload while an item is focused keeps focus on the same position', async () => {
+  const t = setup();
+  await t.panel.reload();
+
+  t.items()[1].focus();
+  await t.panel.reload();
+
+  assert.equal(t.document.activeElement, t.items()[1]);
+});
