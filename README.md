@@ -146,4 +146,4 @@ Please do not report vulnerabilities in a public issue — see
 
 ## License
 
-[MIT](LICENSE) © 2026 Wilkins Fernandez
+[MIT](LICENSE) © 2026 Diagram Desk contributors

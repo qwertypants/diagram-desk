@@ -11,7 +11,7 @@
     "offline"
   ],
   "license": "MIT",
-  "author": "Wilkins Fernandez",
+  "author": "Diagram Desk contributors",
   "type": "module",
   "engines": {
     "node": ">=24"

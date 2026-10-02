@@ -1,9 +1,9 @@
-# Update the owner segment of these URLs to your GitHub user or org before publishing.
+# Replace OWNER in both URLs below with your GitHub user or org before publishing.
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/wilkinsf/diagram-desk/security/advisories/new
+    url: https://github.com/OWNER/diagram-desk/security/advisories/new
     about: Please report vulnerabilities privately instead of in a public issue. See SECURITY.md.
   - name: Question or usage help
-    url: https://github.com/wilkinsf/diagram-desk/discussions
+    url: https://github.com/OWNER/diagram-desk/discussions
     about: Ask how to use or extend Diagram Desk.
