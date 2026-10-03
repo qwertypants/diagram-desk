@@ -352,6 +352,78 @@ h3 {
   margin: 0 auto;
 }
 
+.diagram-explorer {
+  position: relative;
+  min-width: 0;
+}
+
+.diagram-explorer__viewport {
+  position: relative;
+  height: min(68vh, 42rem);
+  min-height: 14rem;
+  padding: 0;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.diagram-explorer__viewport.is-panning {
+  cursor: grabbing;
+}
+
+.diagram-explorer__art {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transform-origin: top left;
+  will-change: transform;
+}
+
+.diagram-explorer__controls {
+  position: absolute;
+  z-index: 1;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+}
+
+.diagram-explorer__controls[hidden] {
+  display: none;
+}
+
+.diagram-explorer__control {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 0;
+  background: var(--paper-raised);
+  color: var(--ink);
+  font: 600 1.4rem/1 var(--sans);
+  cursor: pointer;
+}
+
+.diagram-explorer__control + .diagram-explorer__control {
+  border-top: 1px solid var(--rule);
+}
+
+.diagram-explorer__control:hover:not(:disabled) {
+  background: var(--paper-sunken);
+}
+
+.diagram-explorer__control:disabled {
+  color: var(--ink-faint);
+  cursor: not-allowed;
+}
+
 /* ---------- viewer ---------- */
 
 .viewer {
