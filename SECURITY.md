@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Diagram Desk is pre-1.0 and moving fast. Fixes land on the latest release.
+Fixes land on the latest release.
 
 | Version | Supported |
 | --- | --- |
@@ -15,8 +15,9 @@ Diagram Desk is pre-1.0 and moving fast. Fixes land on the latest release.
 
 Open a private vulnerability report via GitHub's
 "Report a vulnerability" button on the Security tab of the repository. If that
-is not available to you, contact the maintainer directly — see the repository's
-GitHub profile.
+is not available to you, use a private contact method listed on the repository's
+GitHub profile. If none is listed, open an issue asking for a private reporting
+channel without including vulnerability details.
 
 Please include:
 

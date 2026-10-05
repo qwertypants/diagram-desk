@@ -49,9 +49,9 @@ reported to the project maintainers. All complaints will be reviewed and
 investigated promptly and fairly.
 
 The maintainers are obligated to respect the privacy and security of the
-reporter of any incident. You may report through a private GitHub issue or by
-contacting the maintainer directly — see the repository's GitHub profile for
-contact details.
+reporter of any incident. Use a private contact method listed on the
+repository's GitHub profile. If none is listed, open an issue asking for a
+private reporting channel without including incident details.
 
 Maintainers who do not follow or enforce this Code of Conduct in good faith may
 face temporary or permanent repercussions as determined by other members of the

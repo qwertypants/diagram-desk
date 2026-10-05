@@ -3,14 +3,14 @@
 A local-first library of [Mermaid](https://mermaid.js.org/) diagrams. Write
 Mermaid source in a live preview, save it, and come back to it later — search,
 view, edit, and delete. Everything runs on your machine: a small Node server, a
-SQLite file, no cloud account, no network calls.
+SQLite file, no cloud account, no external network calls.
 
 - **Local-first.** Diagrams live in `data/diagrams.sqlite` on your disk. Point
   `DIAGRAMS_DB` anywhere you like.
 - **No accounts, no telemetry, no external services.** The only runtime
   dependency is Mermaid itself, bundled into the static site at build time.
 - **Deep links.** Every view has a URL (`/`, `/new`, `/diagrams/<id>`,
-  `/diagrams/<id>/edit`), so you can bookmark and share links on your LAN.
+  `/diagrams/<id>/edit`), so you can bookmark links on this machine.
 - **Plain API.** A documented JSON API over the same store the UI uses
   ([`docs/api-contract.md`](docs/api-contract.md)).
 
@@ -21,10 +21,10 @@ SQLite file, no cloud account, no network calls.
 
 ## Quick start
 
+From the project directory, run:
+
 ```sh
-git clone <repository-url>
-cd diagram-desk
-npm install
+npm ci
 npm start
 ```
 
@@ -91,7 +91,7 @@ browser ── HTTP ──> node server (127.0.0.1:4317)
 npm test
 ```
 
-150 tests covering the API contract, validation, persistence, routing, and the
+Tests cover the API contract, validation, persistence, routing, and the
 UI panels (rendered in jsdom). No browser required.
 
 There is also a real-browser walkthrough — create, preview, save, reopen,
@@ -99,7 +99,6 @@ search, edit, delete, plus invalid Mermaid, unsaved-changes handling, narrow
 layouts, and rendering with every external origin blocked:
 
 ```sh
-npm run build
 npm start           # in one terminal
 npm run test:browser # in another
 ```

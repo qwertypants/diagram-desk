@@ -9,15 +9,15 @@ By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 You need Node.js 24 or newer.
 
+Clone or download the repository, then from its root run:
+
 ```sh
-git clone <repository-url>
-cd diagram-desk
-npm install
+npm ci
 npm start
 ```
 
 Then open <http://127.0.0.1:4317>. The SQLite file is created on first run, so
-there is no setup beyond `npm install`.
+there is no setup beyond `npm ci`.
 
 ## Before you open a pull request
 
