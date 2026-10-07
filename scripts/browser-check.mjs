@@ -256,6 +256,31 @@ if (editBtn !== null) {
     nativeDialogs.length === dialogsBeforeSave, nativeDialogs.slice(dialogsBeforeSave).join(' | '));
   check('the rename is on screen after saving', afterSaveText.includes(RENAMED_TITLE), oneline(afterSaveText));
 
+  const desktopViewerBounds = await page.evaluate(() => {
+    const stage = document.querySelector('.stage').getBoundingClientRect();
+    const viewer = document.querySelector('.viewer').getBoundingClientRect();
+    const explorer = document.querySelector('.diagram-explorer').getBoundingClientRect();
+    const viewport = document.querySelector('.diagram-explorer__viewport').getBoundingClientRect();
+    const actions = document.querySelector('.viewer__actions').getBoundingClientRect();
+    return {
+      innerHeight: window.innerHeight,
+      stageTop: stage.top,
+      stageBottom: stage.bottom,
+      viewerTop: viewer.top,
+      viewerHeight: viewer.height,
+      explorerHeight: explorer.height,
+      viewportHeight: viewport.height,
+      actionsBottom: actions.bottom,
+    };
+  });
+  check('desktop diagram viewport uses the expanded height',
+    desktopViewerBounds.viewportHeight > desktopViewerBounds.innerHeight * 0.68 - 1,
+    JSON.stringify(desktopViewerBounds));
+  check('desktop Edit and Delete actions stay near the stage bottom',
+    desktopViewerBounds.actionsBottom <= desktopViewerBounds.stageBottom
+      && desktopViewerBounds.stageBottom - desktopViewerBounds.actionsBottom <= desktopViewerBounds.innerHeight * 0.08,
+    JSON.stringify(desktopViewerBounds));
+
   const persisted = await fetch(`${base}/api/diagrams/${diagramId}`).then((r) => r.json());
   check('the rename persisted to the server', persisted.title === RENAMED_TITLE, JSON.stringify(persisted.title));
   check('the edited source persisted to the server', persisted.source === EDITED_SOURCE, JSON.stringify(persisted.source));
@@ -269,6 +294,34 @@ const overflow = await page.evaluate(() =>
 check('no horizontal overflow at 390px', overflow <= 1, `overflow ${overflow}px`);
 const listVisibleNarrow = await page.locator('.library button, .library li, .library a').first().isVisible();
 check('library still visible at 390px', listVisibleNarrow);
+
+const phoneViewerBounds = await page.evaluate(() => {
+  const stage = document.querySelector('.stage').getBoundingClientRect();
+  const viewer = document.querySelector('.viewer').getBoundingClientRect();
+  const explorer = document.querySelector('.diagram-explorer').getBoundingClientRect();
+  const viewport = document.querySelector('.diagram-explorer__viewport').getBoundingClientRect();
+  const actions = document.querySelector('.viewer__actions').getBoundingClientRect();
+  return {
+    innerHeight: window.innerHeight,
+    stageTop: stage.top,
+    stageBottom: stage.bottom,
+    viewerTop: viewer.top,
+    viewerHeight: viewer.height,
+    explorerHeight: explorer.height,
+    viewportHeight: viewport.height,
+    actionsBottom: actions.bottom,
+  };
+});
+check('phone diagram viewport uses the expanded height',
+  phoneViewerBounds.viewportHeight > phoneViewerBounds.innerHeight * 0.68 - 1,
+  JSON.stringify(phoneViewerBounds));
+check('phone Edit and Delete actions stay visible near the bottom',
+  phoneViewerBounds.actionsBottom <= phoneViewerBounds.stageBottom
+    && phoneViewerBounds.stageBottom - phoneViewerBounds.actionsBottom <= phoneViewerBounds.innerHeight * 0.08,
+  JSON.stringify(phoneViewerBounds));
+check('phone Edit and Delete buttons are visible',
+  await page.getByRole('button', { name: 'Edit', exact: true }).isVisible()
+    && await page.getByRole('button', { name: 'Delete', exact: true }).isVisible());
 await page.setViewportSize({ width: 1440, height: 900 });
 
 // ---- offline rendering: reload the app while blocking every external origin ----
