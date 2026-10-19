@@ -1,0 +1,136 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Autonomous Agent: Plan, Act, Check, and Stop",
+    "output": "catalog/diagrams/plan-act-check.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "lane0",
+      "label": "Understand and plan"
+    },
+    {
+      "id": "lane1",
+      "label": "Act and observe"
+    },
+    {
+      "id": "lane2",
+      "label": "Assess and stop"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "H",
+      "label": "Human request",
+      "col": 0,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "C",
+      "label": "Clarify task",
+      "col": 1,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "P",
+      "label": "Plan next step",
+      "col": 2,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "A",
+      "label": "Act with tools",
+      "col": 0,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "E",
+      "label": "Observe results",
+      "col": 1,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "D",
+      "label": "Assess progress",
+      "col": 2,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "X",
+      "label": "Human checkpoint",
+      "col": 0,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "T",
+      "label": "Complete",
+      "col": 1,
+      "lane": "lane2",
+      "type": "database"
+    },
+    {
+      "id": "S",
+      "label": "Limit reached",
+      "col": 2,
+      "lane": "lane2",
+      "type": "database"
+    }
+  ],
+  "edges": [
+    {
+      "from": "H",
+      "to": "C"
+    },
+    {
+      "from": "C",
+      "to": "P"
+    },
+    {
+      "from": "P",
+      "to": "A"
+    },
+    {
+      "from": "A",
+      "to": "E"
+    },
+    {
+      "from": "E",
+      "to": "D"
+    },
+    {
+      "from": "D",
+      "to": "P",
+      "label": "Continue"
+    },
+    {
+      "from": "D",
+      "to": "X",
+      "label": "Checkpoint or blocker"
+    },
+    {
+      "from": "X",
+      "to": "P",
+      "label": "Continue"
+    },
+    {
+      "from": "D",
+      "to": "T",
+      "label": "Task complete"
+    },
+    {
+      "from": "D",
+      "to": "S",
+      "label": "Limit reached, such as max iterations"
+    }
+  ]
+}

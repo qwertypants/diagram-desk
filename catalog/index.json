@@ -1,0 +1,905 @@
+[
+  {
+    "slug": "ai-evaluation",
+    "type": "dataflow",
+    "title": "AI System with evaluation",
+    "file": "diagrams/ai-evaluation.json",
+    "original": [
+      {
+        "id": "1b3b1152-e9e1-4c29-887b-82b32debf9bf",
+        "sourceSha256": "8f4010768f69fd39996ee12334dc68c47a3b5117103aa2828f374fc6872043fe"
+      },
+      {
+        "id": "f5e29a3e-e996-42bd-a38f-ae4294d89b19",
+        "sourceSha256": "8f4010768f69fd39996ee12334dc68c47a3b5117103aa2828f374fc6872043fe"
+      }
+    ],
+    "lesson": {
+      "summary": "Production observations become evaluation cases before proposed changes return to production.",
+      "problem": "A prompt or model update can improve average scores while breaking important user tasks.",
+      "objectives": [
+        "Separate live serving from offline grading.",
+        "Combine deterministic, model, and human evidence."
+      ],
+      "walkthrough": [
+        {
+          "title": "Observe",
+          "detail": "Production traffic passes through the AI application and model. Responses and request context are recorded under an explicit data policy."
+        },
+        {
+          "title": "Grade",
+          "detail": "Sampled production cases and a golden dataset feed deterministic checks, an LLM judge, and human review. Their results reach a dashboard."
+        },
+        {
+          "title": "Decide",
+          "detail": "A detected regression sends prompt, model, or retrieval changes back through evaluation. A passing decision permits deployment."
+        }
+      ],
+      "decisions": [
+        "Use deterministic checks for properties that have a clear exact answer.",
+        "Calibrate model judges against human review and inspect individual failures."
+      ],
+      "failureModes": [
+        "An aggregate score can conceal a severe regression in a small segment.",
+        "Production logs can contain sensitive data; sampling requires redaction and retention policies."
+      ],
+      "takeaways": [
+        "A release decision needs task-specific acceptance criteria."
+      ],
+      "references": [
+        {
+          "title": "Demystifying evaluations for AI agents",
+          "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"
+        },
+        {
+          "title": "OpenTelemetry GenAI conventions",
+          "url": "https://github.com/open-telemetry/semantic-conventions-genai"
+        }
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
+    }
+  },
+  {
+    "slug": "agent-tool-loop",
+    "type": "architecture",
+    "title": "Agentic AI systems with tools",
+    "file": "diagrams/agent-tool-loop.json",
+    "original": [
+      {
+        "id": "9c861823-1ce1-4588-a36f-580dc2edd252",
+        "sourceSha256": "56f937d023e3f66d21eccb7acbf069ab37ff6c35f2b2a50b52efe3ad3571abd5"
+      }
+    ],
+    "lesson": {
+      "summary": "The model proposes actions. The application owns execution and validates the result.",
+      "problem": "A support assistant needs internal data and external tools without treating model output as executable authority.",
+      "objectives": [
+        "Trace the tool loop back to the model.",
+        "Identify where execution and response validation belong."
+      ],
+      "walkthrough": [
+        {
+          "title": "Request and context",
+          "detail": "The API hands the request to the orchestrator, which loads context before calling the model."
+        },
+        {
+          "title": "Tool routing",
+          "detail": "A tool decision selects the database, retrieval, external API, or compute capability. Results return to the model for another decision."
+        },
+        {
+          "title": "Response and evidence",
+          "detail": "A no-tool decision produces a response. Guardrails run before returning it; tracing observes the agent, model, and tools."
+        }
+      ],
+      "decisions": [
+        "Keep tool execution in application code so tool arguments can be checked.",
+        "Trace the complete loop, including failed calls and stopping reasons."
+      ],
+      "failureModes": [
+        "A repeated tool loop needs an iteration and cost budget.",
+        "Response guardrails alone cannot authorize a side effect."
+      ],
+      "takeaways": [
+        "Tool results are feedback, not a guarantee of correctness."
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation.",
+      "references": [
+        {
+          "title": "Building effective agents",
+          "url": "https://www.anthropic.com/engineering/building-effective-agents"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "async-ai",
+    "type": "architecture",
+    "title": "Async AI processing",
+    "file": "diagrams/async-ai.json",
+    "original": [
+      {
+        "id": "394c9b3a-89c3-47da-b514-e70e328320cc",
+        "sourceSha256": "279c6ba0fa21b5da0e1f0745fe837efbbd2f3e8d1f6d5297a9e6fbb1a226244c"
+      }
+    ],
+    "lesson": {
+      "summary": "A durable job record and worker-owned writes make asynchronous AI work observable.",
+      "problem": "Long model calls must continue after the initial HTTP request ends.",
+      "objectives": [
+        "Separate accepting a job from completing it.",
+        "Trace retries to a bounded terminal outcome."
+      ],
+      "walkthrough": [
+        {
+          "title": "Accept",
+          "detail": "The API records the job and enqueues work. A production design should close the dual-write gap with an outbox or equivalent mechanism."
+        },
+        {
+          "title": "Execute",
+          "detail": "The queue distributes work to three workers. Each worker calls the AI service and owns persistence of its returned result and job status."
+        },
+        {
+          "title": "Recover and observe",
+          "detail": "Failed work enters the retry queue. Retryable work returns to the job queue; exhausted work goes to the dead-letter queue. The status endpoint reads the job database."
+        }
+      ],
+      "decisions": [
+        "Workers, rather than the external model provider, write application results.",
+        "A dead-letter queue retains work that needs investigation."
+      ],
+      "failureModes": [
+        "Delivery can repeat; writes need idempotency.",
+        "The original retry path illustrates one worker; the same policy applies to all three."
+      ],
+      "takeaways": [
+        "Retries do not create exactly-once side effects."
+      ],
+      "references": [
+        {
+          "title": "Temporal retry policies",
+          "url": "https://docs.temporal.io/encyclopedia/retry-policies"
+        },
+        {
+          "title": "Transactional outbox pattern",
+          "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html"
+        }
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
+    }
+  },
+  {
+    "slug": "plan-act-check",
+    "type": "workflow",
+    "title": "Autonomous Agent: Plan, Act, Check, and Stop",
+    "file": "diagrams/plan-act-check.json",
+    "original": [
+      {
+        "id": "e6fa751f-e194-4c40-be26-abf59874b526",
+        "sourceSha256": "784981a5edf0d7df162e3c54f11d8ffdb0ffba3f79e7649a3dbf53d4dfe1a0fa"
+      }
+    ],
+    "lesson": {
+      "summary": "An agent loop must return to observed results and have explicit ways to stop.",
+      "problem": "Open-ended work cannot be safely expressed as an endless sequence of model calls.",
+      "objectives": [
+        "Find the feedback edge.",
+        "Distinguish success, a blocker, and a budget stop."
+      ],
+      "walkthrough": [
+        {
+          "title": "Clarify and plan",
+          "detail": "A human request becomes a clarified task and an initial plan."
+        },
+        {
+          "title": "Act and inspect",
+          "detail": "Tools affect the environment. Tool results and code execution provide observations for assessing progress."
+        },
+        {
+          "title": "Continue or stop",
+          "detail": "Continue by replanning; pause at a checkpoint; stop on completion or a reached limit. Human feedback can restart planning."
+        }
+      ],
+      "decisions": [
+        "Assess actual tool results rather than treating a plan as progress.",
+        "Make maximum iterations or cost an explicit stopping rule."
+      ],
+      "failureModes": [
+        "A successful tool call may still fail the user objective.",
+        "A checkpoint without a resume condition leaves ambiguous state."
+      ],
+      "takeaways": [
+        "A credible completion claim requires external evidence."
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation.",
+      "references": [
+        {
+          "title": "Building effective agents",
+          "url": "https://www.anthropic.com/engineering/building-effective-agents"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "collaborative-comments",
+    "type": "architecture",
+    "title": "Collaborative Comments and Version History",
+    "file": "diagrams/collaborative-comments.json",
+    "original": [
+      {
+        "id": "2bdda3f0-3861-4c9f-81d5-34b18aa4a16e",
+        "sourceSha256": "e5d6687a8fedaf2ed053afd674bd07fc545a17a6d701924153a85c12251a07fe"
+      }
+    ],
+    "lesson": {
+      "summary": "Comments need durable anchors and historical context, not only a live document position.",
+      "problem": "Concurrent edits move or delete text while collaborators discuss it.",
+      "objectives": [
+        "Separate current content, edit history, and comment state.",
+        "Explain why text anchors need their own resolver."
+      ],
+      "walkthrough": [
+        {
+          "title": "Live edits",
+          "detail": "Collaborators edit through the collaboration engine. It merges updates into the current document and broadcasts them."
+        },
+        {
+          "title": "History",
+          "detail": "Committed edits produce version records. A comment retains the version at its creation."
+        },
+        {
+          "title": "Anchors",
+          "detail": "The resolver consumes document updates and comment anchors, then records moved or deleted-anchor outcomes."
+        }
+      ],
+      "decisions": [
+        "Store comment state separately from document history.",
+        "Keep a deleted anchor as an explicit unresolved outcome rather than silently moving a comment."
+      ],
+      "failureModes": [
+        "A numeric offset alone becomes wrong after concurrent edits.",
+        "Version retention and comment retention need compatible policies."
+      ],
+      "takeaways": [
+        "A merge engine does not by itself implement comment semantics."
+      ],
+      "references": [
+        {
+          "title": "Yjs shared types and document updates",
+          "url": "https://docs.yjs.dev/api/document-updates"
+        }
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
+    }
+  },
+  {
+    "slug": "effective-agent-principles",
+    "type": "workflow",
+    "title": "Effective Agents: Design Principles and Practice",
+    "file": "diagrams/effective-agent-principles.json",
+    "original": [
+      {
+        "id": "fe3c76da-5763-4014-b013-8785a4f89cb3",
+        "sourceSha256": "890d60128f7e8b58a4b13a098a6a1d0c183be36729109f2e3ad38ba4a1ea5382"
+      }
+    ],
+    "lesson": {
+      "summary": "Choose agentic work that has clear success criteria, feedback, and human oversight.",
+      "problem": "An agent can take actions without making its reasoning or outcomes understandable.",
+      "objectives": [
+        "Connect simplicity and tool design to reliability.",
+        "Apply fit criteria to support and coding work."
+      ],
+      "walkthrough": [
+        {
+          "title": "Keep control understandable",
+          "detail": "Begin with a simple design. Expose meaningful steps and design, document, and test tools."
+        },
+        {
+          "title": "Use feedback",
+          "detail": "Evaluate environment observations and retain human checkpoints."
+        },
+        {
+          "title": "Check fit",
+          "detail": "Support retrieves context and performs permitted actions; coding uses test feedback and review. Other use cases need the same success and oversight criteria."
+        }
+      ],
+      "decisions": [
+        "Increase autonomy only where observations let the system assess progress."
+      ],
+      "failureModes": [
+        "More agents and tools can increase compounding errors."
+      ],
+      "takeaways": [
+        "Tool design is part of product reliability."
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation.",
+      "references": [
+        {
+          "title": "Building effective agents",
+          "url": "https://www.anthropic.com/engineering/building-effective-agents"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "ai-product",
+    "type": "architecture",
+    "title": "Full AI product architecture",
+    "file": "diagrams/ai-product.json",
+    "original": [
+      {
+        "id": "b23c6133-f00e-44c8-957f-2534fdf1cc15",
+        "sourceSha256": "bc597379c9ca9c6e36d7e29514a4ca9ab44f47f74481bc02dc86e02325d78508"
+      }
+    ],
+    "lesson": {
+      "summary": "An AI product combines ordinary application infrastructure with model, retrieval, and tool boundaries.",
+      "problem": "An interactive product also needs authentication, durable jobs, model routing, and evidence about quality.",
+      "objectives": [
+        "Distinguish application state from model context.",
+        "Follow synchronous and background request paths."
+      ],
+      "walkthrough": [
+        {
+          "title": "Application boundary",
+          "detail": "The client reaches the gateway. Authentication must succeed before the application service handles protected work."
+        },
+        {
+          "title": "AI execution",
+          "detail": "The orchestrator builds prompts, retrieves indexed context, and invokes permitted tools. A model gateway selects a provider."
+        },
+        {
+          "title": "Background and feedback",
+          "detail": "The application queues background jobs; workers call the orchestrator. Application, model, and tool traces feed evaluation."
+        }
+      ],
+      "decisions": [
+        "Keep the model gateway separate from application authorization.",
+        "Persist business state in the application database rather than relying on model memory."
+      ],
+      "failureModes": [
+        "Fallback providers may have different tool and context contracts.",
+        "A queue acknowledgement does not prove that a job completed."
+      ],
+      "takeaways": [
+        "Each dependency adds an ownership and failure boundary."
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation.",
+      "references": [
+        {
+          "title": "Building effective agents",
+          "url": "https://www.anthropic.com/engineering/building-effective-agents"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "production-rag",
+    "type": "dataflow",
+    "title": "Production RAG System",
+    "file": "diagrams/production-rag.json",
+    "original": [
+      {
+        "id": "f6036a09-80ec-4c58-b460-e500c39323fe",
+        "sourceSha256": "7af8ce9e07d83117dc58f3dc3b65c6ce7f1bff4a08145c715a2b79f95431c57e"
+      }
+    ],
+    "lesson": {
+      "summary": "Retrieval has two linked paths: preparing the corpus and answering a specific query.",
+      "problem": "A model needs up-to-date documents that cannot all fit in its context window.",
+      "objectives": [
+        "Distinguish ingestion from online retrieval.",
+        "Explain retrieval, reranking, and response checks."
+      ],
+      "walkthrough": [
+        {
+          "title": "Prepare documents",
+          "detail": "Documents are parsed, cleaned, chunked, embedded, and indexed into the vector store."
+        },
+        {
+          "title": "Retrieve for a query",
+          "detail": "The app authenticates and rate-limits the request. The orchestrator embeds the query, retrieves candidates, and reranks or filters them."
+        },
+        {
+          "title": "Build and check",
+          "detail": "The prompt builder receives the original query and selected passages. The model response is validated before returning through the API. Traces cover orchestration, retrieval, and model calls."
+        }
+      ],
+      "decisions": [
+        "Indexing and serving have different latency and freshness requirements.",
+        "Reranking can improve context selection at an additional latency and compute cost."
+      ],
+      "failureModes": [
+        "Relevant-looking documents may be stale or unauthorized.",
+        "Response validation cannot repair missing evidence."
+      ],
+      "takeaways": [
+        "Evaluate retrieval quality separately from answer quality."
+      ],
+      "references": [
+        {
+          "title": "Contextual retrieval",
+          "url": "https://www.anthropic.com/engineering/contextual-retrieval"
+        },
+        {
+          "title": "Demystifying evaluations for AI agents",
+          "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"
+        }
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
+    }
+  },
+  {
+    "slug": "streaming-chat",
+    "type": "sequence",
+    "title": "Stream AI in chat",
+    "file": "diagrams/streaming-chat.json",
+    "original": [
+      {
+        "id": "ecc6c5ad-1bc9-4366-9318-0c0c9eeaf188",
+        "sourceSha256": "eebb038a9fe20725d0e64ba70ea330aaa1241f5a4b6cf20195aa18ceee02a5fb"
+      }
+    ],
+    "lesson": {
+      "summary": "Streaming transports partial output before the complete response can be validated.",
+      "problem": "A chat interface should stay responsive during a long model response.",
+      "objectives": [
+        "Follow chunks through each hop.",
+        "Distinguish a partial display from a validated final result."
+      ],
+      "walkthrough": [
+        {
+          "title": "Request",
+          "detail": "The UI submits a message through the backend and orchestrator to the provider."
+        },
+        {
+          "title": "Chunks",
+          "detail": "Each chunk returns through the orchestrator and backend. SSE and WebSocket are alternative transports, not interchangeable protocol names."
+        },
+        {
+          "title": "Completion",
+          "detail": "The orchestrator validates the complete result before final metadata reaches the UI. A partial reply is not yet final."
+        }
+      ],
+      "decisions": [
+        "Keep cancellation and provider errors visible to the client."
+      ],
+      "failureModes": [
+        "A disconnected stream can leave a partial answer.",
+        "Validation after completion cannot retract tokens already displayed."
+      ],
+      "takeaways": [
+        "Streaming improves perceived responsiveness, not model correctness."
+      ],
+      "references": [
+        {
+          "title": "Server-sent events",
+          "url": "https://html.spec.whatwg.org/multipage/server-sent-events.html"
+        }
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
+    }
+  },
+  {
+    "slug": "offline-job-conflict",
+    "type": "workflow",
+    "title": "When a Job Completes While It Moves",
+    "file": "diagrams/offline-job-conflict.json",
+    "original": [
+      {
+        "id": "3434f23e-7e21-4660-8695-beb392d95d1b",
+        "sourceSha256": "ff31d1ef2d20c93d111884eb36c2e4110a0496ed63588614fb11ae2a5ae31827"
+      }
+    ],
+    "lesson": {
+      "summary": "Reassignment and completion change different fields; reconcile them without dispatching twice.",
+      "problem": "A technician completes a job offline while a dispatcher moves it to another truck.",
+      "objectives": [
+        "Trace durable offline actions and server reconciliation.",
+        "Distinguish assignment changes from completion status."
+      ],
+      "walkthrough": [
+        {
+          "title": "Two concurrent writers",
+          "detail": "The dispatcher supersedes Truck A, activates Truck B, and writes an outbox event in one transaction. The technician records completion and a note in a local store."
+        },
+        {
+          "title": "Reconnect",
+          "detail": "The technician queues an idempotent action with a base version, pulls events after a cursor, and submits completion. Wake-up messages only prompt pulling."
+        },
+        {
+          "title": "Reconcile",
+          "detail": "The server checks the idempotency key and base version. An unchanged status permits completion while the newer assignment is retained. Their disagreement creates a review item."
+        },
+        {
+          "title": "Close the stale dispatch",
+          "detail": "The dispatcher closes Truck B’s stale assignment. Completion stands, including technician, time, and note; the customer is not dispatched twice."
+        }
+      ],
+      "decisions": [
+        "Treat assignment conflict and completion acceptance as field-level decisions, not mutually exclusive whole-record outcomes.",
+        "Use an outbox for committed events and a cursor for durable catch-up."
+      ],
+      "failureModes": [
+        "Blindly retrying a completion can duplicate effects without an idempotency key.",
+        "A wake-up notification is not a durable event log."
+      ],
+      "takeaways": [
+        "Concurrent changes require domain policy, not only version checks."
+      ],
+      "references": [
+        {
+          "title": "Transactional outbox pattern",
+          "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html"
+        }
+      ],
+      "scope": "Illustrative field-service policy. The original intended outcome is retained; field-level conflict handling is clarified."
+    }
+  },
+  {
+    "slug": "workflow-patterns",
+    "type": "workflow",
+    "title": "Workflow Patterns: Five Ways to Compose LLM Calls",
+    "file": "diagrams/workflow-patterns.json",
+    "original": [
+      {
+        "id": "9cebff49-6910-46e2-b238-02efc1cb4fac",
+        "sourceSha256": "290ade525822d90f705fe46473d0c0e9f0632f00dd03dfa4b5728ceb33bb54aa"
+      }
+    ],
+    "lesson": {
+      "summary": "Five composition patterns distribute control and evaluation in different ways.",
+      "problem": "A single model call is insufficient, but unrestricted autonomy is unnecessary.",
+      "objectives": [
+        "Compare chaining, routing, parallelization, orchestration, and refinement."
+      ],
+      "walkthrough": [
+        {
+          "title": "Chaining and routing",
+          "detail": "Chaining passes work through ordered calls and optional gates. Routing classifies input before choosing specialized work."
+        },
+        {
+          "title": "Parallelization",
+          "detail": "Sectioning assigns different subtasks. Voting repeats the same task. Each requires an aggregation step."
+        },
+        {
+          "title": "Orchestration and refinement",
+          "detail": "Orchestrator-workers decomposes tasks dynamically and synthesizes worker results. Evaluator-optimizer feeds critique back to the generator until accepted."
+        }
+      ],
+      "decisions": [
+        "Use separate visual lanes so independent patterns cannot be mistaken for one runtime pipeline.",
+        "Give a refinement loop a stopping budget."
+      ],
+      "failureModes": [
+        "Voting can repeat correlated errors.",
+        "A judge can prefer fluent but incorrect output."
+      ],
+      "takeaways": [
+        "Parallel sectioning and repeated voting solve different problems."
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation.",
+      "references": [
+        {
+          "title": "Building effective agents",
+          "url": "https://www.anthropic.com/engineering/building-effective-agents"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "workflow-or-agent",
+    "type": "workflow",
+    "title": "Workflows or Agents? Choosing the Right Level of Complexity",
+    "file": "diagrams/workflow-or-agent.json",
+    "original": [
+      {
+        "id": "c41e698d-ecdb-467e-8b69-ea3ac28d1e0e",
+        "sourceSha256": "04e161694227963e94f6e0428e172fa493b01db9274ae6b1fe6d9e1fa7f3000b"
+      }
+    ],
+    "lesson": {
+      "summary": "Use the least complex approach that measurably solves the task.",
+      "problem": "A flexible agent can be expensive and unpredictable when a fixed workflow would suffice.",
+      "objectives": [
+        "Distinguish predefined control flow from model-directed control.",
+        "Make added complexity earn its cost."
+      ],
+      "walkthrough": [
+        {
+          "title": "Try one call",
+          "detail": "Check whether retrieval and examples make a single model call sufficient."
+        },
+        {
+          "title": "Choose control",
+          "detail": "Use code-directed workflows for predictable steps; consider an agent when the process itself must be discovered."
+        },
+        {
+          "title": "Measure",
+          "detail": "Evaluate outcomes. If added complexity does not improve them, return to the simpler design."
+        }
+      ],
+      "decisions": [
+        "Workflows favor predictability; agents trade some control for flexibility."
+      ],
+      "failureModes": [
+        "A sophisticated demonstration may fail repeated task evaluation."
+      ],
+      "takeaways": [
+        "Complexity is a cost to justify with outcomes."
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation.",
+      "references": [
+        {
+          "title": "Building effective agents",
+          "url": "https://www.anthropic.com/engineering/building-effective-agents"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "permissioned-support-agent",
+    "type": "workflow",
+    "title": "A support agent that earns permission",
+    "file": "diagrams/permissioned-support-agent.json",
+    "original": [],
+    "lesson": {
+      "summary": "Authorization belongs before execution, and a timeout requires reconciliation before retrying.",
+      "problem": "A support assistant may read an order, but issuing a refund needs scoped human permission.",
+      "objectives": [
+        "Locate authorization before a side effect.",
+        "Explain why a timeout is an unknown outcome."
+      ],
+      "walkthrough": [
+        {
+          "title": "Propose and authorize",
+          "detail": "Load order context. Treat the model’s proposed tool call as data. Check the operation, arguments, caller scope, and budget in application code."
+        },
+        {
+          "title": "Approve and execute",
+          "detail": "Read-only permitted work can proceed. A refund requires approval for that specific order and amount. Denied or forbidden requests stop."
+        },
+        {
+          "title": "Verify or reconcile",
+          "detail": "Execute the refund with an idempotency key. Check the receipt. After a timeout, look up the original operation before attempting another effect."
+        }
+      ],
+      "decisions": [
+        "Bind approval to the exact operation and arguments.",
+        "Use an external receipt to substantiate success."
+      ],
+      "failureModes": [
+        "Prompt injection can propose an unauthorized tool call.",
+        "An expired approval must not authorize changed arguments.",
+        "An uncertain refund must not be retried with a fresh key."
+      ],
+      "takeaways": [
+        "The model suggests; the application authorizes and executes.",
+        "Budgets and terminal states bound the loop."
+      ],
+      "references": [
+        {
+          "title": "Building effective agents",
+          "url": "https://www.anthropic.com/engineering/building-effective-agents"
+        },
+        {
+          "title": "Durable human approval",
+          "url": "https://learn.temporal.io/tutorials/ai/building-durable-ai-applications/human-in-the-loop/"
+        },
+        {
+          "title": "Temporal retry policies",
+          "url": "https://docs.temporal.io/encyclopedia/retry-policies"
+        }
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
+    }
+  },
+  {
+    "slug": "evidence-grounded-rag",
+    "type": "dataflow",
+    "title": "Answer only from usable evidence",
+    "file": "diagrams/evidence-grounded-rag.json",
+    "original": [],
+    "lesson": {
+      "summary": "Retrieval quality, access control, and evidence sufficiency are separate decisions.",
+      "problem": "An internal assistant must answer product questions without leaking documents from another tenant.",
+      "objectives": [
+        "Connect ingestion to a versioned searchable corpus.",
+        "Identify what happens when evidence is weak."
+      ],
+      "walkthrough": [
+        {
+          "title": "Index",
+          "detail": "Parse and chunk approved documents. Build lexical and vector representations with document versions and access metadata."
+        },
+        {
+          "title": "Retrieve within scope",
+          "detail": "Authorize the caller and query. Apply tenant and document permissions during retrieval. Combine lexical and semantic candidates, then rerank using the query."
+        },
+        {
+          "title": "Decide before answering",
+          "detail": "Check whether selected evidence can support the requested answer. Generate citations from the selected passages, or ask for clarification and abstain."
+        },
+        {
+          "title": "Check grounding",
+          "detail": "Verify that cited documents exist and that answer claims are supported. Evaluate retrieval failures separately from generation failures."
+        }
+      ],
+      "decisions": [
+        "Hybrid retrieval balances exact identifiers and semantic similarity.",
+        "The sufficiency rule is task-specific and must be evaluated."
+      ],
+      "failureModes": [
+        "A high similarity score is not proof of factual support.",
+        "Stale access metadata can leak a revoked document."
+      ],
+      "takeaways": [
+        "A citation is useful only if it supports the claim."
+      ],
+      "references": [
+        {
+          "title": "Contextual retrieval",
+          "url": "https://www.anthropic.com/engineering/contextual-retrieval"
+        },
+        {
+          "title": "Demystifying evaluations for AI agents",
+          "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"
+        }
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
+    }
+  },
+  {
+    "slug": "coordinated-research",
+    "type": "architecture",
+    "title": "Research agents with owned work",
+    "file": "diagrams/coordinated-research.json",
+    "original": [],
+    "lesson": {
+      "summary": "Parallel workers need explicit ownership, bounded effort, and evidence that survives synthesis.",
+      "problem": "A research request has independent lines of investigation that exceed one context window.",
+      "objectives": [
+        "Separate decomposition from synthesis.",
+        "Follow evidence through partial failure."
+      ],
+      "walkthrough": [
+        {
+          "title": "Define owned work",
+          "detail": "The lead decomposes the research question into bounded, independent assignments with required evidence and a shared deadline."
+        },
+        {
+          "title": "Gather independent findings",
+          "detail": "A source researcher and counterevidence researcher work in separate contexts. Both return findings with source references, not only conclusions."
+        },
+        {
+          "title": "Review and synthesize",
+          "detail": "Coverage review combines findings and identifies gaps. Additional work needs remaining budget. A failed worker triggers a bounded retry or an explicit limitation in the final answer."
+        }
+      ],
+      "decisions": [
+        "Parallelize independent research rather than every reasoning step.",
+        "Keep one owner for the synthesized answer."
+      ],
+      "failureModes": [
+        "Overlapping assignments waste tokens and repeat evidence.",
+        "A synthesis can lose uncertainty or contradictory findings."
+      ],
+      "takeaways": [
+        "More workers help only when work can be usefully divided."
+      ],
+      "references": [
+        {
+          "title": "Multi-agent research system",
+          "url": "https://www.anthropic.com/engineering/multi-agent-research-system"
+        },
+        {
+          "title": "Building effective agents",
+          "url": "https://www.anthropic.com/engineering/building-effective-agents"
+        }
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
+    }
+  },
+  {
+    "slug": "trace-driven-evaluation",
+    "type": "sequence",
+    "title": "Find the regression behind the answer",
+    "file": "diagrams/trace-driven-evaluation.json",
+    "original": [],
+    "lesson": {
+      "summary": "Correlated traces explain a request; evaluations decide whether a proposed change improves the task.",
+      "problem": "Users report worse answers after a model update even though the average dashboard score is stable.",
+      "objectives": [
+        "Separate runtime observation from offline judgment.",
+        "Follow production failures into a repeatable evaluation set."
+      ],
+      "walkthrough": [
+        {
+          "title": "Observe the request",
+          "detail": "Propagate trace context across retrieval, model, and tool operations. Record errors and token usage while applying content-redaction policy."
+        },
+        {
+          "title": "Build the evaluation",
+          "detail": "Select representative failures and add them to a fixed dataset. Replay the candidate model or prompt against the same tasks."
+        },
+        {
+          "title": "Review the change",
+          "detail": "Compare task success, latency, and cost by segment. Inspect failures and human-calibrated judge results before promoting or holding the release."
+        }
+      ],
+      "decisions": [
+        "Traces diagnose behavior; they do not replace a task rubric.",
+        "Token usage is observed data; monetary cost also needs a dated provider price model."
+      ],
+      "failureModes": [
+        "Sampling only easy requests misses rare severe failures.",
+        "An LLM judge can reward convincing but incorrect answers."
+      ],
+      "takeaways": [
+        "Keep the inputs and grading criteria stable when comparing candidates."
+      ],
+      "references": [
+        {
+          "title": "OpenTelemetry GenAI conventions",
+          "url": "https://github.com/open-telemetry/semantic-conventions-genai"
+        },
+        {
+          "title": "Demystifying evaluations for AI agents",
+          "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"
+        }
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
+    }
+  },
+  {
+    "slug": "durable-recovery",
+    "type": "lifecycle",
+    "title": "An approval that survives a crash",
+    "file": "diagrams/durable-recovery.json",
+    "original": [],
+    "lesson": {
+      "summary": "Persist workflow decisions so a restart neither loses approval nor duplicates a side effect.",
+      "problem": "A long-running job waits for approval and may crash while an external operation is in flight.",
+      "objectives": [
+        "Distinguish waiting, retrying, and unknown outcome.",
+        "Trace every path to a terminal result."
+      ],
+      "walkthrough": [
+        {
+          "title": "Await approval",
+          "detail": "Persist the requested operation and approval state. A restart restores the existing decision. A rejection or expired deadline ends the job."
+        },
+        {
+          "title": "Execute and recover",
+          "detail": "Run the approved operation with an idempotency key. A known transient failure can back off within a deadline; an unknown outcome must be reconciled first."
+        },
+        {
+          "title": "Check the result",
+          "detail": "A verified receipt reaches completion. Exhausted retry budgets and invalid outcomes become explicit intervention states."
+        }
+      ],
+      "decisions": [
+        "Persist approval and external-operation identity before execution.",
+        "Retry activities that can safely repeat; do not infer exactly-once execution from a durable workflow."
+      ],
+      "failureModes": [
+        "A crash between applying an effect and recording its receipt creates uncertainty.",
+        "Permanent errors need correction rather than repeated retries."
+      ],
+      "takeaways": [
+        "Durability preserves state; idempotency controls repeated effects."
+      ],
+      "references": [
+        {
+          "title": "Durable human approval",
+          "url": "https://learn.temporal.io/tutorials/ai/building-durable-ai-applications/human-in-the-loop/"
+        },
+        {
+          "title": "Temporal retry policies",
+          "url": "https://docs.temporal.io/encyclopedia/retry-policies"
+        }
+      ],
+      "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
+    }
+  }
+]

@@ -1,0 +1,439 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Full AI product architecture",
+    "output": "catalog/diagrams/ai-product.html",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "reading-0",
+        "label": "Application",
+        "focus": [
+          "CLIENT",
+          "GATEWAY",
+          "AUTH",
+          "APP",
+          "DB",
+          "CACHE"
+        ]
+      },
+      {
+        "id": "reading-1",
+        "label": "AI work",
+        "focus": [
+          "APP",
+          "AI",
+          "PROMPT",
+          "MODEL",
+          "OPENAI",
+          "ANTHROPIC",
+          "LOCAL"
+        ]
+      },
+      {
+        "id": "reading-2",
+        "label": "Retrieval and tools",
+        "focus": [
+          "AI",
+          "RETRIEVAL",
+          "VECTOR",
+          "TOOLS",
+          "INTERNAL",
+          "EXTERNAL"
+        ]
+      },
+      {
+        "id": "reading-3",
+        "label": "Background and evidence",
+        "focus": [
+          "QUEUE",
+          "WORKERS",
+          "AI",
+          "OBS",
+          "EVAL"
+        ]
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "CLIENT",
+      "label": "Web / mobile",
+      "type": "frontend",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "GATEWAY",
+      "label": "Gateway",
+      "type": "backend",
+      "pos": [
+        325,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "AUTH",
+      "label": "Authenticate",
+      "type": "security",
+      "pos": [
+        610,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "APP",
+      "label": "Application",
+      "type": "backend",
+      "pos": [
+        895,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "DB",
+      "label": "Postgres",
+      "type": "database",
+      "pos": [
+        895,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "CACHE",
+      "label": "Cache",
+      "type": "database",
+      "pos": [
+        610,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "QUEUE",
+      "label": "Job Queue",
+      "type": "messagebus",
+      "pos": [
+        325,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "AI",
+      "label": "AI orchestrator",
+      "type": "backend",
+      "pos": [
+        40,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "PROMPT",
+      "label": "Prompt builder",
+      "type": "backend",
+      "pos": [
+        325,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "RETRIEVAL",
+      "label": "Retrieval",
+      "type": "backend",
+      "pos": [
+        40,
+        490
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "TOOLS",
+      "label": "Tool layer",
+      "type": "backend",
+      "pos": [
+        325,
+        490
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "VECTOR",
+      "label": "Vector store",
+      "type": "database",
+      "pos": [
+        40,
+        640
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "INTERNAL",
+      "label": "Internal Services",
+      "type": "backend",
+      "pos": [
+        325,
+        640
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "EXTERNAL",
+      "label": "External APIs",
+      "type": "backend",
+      "pos": [
+        610,
+        640
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "MODEL",
+      "label": "Model gateway",
+      "type": "backend",
+      "pos": [
+        610,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "OPENAI",
+      "label": "Model A",
+      "type": "cloud",
+      "pos": [
+        895,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "ANTHROPIC",
+      "label": "Model B",
+      "type": "cloud",
+      "pos": [
+        895,
+        490
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "LOCAL",
+      "label": "Self-hosted model",
+      "type": "backend",
+      "pos": [
+        895,
+        640
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "WORKERS",
+      "label": "AI Workers",
+      "type": "backend",
+      "pos": [
+        40,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "OBS",
+      "label": "Observability",
+      "type": "backend",
+      "pos": [
+        1180,
+        490
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "EVAL",
+      "label": "Evaluation",
+      "type": "backend",
+      "pos": [
+        1180,
+        640
+      ],
+      "size": [
+        165,
+        64
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "CLIENT",
+      "to": "GATEWAY"
+    },
+    {
+      "from": "GATEWAY",
+      "to": "AUTH"
+    },
+    {
+      "from": "APP",
+      "to": "DB"
+    },
+    {
+      "from": "APP",
+      "to": "CACHE"
+    },
+    {
+      "from": "APP",
+      "to": "QUEUE"
+    },
+    {
+      "from": "APP",
+      "to": "AI"
+    },
+    {
+      "from": "AI",
+      "to": "PROMPT"
+    },
+    {
+      "from": "AI",
+      "to": "RETRIEVAL"
+    },
+    {
+      "from": "AI",
+      "to": "TOOLS"
+    },
+    {
+      "from": "RETRIEVAL",
+      "to": "VECTOR"
+    },
+    {
+      "from": "TOOLS",
+      "to": "INTERNAL"
+    },
+    {
+      "from": "TOOLS",
+      "to": "EXTERNAL"
+    },
+    {
+      "from": "PROMPT",
+      "to": "MODEL"
+    },
+    {
+      "from": "MODEL",
+      "to": "OPENAI"
+    },
+    {
+      "from": "MODEL",
+      "to": "ANTHROPIC"
+    },
+    {
+      "from": "MODEL",
+      "to": "LOCAL"
+    },
+    {
+      "from": "QUEUE",
+      "to": "WORKERS"
+    },
+    {
+      "from": "WORKERS",
+      "to": "AI"
+    },
+    {
+      "from": "APP",
+      "to": "OBS",
+      "variant": "dashed"
+    },
+    {
+      "from": "AI",
+      "to": "OBS",
+      "variant": "dashed"
+    },
+    {
+      "from": "MODEL",
+      "to": "OBS",
+      "variant": "dashed"
+    },
+    {
+      "from": "TOOLS",
+      "to": "OBS",
+      "variant": "dashed"
+    },
+    {
+      "from": "OBS",
+      "to": "EVAL"
+    },
+    {
+      "from": "AUTH",
+      "to": "APP",
+      "label": "authorized",
+      "variant": "security"
+    }
+  ]
+}

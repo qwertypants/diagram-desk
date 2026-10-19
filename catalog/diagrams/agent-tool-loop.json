@@ -1,0 +1,339 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Agentic AI systems with tools",
+    "output": "catalog/diagrams/agent-tool-loop.html",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "reading-0",
+        "label": "Request",
+        "focus": [
+          "U",
+          "API",
+          "AGENT",
+          "CONTEXT",
+          "LLM"
+        ]
+      },
+      {
+        "id": "reading-1",
+        "label": "Tool loop",
+        "focus": [
+          "DECISION",
+          "TOOL",
+          "DB",
+          "SEARCH",
+          "API2",
+          "CODE",
+          "RESULT",
+          "LLM"
+        ]
+      },
+      {
+        "id": "reading-2",
+        "label": "Response and traces",
+        "focus": [
+          "RESPONSE",
+          "VALIDATE",
+          "U",
+          "TRACE"
+        ]
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "U",
+      "label": "User Request",
+      "type": "external",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "API",
+      "label": "API",
+      "type": "backend",
+      "pos": [
+        325,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "AGENT",
+      "label": "Orchestrator",
+      "type": "backend",
+      "pos": [
+        610,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "CONTEXT",
+      "label": "Load context",
+      "type": "backend",
+      "pos": [
+        895,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "LLM",
+      "label": "LLM",
+      "type": "backend",
+      "pos": [
+        895,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "DECISION",
+      "label": "Need a tool?",
+      "type": "security",
+      "pos": [
+        610,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "RESPONSE",
+      "label": "Generate response",
+      "type": "backend",
+      "pos": [
+        325,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "TOOL",
+      "label": "Tool Router",
+      "type": "backend",
+      "pos": [
+        610,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "DB",
+      "label": "Database",
+      "type": "database",
+      "pos": [
+        40,
+        490
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "SEARCH",
+      "label": "Search / RAG",
+      "type": "backend",
+      "pos": [
+        325,
+        490
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "API2",
+      "label": "External API",
+      "type": "external",
+      "pos": [
+        610,
+        490
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "CODE",
+      "label": "Code / Compute",
+      "type": "backend",
+      "pos": [
+        895,
+        490
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "RESULT",
+      "label": "Tool Result",
+      "type": "backend",
+      "pos": [
+        895,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "VALIDATE",
+      "label": "Validate response",
+      "type": "backend",
+      "pos": [
+        40,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "TRACE",
+      "label": "Trace + evaluate",
+      "type": "database",
+      "pos": [
+        40,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "U",
+      "to": "API"
+    },
+    {
+      "from": "API",
+      "to": "AGENT"
+    },
+    {
+      "from": "AGENT",
+      "to": "CONTEXT"
+    },
+    {
+      "from": "CONTEXT",
+      "to": "LLM"
+    },
+    {
+      "from": "LLM",
+      "to": "DECISION"
+    },
+    {
+      "from": "DECISION",
+      "to": "RESPONSE",
+      "label": "No"
+    },
+    {
+      "from": "DECISION",
+      "to": "TOOL",
+      "label": "Yes"
+    },
+    {
+      "from": "TOOL",
+      "to": "DB"
+    },
+    {
+      "from": "TOOL",
+      "to": "SEARCH"
+    },
+    {
+      "from": "TOOL",
+      "to": "API2"
+    },
+    {
+      "from": "TOOL",
+      "to": "CODE"
+    },
+    {
+      "from": "DB",
+      "to": "RESULT"
+    },
+    {
+      "from": "SEARCH",
+      "to": "RESULT"
+    },
+    {
+      "from": "API2",
+      "to": "RESULT"
+    },
+    {
+      "from": "CODE",
+      "to": "RESULT"
+    },
+    {
+      "from": "RESULT",
+      "to": "LLM"
+    },
+    {
+      "from": "LLM",
+      "to": "DECISION"
+    },
+    {
+      "from": "RESPONSE",
+      "to": "VALIDATE"
+    },
+    {
+      "from": "VALIDATE",
+      "to": "U"
+    },
+    {
+      "from": "AGENT",
+      "to": "TRACE",
+      "variant": "dashed"
+    },
+    {
+      "from": "TOOL",
+      "to": "TRACE",
+      "variant": "dashed"
+    },
+    {
+      "from": "LLM",
+      "to": "TRACE",
+      "variant": "dashed"
+    }
+  ]
+}

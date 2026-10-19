@@ -41,6 +41,7 @@ export function mapDiagram(raw) {
     id: raw.id,
     title: raw.title,
     source: raw.source,
+    ...(raw.type ? { type: raw.type, lesson: raw.lesson ?? null } : {}),
     createdAt: isUsableString(raw.createdAt) ? raw.createdAt : '',
     updatedAt: isUsableString(raw.updatedAt) ? raw.updatedAt : '',
   };
@@ -121,18 +122,18 @@ export function createApiClient({ fetch: fetchImpl, baseUrl = '/api' } = {}) {
       return mapDiagram(await request(resolveFetch, baseUrl, `/diagrams/${encodeURIComponent(id)}`));
     },
 
-    async createDiagram({ title, source }) {
+    async createDiagram({ title, source, ...details }) {
       const payload = await request(resolveFetch, baseUrl, '/diagrams', {
         method: 'POST',
-        body: { title, source },
+        body: { title, source, ...details },
       });
       return mapDiagram(payload);
     },
 
-    async updateDiagram(id, { title, source }) {
+    async updateDiagram(id, { title, source, ...details }) {
       const payload = await request(resolveFetch, baseUrl, `/diagrams/${encodeURIComponent(id)}`, {
         method: 'PUT',
-        body: { title, source },
+        body: { title, source, ...details },
       });
       return mapDiagram(payload);
     },

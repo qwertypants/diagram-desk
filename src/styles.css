@@ -11,7 +11,7 @@
   --rust-deep: #7d2f14;
   --error: #8f2036;
   --rule: #d8cdb8;
-  --rule-strong: #c2b498;
+  --rule-strong: #887b66;
   --grid: #c9bda4;
 
   --serif: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
@@ -22,6 +22,24 @@
   --grid-bold: color-mix(in srgb, var(--grid) 70%, transparent);
   --shadow: 0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent),
     0 8px 24px -14px color-mix(in srgb, var(--ink) 32%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #171a1c;
+    --paper-raised: #222729;
+    --paper-sunken: #101416;
+    --ink: #f2eee6;
+    --ink-soft: #c5c6c3;
+    --ink-faint: #b3b8b7;
+    --rust: #f0a177;
+    --rust-deep: #ffc19b;
+    --error: #ff8a9b;
+    --rule: #596368;
+    --rule-strong: #879397;
+    --grid: #596368;
+  }
 }
 
 * {
@@ -644,4 +662,65 @@ h3 {
   .textarea {
     min-height: 11rem;
   }
+}
+
+/* Reading room: typography leads, the native reader owns the diagram. */
+body { background-image: none; }
+.desk__body { grid-template-columns: minmax(240px, 280px) minmax(0, 1fr); }
+.masthead { align-items: center; padding: 1rem 1.5rem; }
+.masthead__strap { font-style: normal; font-family: var(--mono); font-size: .72rem; }
+.library { background: var(--paper-raised); }
+.library__item-title { font-family: var(--serif); font-size: 1rem; }
+.library__item-time { font-size: .66rem; }
+.stage { background: var(--paper); padding: clamp(1rem, 3vw, 2.7rem); }
+.viewer { max-width: 1500px; margin: auto; }
+.viewer__title { font-size: clamp(1.8rem, 3vw, 3rem); line-height: 1.12; max-width: 28ch; margin: .6rem 0 1rem; }
+.eyebrow { font: 600 .66rem/1.5 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--rust); }
+.lesson-deck { max-width: 75ch; font: 1.15rem/1.6 var(--serif); color: var(--ink-soft); }
+.viewer__actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: 1.25rem 0 1.75rem; }
+.lesson-date { font: .65rem var(--mono); color: var(--ink-soft); margin-left: auto; }
+.learning-goals { display: flex; flex-wrap: wrap; gap: .6rem 1.5rem; padding: 1rem 0; border-block: 1px solid var(--rule); }
+.learning-goals ul { margin: 0; padding-left: 1.2rem; font-size: .85rem; color: var(--ink-soft); }
+.reader-host { width: 100%; min-width: 0; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper-raised); overflow: hidden; }
+.archify-reader { display: block; border: 0; width: 100%; height: min(80vh, 920px); min-height: 650px; background: var(--paper-raised); }
+.lesson-notes { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 2.5rem 3rem; margin: 2.75rem 0; max-width: 1150px; }
+.lesson-notes section { min-width: 0; }
+.lesson-notes h3 { font-size: 1.4rem; margin-bottom: .8rem; }
+.lesson-notes p, .lesson-notes li { font-size: .94rem; line-height: 1.75; color: var(--ink-soft); }
+.lesson-notes ul { padding-left: 1.2rem; }
+.lesson-notes li { margin-bottom: .65rem; }
+.lesson-problem { grid-column: 1 / -1; border-left: 3px solid var(--rust); padding-left: 1.25rem; max-width: 80ch; }
+.reading-path { grid-row: span 3; }
+.reading-path ol { list-style: none; padding: 0; counter-reset: reading; }
+.reading-path li { counter-increment: reading; padding: 0 0 1.25rem 3rem; position: relative; border-bottom: 1px solid var(--rule); }
+.reading-path li::before { content: counter(reading, decimal-leading-zero); position: absolute; left: 0; top: .1rem; color: var(--rust); font: .9rem var(--mono); }
+.reading-path h4 { color: var(--ink); font: 600 1.1rem var(--serif); margin: 1.25rem 0 .4rem; }
+.reading-path p { margin: 0; }
+.lesson-scope { grid-column: 1 / -1; padding: 1rem; border-block: 1px solid var(--rule); }
+.lesson-references { grid-column: 1 / -1; }
+.lesson-references a { color: var(--rust); text-underline-offset: 3px; }
+.welcome { margin: 8vh auto; max-width: 700px; padding: 2rem; }
+.welcome h2 { font-size: clamp(2.4rem, 5vw, 4.8rem); line-height: 1.08; margin: 1rem 0 2rem; }
+.welcome > p:last-child { font: 1.2rem/1.7 var(--serif); color: var(--ink-soft); max-width: 48ch; }
+.editor-tools { display: flex; gap: .6rem; max-width: 30rem; }
+.editor-tools select { flex: 1; }
+.lesson-editor { padding: 1rem; border: 1px solid var(--rule); }
+.lesson-editor summary { cursor: pointer; }
+.lesson-editor p { color: var(--ink-soft); font-size: .85rem; }
+.preview .canvas { padding: 0; overflow: hidden; }
+.preview .archify-reader { min-height: 600px; }
+.library-toggle { display: none; margin-left: auto; }
+@media (max-width: 62rem) {
+  .desk { height: auto; min-height: 100dvh; overflow: visible; }
+  .desk__body { display: block; }
+  .library-toggle { display: inline-flex; }
+  .library { display: none; max-height: 65vh; }
+  .library.is-open { display: flex; }
+  .stage { overflow: visible; padding: 1.25rem; }
+  .lesson-notes { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  .lesson-notes > * { grid-column: 1 !important; grid-row: auto; }
+  .archify-reader { min-height: 620px; height: 75vh; }
+  .lesson-date { width: 100%; margin: .4rem 0 0; }
+  .masthead { padding: 1rem; }
+  .masthead__strap { display: none; }
 }

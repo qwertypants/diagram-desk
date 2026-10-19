@@ -204,6 +204,33 @@ test('flushRender delivers a pending render without waiting for the debounce', a
   assert.deepEqual(t.stub.calls, [VALID]);
 });
 
+test('refreshTheme rerenders the current draft without changing fields or focus', async () => {
+  const t = setup();
+  t.panel.mount({ diagram: { id: 'abc', title: 'Original', source: VALID } });
+  await t.settle();
+
+  const title = t.type('editor-title-field', 'Unsaved title');
+  const source = t.type('editor-source-field', `${VALID}\n  B --> C`);
+  source.focus();
+  t.panel.refreshTheme();
+  await t.settle();
+
+  assert.deepEqual(t.stub.calls, [VALID, `${VALID}\n  B --> C`]);
+  assert.equal(t.document.activeElement, source);
+  assert.equal(title.value, 'Unsaved title');
+  assert.equal(source.value, `${VALID}\n  B --> C`);
+  assert.equal(t.panel.isDirty, true);
+  await t.delay(250);
+  assert.equal(t.stub.calls.length, 2, 'the pending keystroke render is replaced by the theme refresh');
+});
+
+test('refreshTheme does not render an empty source', () => {
+  const t = setup();
+  t.panel.mount();
+  t.panel.refreshTheme();
+  assert.deepEqual(t.stub.calls, []);
+});
+
 test('opening an existing diagram previews it and is not dirty', async () => {
   const t = setup();
   t.panel.mount({ diagram: { id: 'abc', title: 'Order flow', source: VALID } });

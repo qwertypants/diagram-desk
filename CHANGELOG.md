@@ -37,3 +37,9 @@ First public release.
 
 - The server binds `127.0.0.1` and ships without authentication. It is a
   single-user local tool; see [SECURITY.md](SECURITY.md) before exposing it.
+## Archify learning library - 2026-10-19
+
+- Replaced Mermaid rendering with local, sandboxed Archify readers and native JSON authoring.
+- Added guided explanations and migrated all original topics while preserving saved IDs.
+- Added five lessons covering permissioned agents, evidence-grounded retrieval, research coordination, trace-driven evaluation, and durable recovery.
+- Added checked catalog artifacts, transactional migration with backups, fresh-install seeding, and desktop/mobile browser coverage.

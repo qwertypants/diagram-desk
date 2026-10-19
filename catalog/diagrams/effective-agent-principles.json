@@ -1,0 +1,126 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Effective Agents: Design Principles and Practice",
+    "output": "catalog/diagrams/effective-agent-principles.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "lane0",
+      "label": "Design deliberately"
+    },
+    {
+      "id": "lane1",
+      "label": "Ground the work"
+    },
+    {
+      "id": "lane2",
+      "label": "Apply the fit criteria"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "SIM",
+      "label": "Keep it simple",
+      "col": 0,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "TRA",
+      "label": "Expose agent steps",
+      "col": 1,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "TOOLS",
+      "label": "Design and test tools",
+      "col": 2,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "LOOP",
+      "label": "Use real feedback",
+      "col": 0,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "HUMAN",
+      "label": "Human checkpoints",
+      "col": 1,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "FIT",
+      "label": "Suitable task?",
+      "col": 2,
+      "lane": "lane1",
+      "type": "security"
+    },
+    {
+      "id": "CS",
+      "label": "Support actions",
+      "col": 0,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "CODE",
+      "label": "Coding with tests",
+      "col": 1,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "OUT",
+      "label": "Assess other tasks",
+      "col": 2,
+      "lane": "lane2",
+      "type": "backend"
+    }
+  ],
+  "edges": [
+    {
+      "from": "SIM",
+      "to": "TRA"
+    },
+    {
+      "from": "TRA",
+      "to": "TOOLS"
+    },
+    {
+      "from": "TOOLS",
+      "to": "LOOP"
+    },
+    {
+      "from": "LOOP",
+      "to": "HUMAN"
+    },
+    {
+      "from": "HUMAN",
+      "to": "FIT"
+    },
+    {
+      "from": "FIT",
+      "to": "CS",
+      "label": "Customer support"
+    },
+    {
+      "from": "FIT",
+      "to": "CODE",
+      "label": "Coding"
+    },
+    {
+      "from": "FIT",
+      "to": "OUT",
+      "label": "Other"
+    }
+  ]
+}

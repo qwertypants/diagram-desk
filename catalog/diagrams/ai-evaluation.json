@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "AI System with evaluation",
+    "output": "catalog/diagrams/ai-evaluation.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "stages": [
+    {
+      "label": "Input"
+    },
+    {
+      "label": "Prepare"
+    },
+    {
+      "label": "Select"
+    },
+    {
+      "label": "Process"
+    },
+    {
+      "label": "Store / decide"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "U",
+      "label": "Traffic",
+      "type": "external",
+      "stage": 0,
+      "row": 0
+    },
+    {
+      "id": "APP",
+      "label": "AI app",
+      "type": "backend",
+      "stage": 1,
+      "row": 0
+    },
+    {
+      "id": "LLM",
+      "label": "LLM",
+      "type": "backend",
+      "stage": 2,
+      "row": 0
+    },
+    {
+      "id": "OUTPUT",
+      "label": "Response",
+      "type": "backend",
+      "stage": 3,
+      "row": 0
+    },
+    {
+      "id": "LOG",
+      "label": "Traces",
+      "type": "database",
+      "stage": 4,
+      "row": 0
+    },
+    {
+      "id": "SAMPLE",
+      "label": "Sample cases",
+      "type": "backend",
+      "stage": 4,
+      "row": 1
+    },
+    {
+      "id": "TEST",
+      "label": "Golden cases",
+      "type": "backend",
+      "stage": 0,
+      "row": 2
+    },
+    {
+      "id": "EVAL",
+      "label": "Evaluation",
+      "type": "backend",
+      "stage": 1,
+      "row": 2
+    },
+    {
+      "id": "RULES",
+      "label": "Rules",
+      "type": "backend",
+      "stage": 2,
+      "row": 1
+    },
+    {
+      "id": "JUDGE",
+      "label": "Model judge",
+      "type": "backend",
+      "stage": 2,
+      "row": 2
+    },
+    {
+      "id": "HUMAN",
+      "label": "Human review",
+      "type": "backend",
+      "stage": 2,
+      "row": 3
+    },
+    {
+      "id": "SCORE",
+      "label": "Results",
+      "type": "backend",
+      "stage": 3,
+      "row": 2
+    },
+    {
+      "id": "DASH",
+      "label": "Dashboard",
+      "type": "backend",
+      "stage": 4,
+      "row": 2
+    },
+    {
+      "id": "DECISION",
+      "label": "Regression?",
+      "type": "security",
+      "stage": 4,
+      "row": 3
+    },
+    {
+      "id": "IMPROVE",
+      "label": "Revise candidate",
+      "type": "backend",
+      "stage": 1,
+      "row": 4
+    },
+    {
+      "id": "DEPLOY",
+      "label": "Deploy",
+      "type": "backend",
+      "stage": 4,
+      "row": 4
+    }
+  ],
+  "flows": [
+    {
+      "from": "U",
+      "to": "APP",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "APP",
+      "to": "LLM",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "LLM",
+      "to": "OUTPUT",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "OUTPUT",
+      "to": "LOG",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "LOG",
+      "to": "SAMPLE",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        1000,
+        215
+      ]
+    },
+    {
+      "from": "TEST",
+      "to": "EVAL",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "SAMPLE",
+      "to": "EVAL",
+      "label": "cases",
+      "fromSide": "left",
+      "toSide": "top",
+      "via": [
+        [
+          875,
+          271
+        ],
+        [
+          875,
+          215
+        ],
+        [
+          315,
+          215
+        ]
+      ],
+      "labelAt": [
+        795,
+        203
+      ]
+    },
+    {
+      "from": "EVAL",
+      "to": "RULES",
+      "label": "cases"
+    },
+    {
+      "from": "EVAL",
+      "to": "JUDGE",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "EVAL",
+      "to": "HUMAN",
+      "label": "cases"
+    },
+    {
+      "from": "RULES",
+      "to": "SCORE",
+      "label": "cases"
+    },
+    {
+      "from": "JUDGE",
+      "to": "SCORE",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "HUMAN",
+      "to": "SCORE",
+      "label": "cases"
+    },
+    {
+      "from": "SCORE",
+      "to": "DASH",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "DASH",
+      "to": "DECISION",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "DECISION",
+      "to": "IMPROVE",
+      "label": "Yes"
+    },
+    {
+      "from": "IMPROVE",
+      "to": "EVAL",
+      "label": "cases",
+      "route": "straight",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "from": "DECISION",
+      "to": "DEPLOY",
+      "label": "No",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ]
+}

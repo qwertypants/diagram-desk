@@ -1,11 +1,12 @@
 {
   "name": "diagram-desk",
   "version": "1.0.0",
-  "description": "A local-first library of Mermaid diagrams: write, preview, search, and edit saved diagrams offline, with a small Node server and SQLite storage.",
+  "description": "A local visual learning library for software and AI systems, powered by Archify.",
   "keywords": [
-    "mermaid",
+    "archify",
     "diagrams",
-    "flowchart",
+    "learning",
+    "architecture",
     "sqlite",
     "local-first",
     "offline"
@@ -21,17 +22,18 @@
     "start": "vite build && node server/index.js",
     "serve": "node server/index.js",
     "test": "node --test",
-    "test:browser": "node scripts/browser-check.mjs"
+    "test:browser": "node scripts/browser-check.mjs",
+    "migrate:archify": "node scripts/migrate-archify.mjs",
+    "check:catalog": "node scripts/check-catalog.mjs"
   },
   "files": [
     "index.html",
     "src",
     "server",
-    "dist"
+    "dist",
+    "vendor/archify",
+    "catalog"
   ],
-  "dependencies": {
-    "mermaid": "^12.1.0"
-  },
   "devDependencies": {
     "jsdom": "^30.1.1",
     "playwright": "^1.63.0",

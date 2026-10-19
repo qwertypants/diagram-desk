@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Answer only from usable evidence",
+    "output": "catalog/diagrams/evidence-grounded-rag.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "stages": [
+    {
+      "label": "Inputs"
+    },
+    {
+      "label": "Prepare"
+    },
+    {
+      "label": "Retrieve"
+    },
+    {
+      "label": "Rank"
+    },
+    {
+      "label": "Answer / verify"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "docs",
+      "label": "Source documents",
+      "type": "external",
+      "stage": 0,
+      "row": 0
+    },
+    {
+      "id": "prepare",
+      "label": "Parse + chunk",
+      "type": "backend",
+      "stage": 1,
+      "row": 0
+    },
+    {
+      "id": "index",
+      "label": "Hybrid index",
+      "type": "database",
+      "stage": 2,
+      "row": 0
+    },
+    {
+      "id": "query",
+      "label": "User + tenant",
+      "type": "frontend",
+      "stage": 0,
+      "row": 2
+    },
+    {
+      "id": "authorize",
+      "label": "Authorize query",
+      "type": "security",
+      "stage": 1,
+      "row": 2
+    },
+    {
+      "id": "retrieve",
+      "label": "Hybrid retrieval",
+      "type": "backend",
+      "stage": 2,
+      "row": 2
+    },
+    {
+      "id": "rerank",
+      "label": "Rerank evidence",
+      "type": "backend",
+      "stage": 3,
+      "row": 2
+    },
+    {
+      "id": "gate",
+      "label": "Enough evidence?",
+      "type": "security",
+      "stage": 4,
+      "row": 2
+    },
+    {
+      "id": "answer",
+      "label": "Cited answer",
+      "type": "backend",
+      "stage": 4,
+      "row": 3
+    },
+    {
+      "id": "abstain",
+      "label": "Ask or abstain",
+      "type": "backend",
+      "stage": 3,
+      "row": 3
+    },
+    {
+      "id": "checks",
+      "label": "Grounding checks",
+      "type": "backend",
+      "stage": 4,
+      "row": 4
+    }
+  ],
+  "flows": [
+    {
+      "from": "docs",
+      "to": "prepare",
+      "label": "documents",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "prepare",
+      "to": "index",
+      "label": "text + vectors",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "query",
+      "to": "authorize",
+      "label": "identity + query",
+      "variant": "security",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "authorize",
+      "to": "retrieve",
+      "label": "allowed scope",
+      "variant": "security",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "index",
+      "to": "retrieve",
+      "label": "candidates",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        575,
+        270
+      ]
+    },
+    {
+      "from": "retrieve",
+      "to": "rerank",
+      "label": "query + hits",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "rerank",
+      "to": "gate",
+      "label": "ranked passages",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "gate",
+      "to": "answer",
+      "label": "yes: query + text",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "gate",
+      "to": "abstain",
+      "label": "no: explain gap"
+    },
+    {
+      "from": "answer",
+      "to": "checks",
+      "label": "answer + sources",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ]
+}

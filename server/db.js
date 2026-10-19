@@ -42,6 +42,7 @@ export function openStore(databasePath) {
   const database = new DatabaseSync(databasePath);
   try {
     database.exec(SCHEMA);
+    database.exec(`CREATE TABLE IF NOT EXISTS diagram_details (id TEXT PRIMARY KEY, type TEXT NOT NULL, lesson TEXT); CREATE TABLE IF NOT EXISTS library_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);`);
   } catch (error) {
     database.close();
     throw new Error(
@@ -69,36 +70,74 @@ export function openStore(databasePath) {
     remove: database.prepare('DELETE FROM diagrams WHERE id = ? RETURNING id'),
   };
 
+  const details = database.prepare("SELECT type, lesson FROM diagram_details WHERE id = ?");
+  const putDetails = database.prepare("INSERT INTO diagram_details VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET type=excluded.type, lesson=excluded.lesson");
+  const enrich = (row) => {
+    const diagram = toDiagram(row);
+    if (!diagram) return null;
+    const extra = details.get(diagram.id);
+    return extra ? { ...diagram, type: extra.type, lesson: JSON.parse(extra.lesson ?? 'null') } : diagram;
+  };
+
+  function transaction(operation) {
+    database.exec('BEGIN IMMEDIATE');
+    try { const result = operation(); database.exec('COMMIT'); return result; }
+    catch (error) { database.exec('ROLLBACK'); throw error; }
+  }
+
   return {
-    create({ title, source }) {
-      const now = new Date().toISOString();
-      const row = statements.insert.get(randomUUID(), title, title.toLowerCase(), source, now, now);
-      return toDiagram(row);
+    isCatalogInitialized() { return Boolean(database.prepare("SELECT 1 FROM library_meta WHERE key='catalog-v1'").get()); },
+    importCatalog(rows) {
+      database.exec('BEGIN IMMEDIATE');
+      try {
+        const now = new Date().toISOString();
+        for (const row of rows) {
+          database.prepare('INSERT INTO diagrams (id,title,title_lower,source,created_at,updated_at) VALUES (?,?,?,?,?,?)').run(row.id,row.title,row.title.toLowerCase(),row.source,now,now);
+          putDetails.run(row.id,row.type,JSON.stringify(row.lesson));
+        }
+        database.prepare("INSERT INTO library_meta VALUES ('catalog-v1','1')").run();
+        database.exec('COMMIT');
+      } catch(error) { database.exec('ROLLBACK'); throw error; }
+    },
+    create({ title, source, type, lesson = null }) {
+      return transaction(() => {
+        const now = new Date().toISOString();
+        const row = statements.insert.get(randomUUID(), title, title.toLowerCase(), source, now, now);
+        if (type) putDetails.run(row.id, type, JSON.stringify(lesson));
+        return enrich(row);
+      });
     },
 
     list(searchTerm) {
       const term = typeof searchTerm === 'string' ? searchTerm.trim().toLowerCase() : '';
       const rows = term === '' ? statements.selectAll.all() : statements.selectByTitle.all(term);
-      return rows.map(toDiagram);
+      return rows.map(enrich);
     },
 
     get(id) {
-      return toDiagram(statements.selectOne.get(id));
+      return enrich(statements.selectOne.get(id));
     },
 
-    update(id, { title, source }) {
-      const row = statements.update.get(
-        title,
-        title.toLowerCase(),
-        source,
-        new Date().toISOString(),
-        id,
-      );
-      return toDiagram(row);
+    update(id, { title, source, type, lesson = null }) {
+      return transaction(() => {
+        const row = statements.update.get(
+          title,
+          title.toLowerCase(),
+          source,
+          new Date().toISOString(),
+          id,
+        );
+        if (row && type) putDetails.run(row.id, type, JSON.stringify(lesson));
+        return enrich(row);
+      });
     },
 
     remove(id) {
-      return statements.remove.get(id) !== undefined;
+      return transaction(() => {
+        const removed = statements.remove.get(id) !== undefined;
+        if (removed) database.prepare('DELETE FROM diagram_details WHERE id=?').run(id);
+        return removed;
+      });
     },
 
     close() {

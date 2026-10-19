@@ -1,0 +1,323 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Async AI processing",
+    "output": "catalog/diagrams/async-ai.html",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "reading-0",
+        "label": "Accept and poll",
+        "focus": [
+          "U",
+          "API",
+          "DB",
+          "Q",
+          "STATUS"
+        ]
+      },
+      {
+        "id": "reading-1",
+        "label": "Worker ownership",
+        "focus": [
+          "Q",
+          "W1",
+          "W2",
+          "W3",
+          "LLM",
+          "RESULT"
+        ]
+      },
+      {
+        "id": "reading-2",
+        "label": "Recovery",
+        "focus": [
+          "W1",
+          "RETRY",
+          "Q",
+          "DLQ",
+          "OBS"
+        ]
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "U",
+      "label": "User",
+      "type": "external",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "API",
+      "label": "API",
+      "type": "backend",
+      "pos": [
+        325,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "DB",
+      "label": "Job database",
+      "type": "database",
+      "pos": [
+        40,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "Q",
+      "label": "Job queue",
+      "type": "messagebus",
+      "pos": [
+        610,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "W1",
+      "label": "Worker",
+      "type": "backend",
+      "pos": [
+        325,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "W2",
+      "label": "Worker",
+      "type": "backend",
+      "pos": [
+        610,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "W3",
+      "label": "Worker",
+      "type": "backend",
+      "pos": [
+        895,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "LLM",
+      "label": "LLM / AI Service",
+      "type": "backend",
+      "pos": [
+        610,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "RESULT",
+      "label": "Results",
+      "type": "database",
+      "pos": [
+        895,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "RETRY",
+      "label": "Retry queue",
+      "type": "messagebus",
+      "pos": [
+        325,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "DLQ",
+      "label": "Dead-letter queue",
+      "type": "messagebus",
+      "pos": [
+        325,
+        490
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "STATUS",
+      "label": "Status endpoint",
+      "type": "backend",
+      "pos": [
+        40,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "OBS",
+      "label": "Logs + metrics",
+      "type": "backend",
+      "pos": [
+        895,
+        490
+      ],
+      "size": [
+        165,
+        64
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "U",
+      "to": "API"
+    },
+    {
+      "from": "API",
+      "to": "DB"
+    },
+    {
+      "from": "API",
+      "to": "Q"
+    },
+    {
+      "from": "Q",
+      "to": "W1"
+    },
+    {
+      "from": "Q",
+      "to": "W2"
+    },
+    {
+      "from": "Q",
+      "to": "W3"
+    },
+    {
+      "from": "W1",
+      "to": "LLM"
+    },
+    {
+      "from": "W2",
+      "to": "LLM"
+    },
+    {
+      "from": "W3",
+      "to": "LLM"
+    },
+    {
+      "from": "W1",
+      "to": "DB"
+    },
+    {
+      "from": "W2",
+      "to": "DB"
+    },
+    {
+      "from": "W3",
+      "to": "DB"
+    },
+    {
+      "from": "W1",
+      "to": "RETRY",
+      "label": "Failure"
+    },
+    {
+      "from": "RETRY",
+      "to": "Q"
+    },
+    {
+      "from": "RETRY",
+      "to": "DLQ",
+      "label": "Max retries"
+    },
+    {
+      "from": "API",
+      "to": "STATUS"
+    },
+    {
+      "from": "STATUS",
+      "to": "DB"
+    },
+    {
+      "from": "U",
+      "to": "STATUS"
+    },
+    {
+      "from": "W1",
+      "to": "OBS",
+      "variant": "dashed"
+    },
+    {
+      "from": "W2",
+      "to": "OBS",
+      "variant": "dashed"
+    },
+    {
+      "from": "W3",
+      "to": "OBS",
+      "variant": "dashed"
+    },
+    {
+      "from": "W1",
+      "to": "RESULT",
+      "label": "persist result"
+    },
+    {
+      "from": "W2",
+      "to": "RESULT",
+      "label": "persist result"
+    },
+    {
+      "from": "W3",
+      "to": "RESULT",
+      "label": "persist result"
+    }
+  ]
+}

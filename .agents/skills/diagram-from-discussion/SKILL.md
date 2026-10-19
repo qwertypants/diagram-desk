@@ -5,7 +5,7 @@ description: Use when someone wants to talk through an issue and have a new diag
 
 # Diagram from Discussion
 
-Turn the user's description of an issue into a Mermaid diagram in the running text2diagram app. Finish with a verified link to the saved diagram.
+Turn the user's description of an issue into a native Archify diagram in the running text2diagram app. Finish with a verified link to the saved diagram.
 
 ## Interview the issue
 
@@ -20,8 +20,9 @@ Once the model is clear, give a short plain-language summary of what the diagram
 Use the user's existing browser session and the app's visible interface. Do not create or save the diagram through an API, database, or direct storage edit. Preserve any unrelated unsaved editor work; if the app warns that navigation would discard it, cancel and ask the user how to proceed.
 
 1. Open **New diagram** in the app.
-2. Enter a concise title and Mermaid source grounded in the conversation. Keep labels clear and relationships/direction faithful to what the user said.
-3. Wait for the app's preview to render successfully. If Mermaid fails, fix the source in the editor and wait for a successful preview. Never treat source text alone as proof that the diagram works.
+2. Choose the matching diagram type and enter a concise title and native Archify JSON grounded in the conversation. Use the installed Archify skill and the app's starter for the chosen type. Keep labels clear and relationships/direction faithful to what the user said.
+   Add optional learning notes as JSON when they help explain decisions, failure modes, or sources. The selected type must match `diagram_type`; source requires a native `meta.title` and portable `meta.output`.
+3. Wait for the app's preview to render successfully. If Archify fails, fix the source in the editor and wait for a successful preview. Never treat source text alone as proof that the diagram works.
 4. Show the rendered draft to the user and ask whether it represents the issue correctly before saving. Make requested changes, preview again, and get approval for the revised draft.
 5. Save only after the user approves the rendered draft.
 

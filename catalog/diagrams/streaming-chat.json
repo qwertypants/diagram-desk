@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Stream AI in chat",
+    "output": "catalog/diagrams/streaming-chat.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "U",
+      "label": "User",
+      "type": "external"
+    },
+    {
+      "id": "UI",
+      "label": "Chat UI",
+      "type": "frontend"
+    },
+    {
+      "id": "API",
+      "label": "Backend",
+      "type": "backend"
+    },
+    {
+      "id": "AI",
+      "label": "Orchestrator",
+      "type": "backend"
+    },
+    {
+      "id": "LLM",
+      "label": "Provider",
+      "type": "cloud"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m0",
+      "from": "U",
+      "to": "UI",
+      "label": "Submit message",
+      "y": 170
+    },
+    {
+      "id": "m1",
+      "from": "UI",
+      "to": "API",
+      "label": "POST /messages",
+      "y": 236
+    },
+    {
+      "id": "m2",
+      "from": "API",
+      "to": "AI",
+      "label": "Process request",
+      "y": 302
+    },
+    {
+      "id": "m3",
+      "from": "AI",
+      "to": "LLM",
+      "label": "Stream completion",
+      "y": 368
+    },
+    {
+      "id": "m4",
+      "from": "LLM",
+      "to": "AI",
+      "label": "Token chunk",
+      "y": 434,
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "AI",
+      "to": "API",
+      "label": "Token chunk",
+      "y": 500,
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "API",
+      "to": "UI",
+      "label": "SSE or WebSocket",
+      "y": 566,
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "UI",
+      "to": "U",
+      "label": "Render partial reply",
+      "y": 632,
+      "variant": "return"
+    },
+    {
+      "id": "m8",
+      "from": "LLM",
+      "to": "AI",
+      "label": "Next chunk",
+      "y": 698,
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "AI",
+      "to": "API",
+      "label": "Stream update",
+      "y": 764,
+      "variant": "return"
+    },
+    {
+      "id": "m10",
+      "from": "API",
+      "to": "UI",
+      "label": "Stream update",
+      "y": 830,
+      "variant": "return"
+    },
+    {
+      "id": "m11",
+      "from": "UI",
+      "to": "U",
+      "label": "Update partial reply",
+      "y": 896,
+      "variant": "return"
+    },
+    {
+      "id": "m12",
+      "from": "LLM",
+      "to": "AI",
+      "label": "Complete",
+      "y": 962,
+      "variant": "return",
+      "note": "The orchestrator validates the complete result."
+    },
+    {
+      "id": "m13",
+      "from": "AI",
+      "to": "API",
+      "label": "Final metadata",
+      "y": 1028,
+      "variant": "return"
+    },
+    {
+      "id": "m14",
+      "from": "API",
+      "to": "UI",
+      "label": "Complete",
+      "y": 1094,
+      "variant": "return"
+    }
+  ]
+}

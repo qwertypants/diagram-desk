@@ -1,3 +1,4 @@
+import { compileDiagram, readPreview, sendReader } from './archify.js';
 import { hasJsonContentType, readJsonBody, sendJson, sendNoContent } from './http.js';
 import { validateDiagramBody } from './validate.js';
 
@@ -30,6 +31,30 @@ async function route({ req, res, url, store }) {
     return sendMethodNotAllowed(res, COLLECTION_METHODS);
   }
 
+  if (pathname === '/api/preview') {
+    if (req.method !== 'POST') return sendMethodNotAllowed(res, ['POST']);
+    if (!hasJsonContentType(req)) return sendUnsupportedMediaType(res);
+    const input = await readDiagramInput(req);
+    if (input.error) return sendJson(res, 400, { error: input.error });
+    if (!input.diagram.type) return sendJson(res, 400, { error: 'Native preview requires a diagram type.' });
+    const result = await compileDiagram(input.diagram.source, input.diagram.type);
+    return sendJson(res, 200, { readerUrl: `/api/previews/${result.digest}`, sourceHash: result.digest });
+  }
+  const preview = pathname.match(/^\/api\/previews\/([a-f0-9]{64})$/);
+  if (preview) {
+    if (req.method !== 'GET') return sendMethodNotAllowed(res, ['GET']);
+    const html = readPreview(preview[1]);
+    return html ? sendReader(res, html) : sendJson(res, 404, { error: 'Preview expired. Render the source again.' });
+  }
+  const reader = pathname.match(/^\/api\/diagrams\/([^/]+)\/reader$/);
+  if (reader) {
+    if (req.method !== 'GET') return sendMethodNotAllowed(res, ['GET']);
+    const diagram = store.get(decodeURIComponent(reader[1]));
+    if (!diagram) return sendDiagramNotFound(res);
+    if (!diagram.type) return sendJson(res, 409, { error: 'This archived diagram needs the Archify migration.' });
+    const result = await compileDiagram(diagram.source, diagram.type);
+    return sendReader(res, result.html);
+  }
   const id = diagramIdIn(pathname);
   if (id === null) return sendJson(res, 404, { error: 'Not found' });
 
@@ -66,7 +91,12 @@ async function sendUpdatedDiagram(req, res, store, id) {
 async function readDiagramInput(req) {
   const body = await readJsonBody(req);
   if (body.error !== undefined) return body;
-  return validateDiagramBody(body.value);
+  const input = validateDiagramBody(body.value);
+  if (input.diagram?.type) {
+    try { await compileDiagram(input.diagram.source, input.diagram.type); }
+    catch (error) { return { error: error.message }; }
+  }
+  return input;
 }
 
 function sendDiagramList(res, diagrams) {

@@ -79,7 +79,7 @@ export function createLibraryPanel({ root, api, onOpen, onCompose }) {
         { type: 'button', class: 'library__item', onclick: () => onOpen(diagram.id) },
         [
           el(doc, 'span', { class: 'library__item-title', text: diagram.title }),
-          el(doc, 'span', { class: 'library__item-time', text: formatTimestamp(diagram.updatedAt) }),
+          el(doc, 'span', { class: 'library__item-time', text: [diagram.type, formatTimestamp(diagram.updatedAt)].filter(Boolean).join(' · ') }),
         ],
       );
       list.append(el(doc, 'li', {}, [button]));

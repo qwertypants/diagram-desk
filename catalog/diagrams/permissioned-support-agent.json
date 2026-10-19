@@ -1,0 +1,174 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "A support agent that earns permission",
+    "output": "catalog/diagrams/permissioned-support-agent.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "lane0",
+      "label": "Application and tools"
+    },
+    {
+      "id": "lane1",
+      "label": "Human control"
+    },
+    {
+      "id": "lane2",
+      "label": "Recovery and limits"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "request",
+      "label": "Refund request",
+      "col": 0,
+      "lane": "lane0",
+      "type": "external"
+    },
+    {
+      "id": "context",
+      "label": "Load order context",
+      "col": 1,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "plan",
+      "label": "Propose tool call",
+      "col": 2,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "policy",
+      "label": "Policy permits?",
+      "col": 3,
+      "lane": "lane0",
+      "type": "security"
+    },
+    {
+      "id": "approval",
+      "label": "Human approves?",
+      "col": 3,
+      "lane": "lane1",
+      "type": "security"
+    },
+    {
+      "id": "execute",
+      "label": "Execute with key",
+      "col": 4,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "check",
+      "label": "Check receipt",
+      "col": 5,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "answer",
+      "label": "Report outcome",
+      "col": 5,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "deny",
+      "label": "Explain denial",
+      "col": 4,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "unknown",
+      "label": "Reconcile outcome",
+      "col": 4,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "stop",
+      "label": "Budget exhausted",
+      "col": 2,
+      "lane": "lane2",
+      "type": "backend"
+    }
+  ],
+  "edges": [
+    {
+      "from": "request",
+      "to": "context"
+    },
+    {
+      "from": "context",
+      "to": "plan"
+    },
+    {
+      "from": "plan",
+      "to": "policy"
+    },
+    {
+      "from": "policy",
+      "to": "execute",
+      "label": "read-only / allowed"
+    },
+    {
+      "from": "policy",
+      "to": "approval",
+      "label": "refund needs consent",
+      "variant": "security"
+    },
+    {
+      "from": "policy",
+      "to": "deny",
+      "label": "forbidden",
+      "variant": "security"
+    },
+    {
+      "from": "approval",
+      "to": "execute",
+      "label": "approved"
+    },
+    {
+      "from": "approval",
+      "to": "deny",
+      "label": "denied"
+    },
+    {
+      "from": "execute",
+      "to": "check",
+      "label": "receipt"
+    },
+    {
+      "from": "execute",
+      "to": "unknown",
+      "label": "timeout"
+    },
+    {
+      "from": "unknown",
+      "to": "check",
+      "label": "look up key"
+    },
+    {
+      "from": "check",
+      "to": "answer",
+      "label": "verified"
+    },
+    {
+      "from": "check",
+      "to": "plan",
+      "label": "more work"
+    },
+    {
+      "from": "plan",
+      "to": "stop",
+      "label": "limit reached"
+    }
+  ]
+}

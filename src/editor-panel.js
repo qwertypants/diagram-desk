@@ -1,5 +1,5 @@
 /**
- * The editor: title, Mermaid source, and a live preview. Save stays disabled
+ * The editor: title, Archify JSON source, and a live preview. Save stays disabled
  * until there is a title AND a successful preview; a failed render keeps it
  * disabled and shows the error as text.
  *
@@ -8,6 +8,7 @@
  * final keystroke is never the one that gets dropped.
  */
 
+import { createReaderFrame } from './preview.js';
 import { el, clear, setMessage } from './dom.js';
 import { createDebounced } from './debounce.js';
 import { PREVIEW, draftFromDiagram, emptyDraft, canSave, isDirty, saveBlockedReason } from './draft.js';
@@ -52,6 +53,15 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
     'aria-describedby': 'editor-hint',
   });
 
+  const type = el(doc, 'select', { class: 'input', id: 'diagram-type', 'aria-label': 'Diagram type' });
+  for (const name of ['architecture', 'workflow', 'sequence', 'dataflow', 'lifecycle', 'erd', 'class', 'tree', 'timeline', 'waterfall']) type.append(el(doc, 'option', { value: name, text: name }));
+  const notes = el(doc, 'textarea', { class: 'textarea', id: 'lesson-json', rows: '10', spellcheck: 'false', 'aria-label': 'Lesson notes JSON' });
+  const starter = el(doc, 'button', { class: 'btn', type: 'button', text: 'Load starter', onclick: async () => {
+    const response = await fetch(`/starters/${type.value}.json`);
+    if (!response.ok) { hint.textContent = 'Could not load the starter. Your draft is still here.'; return; }
+    source.value = JSON.stringify(await response.json(), null, 2);
+    onSourceChanged();
+  } });
   const status = el(doc, 'p', { class: 'preview__status', id: 'preview-status', role: 'status' });
   const canvas = el(doc, 'div', {
     class: 'canvas',
@@ -82,7 +92,7 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
     ]),
     el(doc, 'div', { class: 'editor__split' }, [
       el(doc, 'div', { class: 'field' }, [
-        el(doc, 'label', { class: 'field__label', for: 'editor-source-field', text: 'Mermaid source' }),
+        el(doc, 'label', { class: 'field__label', for: 'editor-source-field', text: 'Archify JSON' }),
         source,
       ]),
       el(doc, 'div', { class: 'preview' }, [
@@ -94,12 +104,23 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
         error,
       ]),
     ]),
+    el(doc, 'div', { class: 'editor-tools' }, [type, starter]),
+    el(doc, 'details', { class: 'lesson-editor' }, [
+      el(doc, 'summary', { text: 'Edit the learning notes' }),
+      el(doc, 'p', { text: 'Optional JSON: summary, problem, objectives, walkthrough (title and detail), decisions, failureModes, takeaways, scope, references (title and url).' }), notes,
+    ]),
     hint,
     saveError,
   );
 
   function getDraft() {
-    return { title: title.value, source: source.value };
+    const draft = { title: title.value, source: source.value };
+    if (source.value.trim().startsWith('{')) {
+      draft.type = type.value;
+      try { draft.lesson = notes.value.trim() ? JSON.parse(notes.value) : null; }
+      catch { draft.lesson = notes.value; }
+    }
+    return draft;
   }
 
   function reportDirty() {
@@ -108,8 +129,9 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
 
   function syncSaveState() {
     const draft = getDraft();
-    saveButton.disabled = saving || !canSave({ draft, preview });
-    hint.textContent = saving ? 'Saving…' : (saveBlockedReason({ draft, preview }) ?? 'Ready to save.');
+    const invalidNotes = draft.lesson !== undefined && draft.lesson !== null && (typeof draft.lesson !== 'object' || Array.isArray(draft.lesson));
+    saveButton.disabled = saving || invalidNotes || !canSave({ draft, preview });
+    hint.textContent = invalidNotes ? 'Learning notes must be a JSON object.' : saving ? 'Saving…' : (saveBlockedReason({ draft, preview }) ?? 'Ready to save.');
   }
 
   /** The status line is a live region, so it is only written when the words
@@ -140,12 +162,17 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
 
   async function applyRender(text) {
     const mine = (sequence += 1);
-    const result = await render(text, canvas);
+    let result;
+    try {
+      if (text.trim().startsWith('{') && JSON.parse(text).diagram_type !== type.value) throw new Error('The selected type must match diagram_type in the JSON.');
+      result = await render(text, canvas);
+    } catch (error) { result = { status: PREVIEW.ERROR, message: error.message }; }
     if (mine !== sequence) return;
     preview = result.status === PREVIEW.OK ? { ...result } : { status: PREVIEW.ERROR, message: result.message };
     if (preview.status === PREVIEW.OK) {
       clear(canvas);
-      canvas.innerHTML = preview.svg;
+      if (preview.readerUrl) canvas.append(createReaderFrame(doc, preview.readerUrl, 'Diagram preview'));
+      else canvas.innerHTML = preview.svg;
       if (typeof preview.bindFunctions === 'function') preview.bindFunctions(canvas);
     } else {
       clear(canvas);
@@ -162,6 +189,7 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
   }, RENDER_DEBOUNCE_MS);
 
   function onSourceChanged() {
+    sequence += 1;
     preview = { status: PREVIEW.PENDING, message: '' };
     showPreviewState();
     syncSaveState();
@@ -174,6 +202,8 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
     syncSaveState();
   });
   source.addEventListener('input', onSourceChanged);
+  type.addEventListener('change', onSourceChanged);
+  notes.addEventListener('input', () => { reportDirty(); syncSaveState(); });
   source.addEventListener('blur', () => {
     renderDebounced.flush();
   });
@@ -181,7 +211,7 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
   root.addEventListener('submit', (event) => {
     event.preventDefault();
     const draft = getDraft();
-    if (!canSave({ draft, preview })) return;
+    if (saveButton.disabled || !canSave({ draft, preview })) return;
     saving = true;
     syncSaveState();
     Promise.resolve()
@@ -205,6 +235,9 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
     heading.textContent = diagram ? 'Edit diagram' : 'New diagram';
     title.value = baseline.title;
     source.value = baseline.source;
+    type.value = baseline.type ?? 'architecture';
+    notes.value = baseline.lesson ? JSON.stringify(baseline.lesson, null, 2) : '';
+    renderDebounced.cancel();
     sequence += 1;
     clear(canvas);
     setMessage(errorBody, '');
@@ -226,10 +259,18 @@ export function createEditorPanel({ doc, render, onSave, onCancel, onDirtyChange
     renderDebounced.flush();
   }
 
+  function refreshTheme() {
+    const currentSource = source.value;
+    if (currentSource.trim() === '') return;
+    renderDebounced.cancel();
+    applyRender(currentSource);
+  }
+
   return {
     root,
     mount,
     flushRender,
+    refreshTheme,
     get isDirty() {
       return isDirty(getDraft(), baseline);
     },

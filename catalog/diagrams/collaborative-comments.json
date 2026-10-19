@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Collaborative Comments and Version History",
+    "output": "catalog/diagrams/collaborative-comments.html",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "reading-0",
+        "label": "Live content",
+        "focus": [
+          "PEOPLE",
+          "EDITOR",
+          "ENGINE",
+          "DOC"
+        ]
+      },
+      {
+        "id": "reading-1",
+        "label": "History",
+        "focus": [
+          "ENGINE",
+          "VERSION",
+          "VSTORE",
+          "THREADS"
+        ]
+      },
+      {
+        "id": "reading-2",
+        "label": "Anchors",
+        "focus": [
+          "DOC",
+          "ENGINE",
+          "THREADS",
+          "ANCHOR",
+          "CSTORE"
+        ]
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "PEOPLE",
+      "label": "Collaborators",
+      "type": "external",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "EDITOR",
+      "label": "Editor",
+      "type": "frontend",
+      "pos": [
+        325,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "ENGINE",
+      "label": "Merge + broadcast",
+      "type": "backend",
+      "pos": [
+        610,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "DOC",
+      "label": "Current document",
+      "type": "database",
+      "pos": [
+        610,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "VERSION",
+      "label": "Version history",
+      "type": "backend",
+      "pos": [
+        895,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "VSTORE",
+      "label": "Version store",
+      "type": "database",
+      "pos": [
+        895,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "THREADS",
+      "label": "Comment threads",
+      "type": "backend",
+      "pos": [
+        325,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "ANCHOR",
+      "label": "Anchor resolver",
+      "type": "backend",
+      "pos": [
+        610,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "CSTORE",
+      "label": "Comments + anchors",
+      "type": "database",
+      "pos": [
+        325,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "PEOPLE",
+      "to": "EDITOR"
+    },
+    {
+      "from": "EDITOR",
+      "to": "ENGINE"
+    },
+    {
+      "from": "ENGINE",
+      "to": "DOC"
+    },
+    {
+      "from": "ENGINE",
+      "to": "VERSION"
+    },
+    {
+      "from": "VERSION",
+      "to": "VSTORE"
+    },
+    {
+      "from": "EDITOR",
+      "to": "THREADS"
+    },
+    {
+      "from": "VERSION",
+      "to": "THREADS",
+      "label": "version at comment creation"
+    },
+    {
+      "from": "ENGINE",
+      "to": "ANCHOR"
+    },
+    {
+      "from": "DOC",
+      "to": "ANCHOR"
+    },
+    {
+      "from": "THREADS",
+      "to": "ANCHOR"
+    },
+    {
+      "from": "THREADS",
+      "to": "CSTORE"
+    },
+    {
+      "from": "ANCHOR",
+      "to": "CSTORE"
+    }
+  ]
+}

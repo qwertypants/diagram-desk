@@ -1,3 +1,4 @@
+import { seedCatalog } from './catalog.js';
 import { existsSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
@@ -40,8 +41,10 @@ export async function startServer({
   repositoryRoot = findRepositoryRoot(),
   databasePath = resolveDatabasePath({ repositoryRoot }),
   distDirectory = join(repositoryRoot, 'dist'),
+  initializeCatalog = false,
 } = {}) {
   const store = openStore(databasePath);
+  if (initializeCatalog) seedCatalog(store);
   const server = createServer(createApp({ store, distDirectory }));
 
   server.on('close', () => store.close());
@@ -75,7 +78,7 @@ function isEntryPoint() {
 }
 
 if (isEntryPoint()) {
-  const server = await startServer();
+  const server = await startServer({ initializeCatalog: true });
   console.log(`diagram-desk listening on ${server.origin}`);
   console.log(`database: ${server.databasePath}`);
   if (!existsSync(server.distDirectory)) {

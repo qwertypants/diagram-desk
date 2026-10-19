@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Research agents with owned work",
+    "output": "catalog/diagrams/coordinated-research.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "user",
+      "label": "Research question",
+      "type": "external",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "lead",
+      "label": "Lead agent",
+      "type": "backend",
+      "pos": [
+        325,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "plan",
+      "label": "Bounded work plan",
+      "type": "backend",
+      "pos": [
+        610,
+        40
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "a",
+      "label": "Source researcher",
+      "type": "backend",
+      "pos": [
+        610,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "b",
+      "label": "Counterevidence",
+      "type": "backend",
+      "pos": [
+        895,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "evidence",
+      "label": "Evidence + sources",
+      "type": "database",
+      "pos": [
+        610,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "review",
+      "label": "Check coverage",
+      "type": "backend",
+      "pos": [
+        325,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "synth",
+      "label": "Synthesize answer",
+      "type": "backend",
+      "pos": [
+        40,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "limits",
+      "label": "Budget + deadline",
+      "type": "security",
+      "pos": [
+        325,
+        190
+      ],
+      "size": [
+        165,
+        64
+      ]
+    },
+    {
+      "id": "failed",
+      "label": "Retry or report gap",
+      "type": "backend",
+      "pos": [
+        895,
+        340
+      ],
+      "size": [
+        165,
+        64
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "user",
+      "to": "lead"
+    },
+    {
+      "from": "plan",
+      "to": "a",
+      "label": "owned scope"
+    },
+    {
+      "from": "plan",
+      "to": "b",
+      "label": "independent scope"
+    },
+    {
+      "from": "a",
+      "to": "evidence",
+      "label": "cited findings"
+    },
+    {
+      "from": "b",
+      "to": "evidence",
+      "label": "cited findings"
+    },
+    {
+      "from": "evidence",
+      "to": "review",
+      "label": "merge evidence"
+    },
+    {
+      "from": "review",
+      "to": "synth",
+      "label": "sufficient"
+    },
+    {
+      "from": "review",
+      "to": "lead",
+      "label": "gap remains"
+    },
+    {
+      "from": "lead",
+      "to": "limits",
+      "label": "check budget"
+    },
+    {
+      "from": "b",
+      "to": "failed",
+      "label": "worker failure"
+    },
+    {
+      "from": "failed",
+      "to": "evidence",
+      "label": "explicit gap"
+    },
+    {
+      "from": "limits",
+      "to": "plan",
+      "label": "within budget",
+      "variant": "security"
+    },
+    {
+      "from": "limits",
+      "to": "synth",
+      "label": "limit: report gap"
+    }
+  ]
+}

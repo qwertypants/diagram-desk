@@ -1,0 +1,358 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Workflow Patterns: Five Ways to Compose LLM Calls",
+    "output": "catalog/diagrams/workflow-patterns.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "lane0",
+      "label": "Prompt chaining"
+    },
+    {
+      "id": "lane1",
+      "label": "Routing"
+    },
+    {
+      "id": "lane2",
+      "label": "Parallel sectioning"
+    },
+    {
+      "id": "lane3",
+      "label": "Parallel voting"
+    },
+    {
+      "id": "lane4",
+      "label": "Orchestrator-workers"
+    },
+    {
+      "id": "lane5",
+      "label": "Evaluator-optimizer"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "P1",
+      "label": "First model call",
+      "col": 0,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "G",
+      "label": "Gate passes?",
+      "col": 1,
+      "lane": "lane0",
+      "type": "security"
+    },
+    {
+      "id": "P2",
+      "label": "Next model call",
+      "col": 2,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "PR",
+      "label": "Result",
+      "col": 3,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "RI",
+      "label": "Input",
+      "col": 0,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "RC",
+      "label": "Classify",
+      "col": 1,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "RA",
+      "label": "Specialist A",
+      "col": 2,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "RB",
+      "label": "Specialist B",
+      "col": 3,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "RR",
+      "label": "Result",
+      "col": 4,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "PI",
+      "label": "Input",
+      "col": 0,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "PS",
+      "label": "Split subtasks",
+      "col": 1,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "PW1",
+      "label": "Subtask A",
+      "col": 2,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "PW2",
+      "label": "Subtask B",
+      "col": 3,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "AG",
+      "label": "Aggregate",
+      "col": 4,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "PV",
+      "label": "Repeat same task",
+      "col": 0,
+      "lane": "lane3",
+      "type": "backend"
+    },
+    {
+      "id": "PV1",
+      "label": "Attempt A",
+      "col": 1,
+      "lane": "lane3",
+      "type": "backend"
+    },
+    {
+      "id": "PV2",
+      "label": "Attempt B",
+      "col": 2,
+      "lane": "lane3",
+      "type": "backend"
+    },
+    {
+      "id": "VA",
+      "label": "Vote or aggregate",
+      "col": 3,
+      "lane": "lane3",
+      "type": "backend"
+    },
+    {
+      "id": "OI",
+      "label": "Input",
+      "col": 0,
+      "lane": "lane4",
+      "type": "backend"
+    },
+    {
+      "id": "O",
+      "label": "Decompose task",
+      "col": 1,
+      "lane": "lane4",
+      "type": "backend"
+    },
+    {
+      "id": "W1",
+      "label": "Worker A",
+      "col": 2,
+      "lane": "lane4",
+      "type": "backend"
+    },
+    {
+      "id": "W2",
+      "label": "Worker B",
+      "col": 3,
+      "lane": "lane4",
+      "type": "backend"
+    },
+    {
+      "id": "SY",
+      "label": "Synthesize",
+      "col": 4,
+      "lane": "lane4",
+      "type": "backend"
+    },
+    {
+      "id": "OR",
+      "label": "Result",
+      "col": 5,
+      "lane": "lane4",
+      "type": "backend"
+    },
+    {
+      "id": "EI",
+      "label": "Input",
+      "col": 0,
+      "lane": "lane5",
+      "type": "backend"
+    },
+    {
+      "id": "GEN",
+      "label": "Generate",
+      "col": 1,
+      "lane": "lane5",
+      "type": "backend"
+    },
+    {
+      "id": "EV",
+      "label": "Evaluate",
+      "col": 2,
+      "lane": "lane5",
+      "type": "backend"
+    },
+    {
+      "id": "ER",
+      "label": "Accepted",
+      "col": 3,
+      "lane": "lane5",
+      "type": "backend"
+    }
+  ],
+  "edges": [
+    {
+      "from": "P1",
+      "to": "G"
+    },
+    {
+      "from": "G",
+      "to": "P2",
+      "label": "Pass"
+    },
+    {
+      "from": "G",
+      "to": "P1",
+      "label": "Fail"
+    },
+    {
+      "from": "P2",
+      "to": "PR"
+    },
+    {
+      "from": "RI",
+      "to": "RC"
+    },
+    {
+      "from": "RC",
+      "to": "RA",
+      "label": "Category A"
+    },
+    {
+      "from": "RC",
+      "to": "RB",
+      "label": "Category B"
+    },
+    {
+      "from": "RA",
+      "to": "RR"
+    },
+    {
+      "from": "RB",
+      "to": "RR"
+    },
+    {
+      "from": "PI",
+      "to": "PS"
+    },
+    {
+      "from": "PS",
+      "to": "PW1"
+    },
+    {
+      "from": "PS",
+      "to": "PW2"
+    },
+    {
+      "from": "PW1",
+      "to": "AG"
+    },
+    {
+      "from": "PW2",
+      "to": "AG"
+    },
+    {
+      "from": "PI",
+      "to": "PV"
+    },
+    {
+      "from": "PV",
+      "to": "PV1"
+    },
+    {
+      "from": "PV",
+      "to": "PV2"
+    },
+    {
+      "from": "PV1",
+      "to": "VA"
+    },
+    {
+      "from": "PV2",
+      "to": "VA"
+    },
+    {
+      "from": "OI",
+      "to": "O"
+    },
+    {
+      "from": "O",
+      "to": "W1"
+    },
+    {
+      "from": "O",
+      "to": "W2"
+    },
+    {
+      "from": "W1",
+      "to": "SY"
+    },
+    {
+      "from": "W2",
+      "to": "SY"
+    },
+    {
+      "from": "SY",
+      "to": "OR"
+    },
+    {
+      "from": "EI",
+      "to": "GEN"
+    },
+    {
+      "from": "GEN",
+      "to": "EV"
+    },
+    {
+      "from": "EV",
+      "to": "GEN",
+      "label": "Refine"
+    },
+    {
+      "from": "EV",
+      "to": "ER",
+      "label": "Accept"
+    }
+  ]
+}

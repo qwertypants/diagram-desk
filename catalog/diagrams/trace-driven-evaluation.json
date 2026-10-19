@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Find the regression behind the answer",
+    "output": "catalog/diagrams/trace-driven-evaluation.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "app",
+      "label": "Application",
+      "type": "backend"
+    },
+    {
+      "id": "model",
+      "label": "Model gateway",
+      "type": "backend"
+    },
+    {
+      "id": "trace",
+      "label": "Trace collector",
+      "type": "database"
+    },
+    {
+      "id": "eval",
+      "label": "Evaluation",
+      "type": "backend"
+    },
+    {
+      "id": "review",
+      "label": "Release review",
+      "type": "security"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m0",
+      "from": "app",
+      "to": "model",
+      "label": "Invoke with trace context",
+      "y": 170
+    },
+    {
+      "id": "m1",
+      "from": "model",
+      "to": "app",
+      "label": "Output + usage",
+      "y": 236,
+      "variant": "return"
+    },
+    {
+      "id": "m2",
+      "from": "app",
+      "to": "trace",
+      "label": "Redacted spans + outcome",
+      "y": 302,
+      "variant": "dashed",
+      "note": "Correlate retrieval, tools, model calls, errors, and token usage."
+    },
+    {
+      "id": "m3",
+      "from": "trace",
+      "to": "eval",
+      "label": "Sample failing cases",
+      "y": 368,
+      "variant": "dashed"
+    },
+    {
+      "id": "m4",
+      "from": "eval",
+      "to": "model",
+      "label": "Replay fixed dataset",
+      "y": 434
+    },
+    {
+      "id": "m5",
+      "from": "model",
+      "to": "eval",
+      "label": "Candidate outputs",
+      "y": 500,
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "eval",
+      "to": "review",
+      "label": "Task scores + failures",
+      "y": 566,
+      "variant": "emphasis",
+      "note": "Compare correctness, latency, and cost. Inspect segments and judge calibration."
+    },
+    {
+      "id": "m7",
+      "from": "review",
+      "to": "app",
+      "label": "Promote or hold release",
+      "y": 632,
+      "variant": "return"
+    }
+  ]
+}

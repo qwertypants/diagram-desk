@@ -21,12 +21,14 @@ export function draftFromDiagram(diagram) {
   return {
     title: typeof diagram?.title === 'string' ? diagram.title : '',
     source: typeof diagram?.source === 'string' ? diagram.source : '',
+    ...(diagram?.type ? { type: diagram.type, lesson: diagram.lesson ?? null } : {}),
   };
 }
 
 export function isDirty(draft, baseline) {
   return (
-    (draft?.title ?? '') !== (baseline?.title ?? '') || (draft?.source ?? '') !== (baseline?.source ?? '')
+    (draft?.title ?? '') !== (baseline?.title ?? '') || (draft?.source ?? '') !== (baseline?.source ?? '') ||
+    (draft?.type ?? '') !== (baseline?.type ?? '') || JSON.stringify(draft?.lesson ?? null) !== JSON.stringify(baseline?.lesson ?? null)
   );
 }
 

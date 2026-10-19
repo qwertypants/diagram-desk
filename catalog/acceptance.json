@@ -1,0 +1,206 @@
+[
+  {
+    "slug": "ai-evaluation",
+    "sourceSha256": "443a41803dc38be63cb8d69d0228052ad56d43ce0212e9100f5fc56dc9383b26",
+    "artifactSha256": "fa0d5de1c862f831d59e75b0c1a61d7cc29e984bce619876bfbfabb0af10a634",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/ai-evaluation/review/ai-evaluation.finalize-summary.json"
+  },
+  {
+    "slug": "agent-tool-loop",
+    "sourceSha256": "fb79d2088dae6f39cf07d1285255344c95439dfbc486c0b7c0e6dc1c4491bbc9",
+    "artifactSha256": "9def0edd4218def69279d7ef668e823c84476716b63ebbc0f3e56b06107f0f83",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/agent-tool-loop/review/agent-tool-loop.finalize-summary.json"
+  },
+  {
+    "slug": "async-ai",
+    "sourceSha256": "03b2bb042c63d15c387e9d845f2938597c53abac3935194b4b823c18c7fe7ef4",
+    "artifactSha256": "e3e2320a6178cd5bc005679c540d24e8751f9452ccaf4ec971c9d8f0a639375d",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/async-ai/review/async-ai.finalize-summary.json"
+  },
+  {
+    "slug": "plan-act-check",
+    "sourceSha256": "044d6930e279810ec5ca1b1387b4c4581869a4e8cbe324333d0df16031ab3c45",
+    "artifactSha256": "99022e20ad0ce13f9b224817d907db64de50ebd958c5b59911a2c66c1e03b7af",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/plan-act-check/review/plan-act-check.finalize-summary.json"
+  },
+  {
+    "slug": "collaborative-comments",
+    "sourceSha256": "5277be199db37235afe8ffdaaa5a17e060671cef3d83eee36f571b0a22e79b20",
+    "artifactSha256": "5806a74eb8f33ef7206a314c31c9318e7d3ce1c9cf5e990fb2697bc34bdca1a2",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/collaborative-comments/review/collaborative-comments.finalize-summary.json"
+  },
+  {
+    "slug": "effective-agent-principles",
+    "sourceSha256": "f3c211c2984f368ac49e18b8d5d20d98aa7e7d2849bdb019682fe251bb760f93",
+    "artifactSha256": "4c53eafc1b103cc6388be09d0821d11973761a16cb66c1a58a9cd906eadfff9f",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/effective-agent-principles/review/effective-agent-principles.finalize-summary.json"
+  },
+  {
+    "slug": "ai-product",
+    "sourceSha256": "2a3bdeb9b3f608db4142045ef63da6076e6fe70a96f827e49d7f524ae3a959eb",
+    "artifactSha256": "13aa73fc1ddee778d62d0732b79298efa9c7ee97712807d938336d745f13a965",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/ai-product/review/ai-product.finalize-summary.json"
+  },
+  {
+    "slug": "production-rag",
+    "sourceSha256": "66c159beb406036caad0b122e47acd4284122fcf9fc6fd76927ef5158278ee49",
+    "artifactSha256": "4770762a465b4da4864719d21d2c44a4588bd856e614d5587e720ea01af94b2e",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/production-rag/review/production-rag.finalize-summary.json"
+  },
+  {
+    "slug": "streaming-chat",
+    "sourceSha256": "09b6ab939e7a7bbcb3d3de5768b8c760af49908bbb2db9d4e276123821bb902b",
+    "artifactSha256": "34b5237a49f96cc6a1189b0b20ddc79003d8857eb14bbd0d4f6a8df58aca0292",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/streaming-chat/review/streaming-chat.finalize-summary.json"
+  },
+  {
+    "slug": "offline-job-conflict",
+    "sourceSha256": "75310e6efa313e64cfe1f0bf1a7066014c5a49ea3060a0167b77c3e124080951",
+    "artifactSha256": "58c43dfc3e57ed03a953a84d18b6bfca93eeeaa5cd2a617b4ba1d7fd4e1d8bdf",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/offline-job-conflict/review/offline-job-conflict.finalize-summary.json"
+  },
+  {
+    "slug": "workflow-patterns",
+    "sourceSha256": "e8547fdcbd2a5cbe97c6529b5ebf56cdca6db315a0eaa0af36911758ee6cc952",
+    "artifactSha256": "cb21e1c5b44687ec8d1ecec6919579c58a844923d2c245eb1eb3e11f85bcd63f",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/workflow-patterns/review/workflow-patterns.finalize-summary.json"
+  },
+  {
+    "slug": "workflow-or-agent",
+    "sourceSha256": "e98055717c4c66df3abd0c1681d91d310b37840d5d727dc9fa943166737bea56",
+    "artifactSha256": "6e83d52adb092dbb12dcc25a6f39f885f59620da3edc1d04ccabdb5152cb8315",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/workflow-or-agent/review/workflow-or-agent.finalize-summary.json"
+  },
+  {
+    "slug": "permissioned-support-agent",
+    "sourceSha256": "fa1a58b70756ff4cc8e181ff304fdfefe1c3549eb2d8edab1ad9876118525809",
+    "artifactSha256": "72488af5e3f7b6c3ae6020243c0bdc6168040faa62d4775814dd399e2ead7166",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/permissioned-support-agent/review/permissioned-support-agent.finalize-summary.json"
+  },
+  {
+    "slug": "evidence-grounded-rag",
+    "sourceSha256": "b5e49bfae7ca2159662b107a6b830a4a049deebe1a939bf74031c02d6b344ae5",
+    "artifactSha256": "182ce7965f760eb78e9a12429363f80e44aa5ab897887c1972ea73ff379ed446",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/evidence-grounded-rag/review/evidence-grounded-rag.finalize-summary.json"
+  },
+  {
+    "slug": "coordinated-research",
+    "sourceSha256": "30d0ab9c607cf4a6c7c3a91bb9c928acfced2febc41b503cf9f6c1b6227ccc35",
+    "artifactSha256": "eef6eb4ae9328a01a04b40a4f260f59d771aaa04fc143babf402596b49d6be63",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/coordinated-research/review/coordinated-research.finalize-summary.json"
+  },
+  {
+    "slug": "trace-driven-evaluation",
+    "sourceSha256": "5c420e62107a824729aae5cd52f889c2c6b35cbece468b7550c8fb4f8e614ff6",
+    "artifactSha256": "a6371aa97ed82a4d8465ecf2de459857ab85396d8ef7f00de183a3a20ea1c9f3",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/trace-driven-evaluation/review/trace-driven-evaluation.finalize-summary.json"
+  },
+  {
+    "slug": "durable-recovery",
+    "sourceSha256": "f142e3f0be0103622f5596dd6ad4e584a818822569423b0ae000258982edda1e",
+    "artifactSha256": "f09a93c24dabf454b3a486488cd5ddfc881eedbf7fbce6265a647b9e93e86ef1",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "receipt": ".archify/final-20261019/durable-recovery/review/durable-recovery.finalize-summary.json"
+  }
+]

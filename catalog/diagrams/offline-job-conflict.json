@@ -1,0 +1,280 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "When a Job Completes While It Moves",
+    "output": "catalog/diagrams/offline-job-conflict.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "lane0",
+      "label": "Dispatch transaction"
+    },
+    {
+      "id": "lane1",
+      "label": "Offline technician"
+    },
+    {
+      "id": "lane2",
+      "label": "Durable reconnect"
+    },
+    {
+      "id": "lane3",
+      "label": "Server reconciliation"
+    },
+    {
+      "id": "lane4",
+      "label": "Resolve the disagreement"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "J",
+      "label": "Job scheduled",
+      "col": 0,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "M",
+      "label": "Move A to B",
+      "col": 1,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "TX",
+      "label": "One transaction",
+      "col": 2,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "A",
+      "label": "Supersede A; B live",
+      "col": 3,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "O",
+      "label": "Write outbox",
+      "col": 4,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "F",
+      "label": "Wake-up fan-out",
+      "col": 5,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "C",
+      "label": "Complete offline",
+      "col": 0,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "L",
+      "label": "Write local store",
+      "col": 1,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "Q",
+      "label": "Queue durable action",
+      "col": 2,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "R",
+      "label": "Reconnect",
+      "col": 0,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "P",
+      "label": "Pull after cursor",
+      "col": 1,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "S",
+      "label": "Send completion",
+      "col": 2,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "V",
+      "label": "Check key + version",
+      "col": 3,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "K",
+      "label": "Field-level check",
+      "col": 0,
+      "lane": "lane3",
+      "type": "security"
+    },
+    {
+      "id": "CS",
+      "label": "Accept completion",
+      "col": 1,
+      "lane": "lane3",
+      "type": "backend"
+    },
+    {
+      "id": "RA",
+      "label": "Retain assignment",
+      "col": 4,
+      "lane": "lane3",
+      "type": "backend"
+    },
+    {
+      "id": "ST",
+      "label": "Status complete",
+      "col": 2,
+      "lane": "lane3",
+      "type": "backend"
+    },
+    {
+      "id": "LOG",
+      "label": "Append audit event",
+      "col": 3,
+      "lane": "lane3",
+      "type": "backend"
+    },
+    {
+      "id": "EX",
+      "label": "Create review item",
+      "col": 0,
+      "lane": "lane4",
+      "type": "backend"
+    },
+    {
+      "id": "CLOSE",
+      "label": "Close B assignment",
+      "col": 1,
+      "lane": "lane4",
+      "type": "backend"
+    },
+    {
+      "id": "DONE",
+      "label": "Completion stands",
+      "col": 2,
+      "lane": "lane4",
+      "type": "backend"
+    }
+  ],
+  "edges": [
+    {
+      "from": "M",
+      "to": "TX"
+    },
+    {
+      "from": "TX",
+      "to": "A"
+    },
+    {
+      "from": "A",
+      "to": "O"
+    },
+    {
+      "from": "O",
+      "to": "F"
+    },
+    {
+      "from": "C",
+      "to": "L"
+    },
+    {
+      "from": "L",
+      "to": "Q"
+    },
+    {
+      "from": "Q",
+      "to": "R"
+    },
+    {
+      "from": "R",
+      "to": "P"
+    },
+    {
+      "from": "P",
+      "to": "S"
+    },
+    {
+      "from": "J",
+      "to": "M"
+    },
+    {
+      "from": "J",
+      "to": "C"
+    },
+    {
+      "from": "F",
+      "to": "P",
+      "label": "Wake-up only",
+      "variant": "dashed"
+    },
+    {
+      "from": "S",
+      "to": "V"
+    },
+    {
+      "from": "V",
+      "to": "K"
+    },
+    {
+      "from": "K",
+      "to": "CS",
+      "label": "Status unchanged"
+    },
+    {
+      "from": "CS",
+      "to": "ST"
+    },
+    {
+      "from": "ST",
+      "to": "LOG"
+    },
+    {
+      "from": "RA",
+      "to": "EX"
+    },
+    {
+      "from": "LOG",
+      "to": "EX"
+    },
+    {
+      "from": "EX",
+      "to": "CLOSE"
+    },
+    {
+      "from": "CLOSE",
+      "to": "DONE"
+    },
+    {
+      "from": "CS",
+      "to": "RA",
+      "label": "assignment changed"
+    },
+    {
+      "from": "RA",
+      "to": "EX",
+      "label": "retain + review"
+    }
+  ]
+}

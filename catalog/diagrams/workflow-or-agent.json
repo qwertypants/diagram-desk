@@ -1,0 +1,159 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Workflows or Agents? Choosing the Right Level of Complexity",
+    "output": "catalog/diagrams/workflow-or-agent.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "lane0",
+      "label": "Choose the control model"
+    },
+    {
+      "id": "lane1",
+      "label": "Compare outcomes"
+    },
+    {
+      "id": "lane2",
+      "label": "Keep complexity justified"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "S",
+      "label": "Start simple",
+      "col": 0,
+      "lane": "lane0",
+      "type": "backend"
+    },
+    {
+      "id": "Q",
+      "label": "One call enough?",
+      "col": 1,
+      "lane": "lane0",
+      "type": "security"
+    },
+    {
+      "id": "L",
+      "label": "One model call",
+      "col": 0,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "D",
+      "label": "Predictable steps?",
+      "col": 2,
+      "lane": "lane0",
+      "type": "security"
+    },
+    {
+      "id": "W",
+      "label": "Code-led workflow",
+      "col": 1,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "A",
+      "label": "Model-led agent",
+      "col": 2,
+      "lane": "lane1",
+      "type": "backend"
+    },
+    {
+      "id": "WP",
+      "label": "Predictable process",
+      "col": 0,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "AP",
+      "label": "Flexibility and cost",
+      "col": 1,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "M",
+      "label": "Measure outcomes",
+      "col": 2,
+      "lane": "lane2",
+      "type": "backend"
+    },
+    {
+      "id": "I",
+      "label": "Better outcomes?",
+      "col": 3,
+      "lane": "lane2",
+      "type": "security"
+    },
+    {
+      "id": "P",
+      "label": "Keep it simple",
+      "col": 4,
+      "lane": "lane2",
+      "type": "backend"
+    }
+  ],
+  "edges": [
+    {
+      "from": "S",
+      "to": "Q"
+    },
+    {
+      "from": "Q",
+      "to": "L",
+      "label": "Yes"
+    },
+    {
+      "from": "Q",
+      "to": "D",
+      "label": "No"
+    },
+    {
+      "from": "D",
+      "to": "W",
+      "label": "Yes"
+    },
+    {
+      "from": "D",
+      "to": "A",
+      "label": "No"
+    },
+    {
+      "from": "W",
+      "to": "WP"
+    },
+    {
+      "from": "A",
+      "to": "AP"
+    },
+    {
+      "from": "WP",
+      "to": "M"
+    },
+    {
+      "from": "AP",
+      "to": "M"
+    },
+    {
+      "from": "M",
+      "to": "I"
+    },
+    {
+      "from": "I",
+      "to": "S",
+      "label": "No"
+    },
+    {
+      "from": "I",
+      "to": "P",
+      "label": "Yes"
+    }
+  ]
+}

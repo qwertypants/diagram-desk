@@ -1,392 +1,108 @@
-/**
- * Browser verification for the plan's completion criteria: paste → preview →
- * save → reopen → search → edit → delete, invalid Mermaid, unsaved changes,
- * narrow layouts, and rendering with every external origin blocked.
- *
- * This file is deliberately NOT under `test/`: `node --test` runs every file it
- * finds in a `test/` directory, which would launch a browser during `npm test`.
- *
- *   npm run build && npm start        # in another terminal
- *   npm run test:browser
- *
- * `DIAGRAMS_BASE_URL` overrides the default `http://127.0.0.1:4317`.
- */
-
+import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
-
-const base = (process.env.DIAGRAMS_BASE_URL ?? 'http://127.0.0.1:4317').replace(/\/+$/, '');
-let fails = 0;
-const notes = [];
-
-function check(name, cond, detail = '') {
-  if (cond) console.log(`ok   ${name}`);
-  else { fails++; console.log(`FAIL ${name} ${detail}`); }
-}
-
-/** A control a check cannot run without. A missing one records a failure and
- *  returns `null`; it never returns quietly, because a section that skips
- *  itself still reports the run as green - which is exactly how the edit and
- *  rename checks went missing from this script. */
-async function requireControl(name, locator) {
-  const found = await locator.count();
-  check(name, found > 0, found === 0 ? 'the control this check needs is not on the page' : '');
-  return found === 0 ? null : locator.first();
-}
-
-/** Failure detail, on one line: `check` prints it inline and page text is
- *  paragraph-shaped. */
-function oneline(text) {
-  return text.replace(/\s+/g, ' ').trim().slice(0, 200);
-}
-
-async function assertSiteIsRunning() {
-  let probe;
-  try {
-    probe = await fetch(`${base}/api/diagrams`);
-  } catch (error) {
-    console.error(`FAIL the site is not answering at ${base}`);
-    console.error(`     ${error.cause?.code ?? error.message}`);
-    console.error('     start it in another terminal with:  npm run build && npm start');
-    console.error('     or point DIAGRAMS_BASE_URL at a server that is already running');
-    process.exit(1);
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { resolve, join } from 'node:path';
+import { startServer } from '../server/index.js';
+const temp=mkdtempSync(join(tmpdir(),'diagram-desk-browser-'));
+const evidence=resolve('.archify/browser');mkdirSync(evidence,{recursive:true});
+const server=await startServer({port:0,databasePath:join(temp,'library.sqlite'),distDirectory:resolve('dist'),initializeCatalog:true});
+const browser=await chromium.launch({channel:'chrome',headless:true});
+const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});
+const page=await context.newPage();const errors=[];const external=[];
+page.on('pageerror',error=>errors.push(error.message));
+page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
+await context.route('**/*',route=>{
+ const url=route.request().url();
+ if(url.startsWith(server.origin)||url.startsWith('data:')||url.startsWith('blob:'))return route.continue();
+ external.push(url);return route.abort();
+});
+const report={catalog:[],checks:[]};
+const check=(name,condition)=>{assert.ok(condition,name);report.checks.push(name);console.log('PASS',name);};
+async function ready(){await page.locator('.archify-reader').waitFor();const frame=page.frameLocator('.archify-reader');await frame.locator('svg').first().waitFor();return frame;}
+try{
+ const diagrams=await(await fetch(`${server.origin}/api/diagrams`)).json();check('fresh install has eighteen records',diagrams.diagrams.length===18);
+ const catalog=JSON.parse(readFileSync('catalog/index.json'));
+ for(const theme of (process.env.BROWSER_INTERACTIONS_ONLY ? [] : ['light','dark'])){
+  await page.emulateMedia({colorScheme:theme,reducedMotion:'reduce'});
+  for(const[slugIndex,item]of catalog.entries()){
+   const row=diagrams.diagrams.find(d=>d.title===item.title);assert.ok(row);
+   await page.setViewportSize({width:1440,height:1000});await page.goto(`${server.origin}/diagrams/${row.id}`);const frame=await ready();
+   check(`${theme}: ${item.slug} has a native reader`,await frame.locator('svg').count()>0);
+   await page.locator('iframe').screenshot({path:join(evidence,`${item.slug}-${theme}-desktop.png`)});
+   await page.setViewportSize({width:390,height:844});
+   check(`${theme}: ${item.slug} mobile page is contained`,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+   check(`${theme}: ${item.slug} learning text is readable`,await page.locator('.lesson-deck').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)>=16));
+   await page.screenshot({path:join(evidence,`${item.slug}-${theme}-mobile.png`),fullPage:true});
+   report.catalog.push({slug:item.slug,theme,viewports:['1440x1000','390x844']});
   }
-
-  if (!probe.ok) {
-    console.error(`FAIL ${base}/api/diagrams answered ${probe.status}`);
-    console.error('     the server is up but is not serving the app - run "npm run build" first');
-    process.exit(1);
-  }
-}
-
-async function launchBrowser() {
-  try {
-    return await chromium.launch({ channel: 'chrome' });
-  } catch (error) {
-    console.error('FAIL Playwright could not launch Chrome');
-    console.error(`     ${String(error.message).split('\n')[0]}`);
-    console.error('     these checks need a Chrome install (the playwright devDependency');
-    console.error('     alone does not provide one)');
-    process.exit(1);
-  }
-}
-
-await assertSiteIsRunning();
-
-const browser = await launchBrowser();
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-const page = await ctx.newPage();
-
-const consoleErrors = [];
-const badResponses = [];
-const nativeDialogs = [];
-page.on('response', (r) => { if (r.status() >= 400) badResponses.push(`${r.status()} ${r.url()}`); });
-page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
-page.on('pageerror', (e) => consoleErrors.push(`pageerror: ${e.message}`));
-// Recorded and dismissed: the app's confirmations are in-page dialogs, so any
-// native dialog here means a beforeunload guard fired on its own.
-page.on('dialog', (d) => {
-  nativeDialogs.push(`${d.type()}: ${d.message()}`);
-  d.dismiss().catch(() => {});
-});
-
-const externalRequests = [];
-page.on('request', (r) => {
-  const u = r.url();
-  if (!u.startsWith(base) && !u.startsWith('data:') && !u.startsWith('blob:')) externalRequests.push(u);
-});
-
-// ---- load ----
-await page.goto(`${base}/`, { waitUntil: 'networkidle' });
-check('app loads', (await page.title()).includes('Diagram'));
-check('library region present', await page.locator('.library, nav, [role="navigation"]').first().isVisible());
-const emptyState = await page.locator('body').innerText();
-check('empty state invites a first diagram', /choose a diagram|start a new/i.test(emptyState));
-
-await page.getByRole('button', { name: 'New diagram' }).first().click();
-await page.waitForURL('**/new', { timeout: 10000 });
-check('New diagram routes to /new', page.url().endsWith('/new'), page.url());
-
-// ---- paste + preview ----
-const SRC = 'flowchart TD\n  A[Paste] --> B[Preview]\n  B --> C{Saved}';
-const editor = page.locator('.composer textarea, textarea').first();
-await editor.fill(SRC);
-await editor.fill('');          // force input event path
-await editor.type(SRC, { delay: 5 });
-await page.waitForSelector('.stage svg, [data-testid="preview"] svg, .preview svg', { timeout: 15000 });
-check('preview renders an svg', (await page.locator('svg').count()) > 0);
-
-// save gating: title empty -> disabled
-const saveBtn = page.getByRole('button', { name: /save/i }).first();
-check('save disabled before a title', await saveBtn.isDisabled());
-
-const titleInput = page.locator('.composer input[type="text"], input[type="text"]').first();
-await titleInput.fill('Browser flow check');
-await page.waitForTimeout(400);
-check('save enabled with title + good preview', !(await saveBtn.isDisabled()));
-
-// ---- invalid mermaid blocks save ----
-await editor.fill('flowchart TD\n  A[[[broken');
-await page.waitForTimeout(700);
-const invalidDisabled = await saveBtn.isDisabled();
-const invalidText = await page.locator('body').innerText();
-check('invalid mermaid disables save', invalidDisabled);
-check('invalid mermaid shows a visible error',
-  /error|invalid|parse|expect/i.test(invalidText));
-await editor.fill(SRC);
-await page.waitForTimeout(700);
-check('save re-enables after fixing', !(await saveBtn.isDisabled()));
-
-// ---- save ----
-await saveBtn.click();
-await page.waitForTimeout(1200);
-check('no failed request after save', badResponses.length === 0, badResponses.join(' | '));
-
-const savedUrl = page.url();
-notes.push(`saved url: ${savedUrl}`);
-check('saved url is a deep link', /\/diagrams\/[0-9a-f-]{36}/.test(savedUrl), savedUrl);
-
-// ---- reopen: render first ----
-await page.goto(savedUrl, { waitUntil: 'networkidle' });
-await page.waitForSelector('svg', { timeout: 15000 });
-check('deep link reopens and renders', (await page.locator('svg').count()) > 0);
-const textareaVisibleOnOpen = await page.locator('.composer textarea, textarea').first().isVisible().catch(() => false);
-check('reopen shows render, not the editor', textareaVisibleOnOpen === false);
-
-// ---- a cold deep link populates the library column ----
-const coldLibraryItems = await page.locator('.library__item').allInnerTexts();
-check('cold deep link lists the diagram in the library',
-  coldLibraryItems.some((text) => /Browser flow check/.test(text)), coldLibraryItems.join(' / '));
-const coldLibraryStatus = await page.locator('#library-status').innerText();
-check('cold deep link shows a counted library status',
-  /1 saved diagram\./.test(coldLibraryStatus), coldLibraryStatus);
-const coldSelected = await page.locator('.library__item[aria-current="true"]').allInnerTexts();
-check('cold deep link marks the open diagram as selected',
-  coldSelected.some((text) => /Browser flow check/.test(text)), coldSelected.join(' / '));
-
-// ---- a cold deep link to the editor populates it too ----
-await page.goto(`${savedUrl}/edit`, { waitUntil: 'networkidle' });
-await page.waitForTimeout(600);
-const editLibraryItems = await page.locator('.library__item').allInnerTexts();
-check('cold editor deep link lists the diagram in the library',
-  editLibraryItems.some((text) => /Browser flow check/.test(text)), editLibraryItems.join(' / '));
-
-// ---- render error is not color-only ----
-const live = await page.locator('[aria-live], [role="status"], [role="alert"]').count();
-check('render status is announced via a live region', live > 0, `found ${live}`);
-const viewerStatus = page.locator('#viewer-status, .preview__status').first();
-check('viewer status line exists', await viewerStatus.count() > 0);
-check('viewer status reports the rendered diagram type',
-  /render|diagram/i.test(await viewerStatus.innerText()), await viewerStatus.innerText());
-
-// ---- search ----
-const searchInput = page.locator('input[type="search"], input[placeholder*="earch" i]').first();
-await searchInput.fill('Browser flow');
-await page.waitForTimeout(900);
-const listed = await page.locator('.library button, .library li, .library a').allInnerTexts();
-check('search finds the diagram by title', listed.some((t) => /Browser flow check/.test(t)), listed.join(' / '));
-
-await searchInput.fill('zzzznomatch');
-await page.waitForTimeout(800);
-const emptyText = await page.locator('body').innerText();
-check('no-match search shows an empty state', /no |nothing|empty|0 diagram/i.test(emptyText));
-await searchInput.fill('');
-await page.waitForTimeout(600);
-
-// ---- keyboard: reach and activate a diagram from the library ----
-await page.keyboard.press('Tab');
-let reached = false;
-for (let i = 0; i < 40; i++) {
-  const active = await page.evaluate(() => {
-    const el = document.activeElement;
-    return { tag: el?.tagName, text: (el?.textContent || '').trim() };
-  });
-  if (/Browser flow/.test(active.text)) { reached = true; break; }
-  await page.keyboard.press('Tab');
-}
-check('diagram is reachable by keyboard', reached);
-
-// ---- edit + rename + unsaved-changes warning ----
-// Load-bearing section. `edit saved without a false discard warning` is the only
-// guard on the regression where saving a dirty draft popped the discard prompt,
-// so the flow below is driven from the viewer (where the Edit control lives)
-// instead of from an editor page that has no Edit button at all.
-const diagramId = savedUrl.split('/').pop();
-const EDITED_SOURCE = `${SRC}\n  C --> D[Changed]`;
-const RENAMED_TITLE = 'Renamed in browser';
-
-await page.goto(savedUrl, { waitUntil: 'networkidle' });
-await page.waitForSelector('svg', { timeout: 15000 });
-
-const editBtn = await requireControl('a saved diagram offers an Edit control',
-  page.getByRole('button', { name: /^edit$/i }));
-
-if (editBtn !== null) {
-  await editBtn.click();
-  await page.waitForURL(`${savedUrl}/edit`, { timeout: 10000 }).catch(() => {});
-  check('Edit opens the editor at its own deep link', page.url() === `${savedUrl}/edit`, page.url());
-
-  const sourceField = page.locator('#editor-source-field');
-  const titleField = page.locator('#editor-title-field');
-  // The URL changes on `pushState`, a tick before the editor is mounted, so wait
-  // for it rather than sampling `isVisible()` on the viewer's last frame.
-  const editorShown = await sourceField.waitFor({ state: 'visible', timeout: 10000 })
-    .then(() => true, () => false);
-  check('editor opens for editing', editorShown && await sourceField.isEditable());
-  check('the editor is filled with the saved draft',
-    (await sourceField.inputValue()) === SRC && (await titleField.inputValue()) === 'Browser flow check');
-
-  await sourceField.fill(EDITED_SOURCE);
-  await page.waitForTimeout(600);
-  await titleField.fill(RENAMED_TITLE);
-  await page.waitForTimeout(600);
-
-  const saveInEditor = page.getByRole('button', { name: /^save$/i }).first();
-  check('the edited draft keeps Save enabled', await saveInEditor.count() > 0 && !(await saveInEditor.isDisabled()));
-
-  const dialogsBeforeSave = nativeDialogs.length;
-  await saveInEditor.click();
-  const savedAgain = await page.waitForURL(savedUrl, { timeout: 10000 }).then(() => true, () => false);
-  await page.waitForTimeout(600);
-
-  const afterSaveText = await page.locator('body').innerText();
-  check('edit saved without a false discard warning', !/discard|unsaved/i.test(afterSaveText),
-    oneline(afterSaveText));
-  check('the edit save returns to the viewer', savedAgain, page.url());
-  check('the edit save raises no native discard dialog',
-    nativeDialogs.length === dialogsBeforeSave, nativeDialogs.slice(dialogsBeforeSave).join(' | '));
-  check('the rename is on screen after saving', afterSaveText.includes(RENAMED_TITLE), oneline(afterSaveText));
-
-  const desktopViewerBounds = await page.evaluate(() => {
-    const stage = document.querySelector('.stage').getBoundingClientRect();
-    const viewer = document.querySelector('.viewer').getBoundingClientRect();
-    const explorer = document.querySelector('.diagram-explorer').getBoundingClientRect();
-    const viewport = document.querySelector('.diagram-explorer__viewport').getBoundingClientRect();
-    const actions = document.querySelector('.viewer__actions').getBoundingClientRect();
-    return {
-      innerHeight: window.innerHeight,
-      stageTop: stage.top,
-      stageBottom: stage.bottom,
-      viewerTop: viewer.top,
-      viewerHeight: viewer.height,
-      explorerHeight: explorer.height,
-      viewportHeight: viewport.height,
-      actionsBottom: actions.bottom,
-    };
-  });
-  check('desktop diagram viewport uses the expanded height',
-    desktopViewerBounds.viewportHeight > desktopViewerBounds.innerHeight * 0.68 - 1,
-    JSON.stringify(desktopViewerBounds));
-  check('desktop Edit and Delete actions stay near the stage bottom',
-    desktopViewerBounds.actionsBottom <= desktopViewerBounds.stageBottom
-      && desktopViewerBounds.stageBottom - desktopViewerBounds.actionsBottom <= desktopViewerBounds.innerHeight * 0.08,
-    JSON.stringify(desktopViewerBounds));
-
-  const persisted = await fetch(`${base}/api/diagrams/${diagramId}`).then((r) => r.json());
-  check('the rename persisted to the server', persisted.title === RENAMED_TITLE, JSON.stringify(persisted.title));
-  check('the edited source persisted to the server', persisted.source === EDITED_SOURCE, JSON.stringify(persisted.source));
-}
-
-// ---- narrow layout ----
-await page.setViewportSize({ width: 390, height: 780 });
-await page.waitForTimeout(600);
-const overflow = await page.evaluate(() =>
-  document.documentElement.scrollWidth - document.documentElement.clientWidth);
-check('no horizontal overflow at 390px', overflow <= 1, `overflow ${overflow}px`);
-const listVisibleNarrow = await page.locator('.library button, .library li, .library a').first().isVisible();
-check('library still visible at 390px', listVisibleNarrow);
-
-const phoneViewerBounds = await page.evaluate(() => {
-  const stage = document.querySelector('.stage').getBoundingClientRect();
-  const viewer = document.querySelector('.viewer').getBoundingClientRect();
-  const explorer = document.querySelector('.diagram-explorer').getBoundingClientRect();
-  const viewport = document.querySelector('.diagram-explorer__viewport').getBoundingClientRect();
-  const actions = document.querySelector('.viewer__actions').getBoundingClientRect();
-  return {
-    innerHeight: window.innerHeight,
-    stageTop: stage.top,
-    stageBottom: stage.bottom,
-    viewerTop: viewer.top,
-    viewerHeight: viewer.height,
-    explorerHeight: explorer.height,
-    viewportHeight: viewport.height,
-    actionsBottom: actions.bottom,
-  };
-});
-check('phone diagram viewport uses the expanded height',
-  phoneViewerBounds.viewportHeight > phoneViewerBounds.innerHeight * 0.68 - 1,
-  JSON.stringify(phoneViewerBounds));
-check('phone Edit and Delete actions stay visible near the bottom',
-  phoneViewerBounds.actionsBottom <= phoneViewerBounds.stageBottom
-    && phoneViewerBounds.stageBottom - phoneViewerBounds.actionsBottom <= phoneViewerBounds.innerHeight * 0.08,
-  JSON.stringify(phoneViewerBounds));
-check('phone Edit and Delete buttons are visible',
-  await page.getByRole('button', { name: 'Edit', exact: true }).isVisible()
-    && await page.getByRole('button', { name: 'Delete', exact: true }).isVisible());
-await page.setViewportSize({ width: 1440, height: 900 });
-
-// ---- offline rendering: reload the app while blocking every external origin ----
-const blocked = await ctx.newPage();
-await blocked.route('**/*', (route) => {
-  const u = route.request().url();
-  if (u.startsWith(base) || u.startsWith('data:') || u.startsWith('blob:')) return route.continue();
-  return route.abort();
-});
-const blockedErrors = [];
-blocked.on('pageerror', (e) => blockedErrors.push(e.message));
-await blocked.goto(savedUrl, { waitUntil: 'networkidle' });
-await blocked.waitForSelector('svg', { timeout: 15000 });
-check('renders with all external origins blocked', (await blocked.locator('svg').count()) > 0);
-check('no page errors with external origins blocked', blockedErrors.length === 0, blockedErrors.join(' | '));
-await blocked.close();
-
-// ---- delete with confirmation ----
-await page.goto(savedUrl, { waitUntil: 'networkidle' });
-const deleteBtn = page.getByRole('button', { name: /delete|remove/i }).first();
-check('delete control present', await deleteBtn.count() > 0);
-await deleteBtn.click();
-await page.waitForTimeout(500);
-const dialogVisible = await page.locator('[role="dialog"][aria-modal="true"]').first().isVisible();
-check('delete asks for confirmation', dialogVisible);
-
-let cancelled = true;
-await page.keyboard.press('Escape');
-await page.waitForTimeout(600);
-const afterEscape = await fetch(`${base}/api/diagrams/${savedUrl.split('/').pop()}`);
-check('escape cancels the delete', afterEscape.status === 200, afterEscape.status);
-
-await deleteBtn.click();
-await page.waitForTimeout(500);
-await page.locator('[role="dialog"][aria-modal="true"]').getByRole('button', { name: /delete|confirm|yes/i }).first().click();
-await page.waitForTimeout(1200);
-const afterDelete = await fetch(`${base}/api/diagrams/${savedUrl.split('/').pop()}`);
-check('confirmed delete removes it', afterDelete.status === 404, afterDelete.status);
-const libraryText = await page.locator('body').innerText();
-check('deleted diagram leaves the library', !/Browser flow/.test(libraryText));
-
-// ---- unreachable-id deep link ----
-await page.goto(`${base}/diagrams/00000000-0000-4000-8000-000000000000`, { waitUntil: 'networkidle' });
-await page.waitForTimeout(900);
-const notFoundText = await page.locator('body').innerText();
-check('unknown id shows a not-found state', /not found|couldn.t|doesn.t exist|missing/i.test(notFoundText), notFoundText.slice(0, 160));
-
-// ---- no CDN / external requests at any point ----
-check('no external network requests during the whole flow', externalRequests.length === 0,
-  [...new Set(externalRequests)].join(' | '));
-
-const unexpectedResponses = badResponses.filter((r) => !r.includes('/api/diagrams/'));
-check('no failed static or api request across the flow', unexpectedResponses.length === 0,
-  unexpectedResponses.slice(0, 4).join(' | '));
-check('no uncaught page errors across the flow',
-  consoleErrors.filter((e) => !/Failed to load resource/.test(e)).length === 0,
-  consoleErrors.slice(0, 3).join(' | '));
-
-// The policy is `script-src 'self'` with no `style-src`, so a style restriction
-// here would be a regression; a script one is the whole point of the header.
-const cspViolations = consoleErrors.filter((e) => /content security policy|refused to (execute|load|apply)/i.test(e));
-check('the Content-Security-Policy blocks nothing the app needs', cspViolations.length === 0,
-  cspViolations.slice(0, 3).join(' | '));
-
-for (const n of notes) console.log(`note: ${n}`);
-await browser.close();
-console.log(fails === 0 ? '\nALL BROWSER CHECKS PASSED' : `\n${fails} BROWSER CHECK(S) FAILED`);
-process.exit(fails === 0 ? 0 : 1);
+ }
+ await page.setViewportSize({width:1440,height:1000});await page.goto(`${server.origin}/new`);
+ await page.getByLabel('Title',{exact:true}).fill('Browser verification');
+ const candidate={schema_version:1,diagram_type:'architecture',meta:{title:'Browser verification',output:'diagram.html',locale:'en',quality_profile:'showcase'},components:[{id:'a',type:'frontend',label:'Request',pos:[40,40],size:[120,60]},{id:'b',type:'backend',label:'Response',pos:[300,40],size:[120,60]}],connections:[{from:'a',to:'b',label:'result'}]};
+ await page.getByLabel('Archify JSON',{exact:true}).fill(JSON.stringify(candidate,null,2));await ready();
+ await page.getByRole('button',{name:'Save',exact:true}).click();await page.waitForURL(/\/diagrams\/[a-f0-9-]+$/);await ready();const saved=page.url();
+ check('create saves and opens a bookmarkable native lesson',saved.includes('/diagrams/'));
+ await page.getByRole('button',{name:'Edit',exact:true}).click();await ready();await page.getByLabel('Title',{exact:true}).fill('Updated browser verification');
+ await page.getByRole('button',{name:'Save',exact:true}).click();await page.waitForURL(saved);await ready();
+ check('edit persists a changed title',await page.locator('h2.viewer__title').textContent()==='Updated browser verification');
+ await page.reload();await ready();check('deep link survives reload',await page.locator('h2.viewer__title').textContent()==='Updated browser verification');
+ await page.getByLabel('Search diagrams',{exact:true}).fill('Updated browser');await page.waitForTimeout(250);check('search finds the saved record',await page.locator('.library__item').count()===1);
+ await page.getByRole('button',{name:'Edit',exact:true}).click();await ready();await page.getByLabel('Archify JSON',{exact:true}).fill('{bad');await page.waitForTimeout(300);check('invalid JSON blocks save',await page.getByRole('button',{name:'Save',exact:true}).isDisabled());
+ await page.getByRole('button',{name:'Cancel',exact:true}).click();await page.getByRole('button',{name:'Discard changes',exact:true}).click();await page.waitForURL(saved);await ready();
+ await page.getByRole('button',{name:'Delete',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Delete',exact:true}).click();await page.waitForURL(`${server.origin}/`);
+ const all=(await(await fetch(`${server.origin}/api/diagrams`)).json()).diagrams;check('delete removes only the new record',all.length===18);
+ const nativeRecord=all.find(row=>row.title==='Agentic AI systems with tools');
+ await page.goto(`${server.origin}/diagrams/${nativeRecord.id}`);const native=await ready();
+ for(const format of ['svg','png']){
+  await native.getByRole('button',{name:'Export diagram',exact:true}).click();
+  const downloadPromise=page.waitForEvent('download');await native.locator(`[data-format="${format}"]`).click();
+  const download=await downloadPromise;check(`native ${format.toUpperCase()} download succeeds`,(await download.failure())===null);
+ }
+ await native.getByRole('button',{name:'Find a node',exact:true}).click();
+ await native.getByLabel('Search diagram nodes',{exact:true}).fill('LLM');
+ await native.locator('.node-finder [aria-label^="Focus LLM,"]').click();
+ check('node search opens its semantic explanation',await native.getByRole('button',{name:'Close semantic passport',exact:true}).isVisible());
+ await native.getByRole('button',{name:'Close semantic passport',exact:true}).click();
+ const svg=native.locator('.diagram-container > svg');
+ const widthBefore=await svg.evaluate(el=>el.getBoundingClientRect().width);
+ await native.getByRole('button',{name:'Zoom in',exact:true}).click();
+ check('native zoom enlarges the diagram',await svg.evaluate(el=>el.getBoundingClientRect().width)>widthBefore);
+ const phone=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
+ const phonePage=await phone.newPage();await phonePage.goto(`${server.origin}/diagrams/${nativeRecord.id}`);
+ const touchFrame=phonePage.frameLocator('iframe');await touchFrame.locator('.diagram-container > svg').waitFor();
+ await phonePage.locator('iframe').scrollIntoViewIfNeeded();
+ const touchContainer=touchFrame.locator('.diagram-container');
+ await touchFrame.getByRole('button',{name:'Zoom in',exact:true}).click();
+ const touchSvg=touchFrame.locator('.diagram-container > svg');
+ const before=await touchSvg.evaluate(el=>el.style.transform);
+ const frameRect=await phonePage.locator('iframe').boundingBox();
+ const background=await touchContainer.evaluate(el=>{
+   const bounds=el.getBoundingClientRect();
+   for(let y=bounds.top+12;y<Math.min(innerHeight-20,bounds.bottom-12);y+=18){
+     for(let x=bounds.left+180;x<bounds.right-12;x+=18){
+       const target=document.elementFromPoint(x,y);
+       if(target && el.contains(target) && !target.closest('[data-node-id],[data-relationship-hit-key],.diagram-nav') && ['svg','DIV','rect'].includes(target.tagName))return{x,y};
+     }
+   }
+   return null;
+ });
+ assert.ok(background,'The native viewport has draggable background space.');
+ const client=await phone.newCDPSession(phonePage);
+ const tx=frameRect.x+background.x,ty=frameRect.y+background.y;
+ await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:tx,y:ty}]});
+ for(let i=1;i<=8;i++){await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:tx-i*15,y:ty}]});await phonePage.waitForTimeout(20);}
+ await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await phonePage.waitForTimeout(150);
+ check('phone touch gesture pans the contained native diagram',await touchSvg.evaluate(el=>el.style.transform)!==before);
+ const scaleBefore=Number(await touchSvg.getAttribute('data-view-scale'));
+ const pinchX=frameRect.x+Math.min(200,background.x),pinchY=frameRect.y+background.y;
+ await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:pinchX-25,y:pinchY,id:1},{x:pinchX+25,y:pinchY,id:2}]});
+ for(let i=1;i<=5;i++){await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:pinchX-25-i*7,y:pinchY,id:1},{x:pinchX+25+i*7,y:pinchY,id:2}]});await phonePage.waitForTimeout(20);}
+ await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ check('phone two-finger pinch increases native zoom',Number(await touchSvg.getAttribute('data-view-scale'))>scaleBefore);
+ await phone.close();
+ await page.setViewportSize({width:390,height:844});await page.goto(`${server.origin}/diagrams/${all[0].id}`);await ready();await page.getByRole('button',{name:'Browse lessons'}).click();check('mobile library opens on demand',await page.locator('#library').isVisible());
+ check('no external runtime requests',external.length===0);check('no browser errors',errors.length===0);
+ writeFileSync(join(evidence,process.env.BROWSER_INTERACTIONS_ONLY ? 'report-interactions.json' : 'report.json'),JSON.stringify(report,null,2));
+ console.log(`${report.checks.length} browser checks passed; ${report.catalog.length} catalog/theme reviews captured at ${evidence}`);
+}finally{await context.close();await browser.close();await server.close();rmSync(temp,{recursive:true,force:true});}

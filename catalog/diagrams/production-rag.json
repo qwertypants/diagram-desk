@@ -1,0 +1,305 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Production RAG System",
+    "output": "catalog/diagrams/production-rag.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "stages": [
+    {
+      "label": "Input"
+    },
+    {
+      "label": "Prepare"
+    },
+    {
+      "label": "Select"
+    },
+    {
+      "label": "Process"
+    },
+    {
+      "label": "Store / decide"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "U",
+      "label": "User",
+      "type": "external",
+      "stage": 0,
+      "row": 0
+    },
+    {
+      "id": "API",
+      "label": "App",
+      "type": "backend",
+      "stage": 1,
+      "row": 0
+    },
+    {
+      "id": "AUTH",
+      "label": "Auth + limit",
+      "type": "security",
+      "stage": 2,
+      "row": 0
+    },
+    {
+      "id": "ORCH",
+      "label": "Orchestrator",
+      "type": "backend",
+      "stage": 3,
+      "row": 0
+    },
+    {
+      "id": "EMB",
+      "label": "Embed query",
+      "type": "backend",
+      "stage": 4,
+      "row": 0
+    },
+    {
+      "id": "VS",
+      "label": "Vector store",
+      "type": "database",
+      "stage": 4,
+      "row": 2
+    },
+    {
+      "id": "RET",
+      "label": "Retrieve",
+      "type": "backend",
+      "stage": 3,
+      "row": 2
+    },
+    {
+      "id": "RERANK",
+      "label": "Rerank",
+      "type": "backend",
+      "stage": 2,
+      "row": 2
+    },
+    {
+      "id": "PROMPT",
+      "label": "Build prompt",
+      "type": "backend",
+      "stage": 1,
+      "row": 2
+    },
+    {
+      "id": "LLM",
+      "label": "LLM",
+      "type": "backend",
+      "stage": 0,
+      "row": 2
+    },
+    {
+      "id": "VALIDATE",
+      "label": "Validate",
+      "type": "backend",
+      "stage": 0,
+      "row": 1
+    },
+    {
+      "id": "DOCS",
+      "label": "Documents",
+      "type": "backend",
+      "stage": 0,
+      "row": 4
+    },
+    {
+      "id": "PARSE",
+      "label": "Parse + clean",
+      "type": "backend",
+      "stage": 1,
+      "row": 4
+    },
+    {
+      "id": "CHUNK",
+      "label": "Chunk",
+      "type": "backend",
+      "stage": 2,
+      "row": 4
+    },
+    {
+      "id": "INDEX",
+      "label": "Embed + index",
+      "type": "backend",
+      "stage": 3,
+      "row": 4
+    },
+    {
+      "id": "OBS",
+      "label": "Traces",
+      "type": "backend",
+      "stage": 3,
+      "row": 1
+    },
+    {
+      "id": "QUERY",
+      "type": "external",
+      "label": "Original query",
+      "sublabel": "same request retained",
+      "stage": 1,
+      "row": 3
+    }
+  ],
+  "flows": [
+    {
+      "from": "U",
+      "to": "API",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "API",
+      "to": "AUTH",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "AUTH",
+      "to": "ORCH",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "ORCH",
+      "to": "EMB",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "EMB",
+      "to": "VS",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        995,
+        260
+      ]
+    },
+    {
+      "from": "VS",
+      "to": "RET",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "from": "RET",
+      "to": "RERANK",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "from": "RERANK",
+      "to": "PROMPT",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "from": "PROMPT",
+      "to": "LLM",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "from": "LLM",
+      "to": "VALIDATE",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "from": "VALIDATE",
+      "to": "API",
+      "label": "context"
+    },
+    {
+      "from": "DOCS",
+      "to": "PARSE",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "PARSE",
+      "to": "CHUNK",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "CHUNK",
+      "to": "INDEX",
+      "label": "context",
+      "route": "straight",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "INDEX",
+      "to": "VS",
+      "label": "context"
+    },
+    {
+      "from": "ORCH",
+      "to": "OBS",
+      "label": "context",
+      "variant": "dashed",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "LLM",
+      "to": "OBS",
+      "label": "context",
+      "variant": "dashed"
+    },
+    {
+      "from": "RET",
+      "to": "OBS",
+      "label": "context",
+      "variant": "dashed",
+      "route": "straight",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "from": "QUERY",
+      "to": "PROMPT",
+      "label": "query text",
+      "route": "straight",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelAt": [
+        355,
+        450
+      ]
+    }
+  ]
+}

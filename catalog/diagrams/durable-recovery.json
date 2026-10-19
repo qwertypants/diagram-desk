@@ -1,0 +1,136 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "An approval that survives a crash",
+    "output": "catalog/diagrams/durable-recovery.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "mainPath": [
+    "queued",
+    "approval",
+    "running",
+    "checking",
+    "done"
+  ],
+  "states": [
+    {
+      "id": "queued",
+      "type": "start",
+      "label": "Queued"
+    },
+    {
+      "id": "approval",
+      "type": "waiting",
+      "label": "Awaiting approval"
+    },
+    {
+      "id": "running",
+      "type": "active",
+      "label": "Executing"
+    },
+    {
+      "id": "checking",
+      "type": "decision",
+      "label": "Check outcome"
+    },
+    {
+      "id": "done",
+      "type": "success",
+      "label": "Completed"
+    },
+    {
+      "id": "backoff",
+      "type": "waiting",
+      "label": "Backoff"
+    },
+    {
+      "id": "reconcile",
+      "type": "active",
+      "label": "Reconcile receipt"
+    },
+    {
+      "id": "denied",
+      "type": "failure",
+      "label": "Denied"
+    },
+    {
+      "id": "expired",
+      "type": "failure",
+      "label": "Expired"
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "Needs intervention"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "queued",
+      "to": "approval",
+      "label": "request consent"
+    },
+    {
+      "from": "approval",
+      "to": "running",
+      "label": "approved"
+    },
+    {
+      "from": "approval",
+      "to": "denied",
+      "label": "denied"
+    },
+    {
+      "from": "approval",
+      "to": "expired",
+      "label": "deadline passed"
+    },
+    {
+      "from": "running",
+      "to": "checking",
+      "label": "receipt"
+    },
+    {
+      "from": "running",
+      "to": "backoff",
+      "label": "retryable failure"
+    },
+    {
+      "from": "backoff",
+      "to": "running",
+      "label": "within deadline"
+    },
+    {
+      "from": "backoff",
+      "to": "failed",
+      "label": "budget exhausted"
+    },
+    {
+      "from": "running",
+      "to": "reconcile",
+      "label": "unknown outcome"
+    },
+    {
+      "from": "reconcile",
+      "to": "checking",
+      "label": "receipt found"
+    },
+    {
+      "from": "reconcile",
+      "to": "backoff",
+      "label": "confirmed not applied"
+    },
+    {
+      "from": "checking",
+      "to": "done",
+      "label": "verified"
+    },
+    {
+      "from": "checking",
+      "to": "failed",
+      "label": "invalid outcome"
+    }
+  ]
+}

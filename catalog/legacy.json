@@ -1,0 +1,93 @@
+[
+  {
+    "id": "1b3b1152-e9e1-4c29-887b-82b32debf9bf",
+    "title": "AI System with evaluation",
+    "source": "flowchart TD\n    U[Production Traffic] --> APP[AI Application]\n\n    APP --> LLM[LLM]\n    LLM --> OUTPUT[Response]\n\n    OUTPUT --> LOG[(Trace Store)]\n\n    LOG --> SAMPLE[Sample Production Cases]\n\n    TEST[Golden Dataset] --> EVAL[Evaluation Pipeline]\n    SAMPLE --> EVAL\n\n    EVAL --> RULES[Deterministic Checks]\n    EVAL --> JUDGE[LLM Judge]\n    EVAL --> HUMAN[Human Review]\n\n    RULES --> SCORE[Evaluation Results]\n    JUDGE --> SCORE\n    HUMAN --> SCORE\n\n    SCORE --> DASH[Dashboard]\n\n    DASH --> DECISION{Regression?}\n\n    DECISION -->|Yes| IMPROVE[Prompt / Model / Retrieval Changes]\n    IMPROVE --> EVAL\n\n    DECISION -->|No| DEPLOY[Deploy]",
+    "createdAt": "2026-10-02T18:52:33.031Z",
+    "updatedAt": "2026-10-02T18:52:33.031Z"
+  },
+  {
+    "id": "f5e29a3e-e996-42bd-a38f-ae4294d89b19",
+    "title": "AI System with evaluation",
+    "source": "flowchart TD\n    U[Production Traffic] --> APP[AI Application]\n\n    APP --> LLM[LLM]\n    LLM --> OUTPUT[Response]\n\n    OUTPUT --> LOG[(Trace Store)]\n\n    LOG --> SAMPLE[Sample Production Cases]\n\n    TEST[Golden Dataset] --> EVAL[Evaluation Pipeline]\n    SAMPLE --> EVAL\n\n    EVAL --> RULES[Deterministic Checks]\n    EVAL --> JUDGE[LLM Judge]\n    EVAL --> HUMAN[Human Review]\n\n    RULES --> SCORE[Evaluation Results]\n    JUDGE --> SCORE\n    HUMAN --> SCORE\n\n    SCORE --> DASH[Dashboard]\n\n    DASH --> DECISION{Regression?}\n\n    DECISION -->|Yes| IMPROVE[Prompt / Model / Retrieval Changes]\n    IMPROVE --> EVAL\n\n    DECISION -->|No| DEPLOY[Deploy]",
+    "createdAt": "2026-10-02T18:53:02.809Z",
+    "updatedAt": "2026-10-02T18:53:02.809Z"
+  },
+  {
+    "id": "9c861823-1ce1-4588-a36f-580dc2edd252",
+    "title": "Agentic AI systems with tools",
+    "source": "flowchart TD\n    U[User Request] --> API[API]\n    API --> AGENT[Agent / Orchestrator]\n\n    AGENT --> CONTEXT[Load Context]\n    CONTEXT --> LLM[LLM]\n\n    LLM --> DECISION{Need a tool?}\n\n    DECISION -->|No| RESPONSE[Generate Response]\n\n    DECISION -->|Yes| TOOL[Tool Router]\n\n    TOOL --> DB[(Database)]\n    TOOL --> SEARCH[Search / RAG]\n    TOOL --> API2[External API]\n    TOOL --> CODE[Code / Compute]\n\n    DB --> RESULT[Tool Result]\n    SEARCH --> RESULT\n    API2 --> RESULT\n    CODE --> RESULT\n\n    RESULT --> LLM\n\n    LLM --> DECISION\n\n    RESPONSE --> VALIDATE[Validate / Guardrails]\n    VALIDATE --> U\n\n    AGENT -.-> TRACE[Tracing + Evaluation]\n    TOOL -.-> TRACE\n    LLM -.-> TRACE",
+    "createdAt": "2026-10-02T18:51:42.533Z",
+    "updatedAt": "2026-10-02T18:51:42.533Z"
+  },
+  {
+    "id": "394c9b3a-89c3-47da-b514-e70e328320cc",
+    "title": "Async AI processing",
+    "source": "flowchart LR\n    U[User] --> API[API]\n\n    API --> DB[(Job DB)]\n    API --> Q[Job Queue]\n\n    Q --> W1[Worker]\n    Q --> W2[Worker]\n    Q --> W3[Worker]\n\n    W1 --> LLM[LLM / AI Service]\n    W2 --> LLM\n    W3 --> LLM\n\n    LLM --> RESULT[(Results)]\n\n    W1 --> DB\n    W2 --> DB\n    W3 --> DB\n\n    W1 -->|Failure| RETRY[Retry Queue]\n    RETRY --> Q\n\n    RETRY -->|Max retries| DLQ[Dead Letter Queue]\n\n    API --> STATUS[Status Endpoint]\n    STATUS --> DB\n\n    U --> STATUS\n\n    W1 -.-> OBS[Logs / Metrics / Traces]\n    W2 -.-> OBS\n    W3 -.-> OBS",
+    "createdAt": "2026-10-02T18:52:05.524Z",
+    "updatedAt": "2026-10-02T18:52:05.524Z"
+  },
+  {
+    "id": "e6fa751f-e194-4c40-be26-abf59874b526",
+    "title": "Autonomous Agent: Plan, Act, Check, and Stop",
+    "source": "flowchart TD\n  H[\"Human gives a command or discusses a task\"] --> C[\"Clarify task\"]\n  C --> P[\"Agent plans\"]\n  P --> A[\"Agent acts using tools\"]\n  A --> E[\"Environment returns ground truth<br/>such as tool results or code execution\"]\n  E --> D[\"Agent assesses progress\"]\n  D -->|Continue| P\n  D -->|Checkpoint or blocker| X[\"Pause for human feedback or judgment\"]\n  X -->|Continue| P\n  D -->|Task complete| T([\"Stop: completion\"])\n  D -->|Limit reached, such as max iterations| S([\"Stop: stopping condition\"])",
+    "createdAt": "2026-10-05T01:01:41.703Z",
+    "updatedAt": "2026-10-05T01:01:41.703Z"
+  },
+  {
+    "id": "2bdda3f0-3861-4c9f-81d5-34b18aa4a16e",
+    "title": "Collaborative Comments and Version History",
+    "source": "flowchart TB\n  PEOPLE[\"Collaborators A and B\"]\n  EDITOR[\"Collaborative editor<br/>edits and text selection\"]\n  ENGINE[\"Live collaboration engine<br/>merge concurrent edits and broadcast\"]\n  DOC[(\"Current document\")]\n  VERSION[\"Automatic version history<br/>records committed edits\"]\n  VSTORE[(\"Version store\")]\n  THREADS[\"Comment threads<br/>replies and resolution\"]\n  ANCHOR[\"Text anchor resolver<br/>follows moved text; retains deleted anchors\"]\n  CSTORE[(\"Comment and anchor store\")]\n\n  PEOPLE --> EDITOR --> ENGINE\n  ENGINE --> DOC\n  ENGINE --> VERSION --> VSTORE\n  EDITOR --> THREADS\n  VERSION -->|\"version at comment creation\"| THREADS\n  ENGINE --> ANCHOR\n  DOC --> ANCHOR\n  THREADS --> ANCHOR\n  THREADS --> CSTORE\n  ANCHOR --> CSTORE",
+    "createdAt": "2026-10-02T21:05:44.356Z",
+    "updatedAt": "2026-10-02T21:05:44.356Z"
+  },
+  {
+    "id": "fe3c76da-5763-4014-b013-8785a4f89cb3",
+    "title": "Effective Agents: Design Principles and Practice",
+    "source": "flowchart TD\n  SIM[\"Keep the design simple\"] --> TRA[\"Make agent steps transparent\"]\n  TRA --> TOOLS[\"Carefully design, document, and test tools\"]\n  TOOLS --> LOOP[\"Use environment feedback as ground truth\"]\n  LOOP --> HUMAN[\"Keep human checkpoints for feedback or judgment\"]\n  HUMAN --> FIT{\"Does the use case have conversation and action,<br/>clear success criteria, feedback, and oversight?\"}\n  FIT -->|Customer support| CS[\"Retrieve relevant data;<br/>take supported ticket or refund actions;<br/>measure resolution\"]\n  FIT -->|Coding| CODE[\"Make a change;<br/>use automated test results as feedback;<br/>retain human review\"]\n  FIT -->|Other| OUT[\"Assess the same fit factors\"]",
+    "createdAt": "2026-10-05T01:00:49.753Z",
+    "updatedAt": "2026-10-05T01:00:49.753Z"
+  },
+  {
+    "id": "b23c6133-f00e-44c8-957f-2534fdf1cc15",
+    "title": "Full AI product architecture",
+    "source": "flowchart TB\n    CLIENT[Web / Mobile Client]\n\n    CLIENT --> GATEWAY[API Gateway]\n\n    GATEWAY --> AUTH[Authentication]\n    GATEWAY --> APP[Application Service]\n\n    APP --> DB[(Postgres)]\n    APP --> CACHE[(Cache)]\n    APP --> QUEUE[Job Queue]\n\n    APP --> AI[AI Orchestrator]\n\n    AI --> PROMPT[Prompt / Context Builder]\n    AI --> RETRIEVAL[Retrieval Service]\n    AI --> TOOLS[Tool Layer]\n\n    RETRIEVAL --> VECTOR[(Vector DB)]\n\n    TOOLS --> INTERNAL[Internal Services]\n    TOOLS --> EXTERNAL[External APIs]\n\n    PROMPT --> MODEL[Model Gateway]\n\n    MODEL --> OPENAI[Model A]\n    MODEL --> ANTHROPIC[Model B]\n    MODEL --> LOCAL[Self Hosted Model]\n\n    QUEUE --> WORKERS[AI Workers]\n    WORKERS --> AI\n\n    APP -.-> OBS[Observability]\n    AI -.-> OBS\n    MODEL -.-> OBS\n    TOOLS -.-> OBS\n\n    OBS --> EVAL[Evaluation Pipeline]",
+    "createdAt": "2026-10-02T18:52:48.894Z",
+    "updatedAt": "2026-10-02T18:52:48.894Z"
+  },
+  {
+    "id": "f6036a09-80ec-4c58-b460-e500c39323fe",
+    "title": "Production RAG System",
+    "source": "flowchart LR\n    U[User] --> API[API / App]\n    API --> AUTH[Auth + Rate Limit]\n    AUTH --> ORCH[AI Orchestrator]\n\n    ORCH --> EMB[Embed Query]\n    EMB --> VS[(Vector DB)]\n    VS --> RET[Retrieve Top K]\n\n    RET --> RERANK[Rerank / Filter]\n    RERANK --> PROMPT[Build Prompt]\n    PROMPT --> LLM[LLM]\n    LLM --> VALIDATE[Validate / Guardrails]\n    VALIDATE --> API\n\n    DOCS[Documents] --> PARSE[Parse / Clean]\n    PARSE --> CHUNK[Chunk]\n    CHUNK --> INDEX[Embed + Index]\n    INDEX --> VS\n\n    ORCH -.-> OBS[Logs / Traces / Metrics]\n    LLM -.-> OBS\n    RET -.-> OBS",
+    "createdAt": "2026-10-02T18:51:05.892Z",
+    "updatedAt": "2026-10-02T18:51:05.892Z"
+  },
+  {
+    "id": "ecc6c5ad-1bc9-4366-9318-0c0c9eeaf188",
+    "title": "Stream AI in chat",
+    "source": "sequenceDiagram\n    participant U as User\n    participant UI as React UI\n    participant API as Backend\n    participant AI as AI Orchestrator\n    participant LLM as LLM Provider\n\n    U->>UI: Submit message\n    UI->>API: POST /messages\n    API->>AI: Process request\n    AI->>LLM: Stream completion\n\n    LLM-->>AI: Token chunk\n    AI-->>API: Token chunk\n    API-->>UI: SSE / WebSocket\n    UI-->>U: Render partial response\n\n    LLM-->>AI: Token chunk\n    AI-->>API: Token chunk\n    API-->>UI: Stream update\n    UI-->>U: Update response\n\n    LLM-->>AI: Complete\n    AI->>AI: Validate result\n    AI-->>API: Final metadata\n    API-->>UI: Complete",
+    "createdAt": "2026-10-02T18:52:18.696Z",
+    "updatedAt": "2026-10-02T18:52:18.696Z"
+  },
+  {
+    "id": "3434f23e-7e21-4660-8695-beb392d95d1b",
+    "title": "When a Job Completes While It Moves",
+    "source": "flowchart TD\n  J[Job 412 is scheduled]\n\n  subgraph D[Dispatcher plan]\n    M[Move assignment\nTruck A to Truck B]\n    TX[One database transaction]\n    A[Supersede Truck A\nmake Truck B live]\n    O[Write outbox event]\n    F[Fan out wake-up]\n    M --> TX --> A --> O --> F\n  end\n\n  subgraph T[Technician field work]\n    C[Complete job\nand add a note offline]\n    L[Write local store]\n    Q[Queue durable action\nidempotency key + base version]\n    R[Reconnect]\n    P[Pull events after cursor]\n    S[Send queued completion]\n    C --> L --> Q --> R --> P --> S\n  end\n\n  J --> M\n  J --> C\n  F -. Wake-up only .-> P\n  S --> V[Server checks key\nand base version]\n  V --> K{Which field changed?}\n  K -->|Status unchanged| CS[Accept completion]\n  K -->|Assignment changed| RA[Retain reassignment]\n  CS --> ST[Status becomes complete]\n  ST --> LOG[Append event with\ntechnician, time, and note]\n  RA --> EX[Create review item\nassignment and completion disagree]\n  LOG --> EX\n  EX --> CLOSE[Dispatcher closes stale\nTruck B assignment]\n  CLOSE --> DONE[Completion stands\ncustomer is not dispatched twice]",
+    "createdAt": "2026-10-07T09:51:40.103Z",
+    "updatedAt": "2026-10-07T09:51:40.103Z"
+  },
+  {
+    "id": "9cebff49-6910-46e2-b238-02efc1cb4fac",
+    "title": "Workflow Patterns: Five Ways to Compose LLM Calls",
+    "source": "flowchart TD\n  subgraph PC[\"Prompt chaining\"]\n    P1[\"LLM call: step 1\"] --> G{\"Optional programmatic gate\"}\n    G -->|Pass| P2[\"LLM call: next step\"]\n    G -->|Fail| P1\n    P2 --> PR[\"Result\"]\n  end\n\n  subgraph R[\"Routing\"]\n    RI[\"Input\"] --> RC[\"Classifier\"]\n    RC -->|Category A| RA[\"Specialized task A\"]\n    RC -->|Category B| RB[\"Specialized task B\"]\n    RA --> RR[\"Result\"]\n    RB --> RR\n  end\n\n  subgraph PA[\"Parallelization\"]\n    PI[\"Input\"] --> PS[\"Sectioning into subtasks\"]\n    PS --> PW1[\"LLM call\"]\n    PS --> PW2[\"LLM call\"]\n    PW1 --> AG[\"Aggregate results\"]\n    PW2 --> AG\n    PI --> PV[\"Run the same task multiple times\"]\n    PV --> PV1[\"LLM call\"]\n    PV --> PV2[\"LLM call\"]\n    PV1 --> VA[\"Aggregate results\"]\n    PV2 --> VA\n  end\n\n  subgraph OW[\"Orchestrator-workers\"]\n    OI[\"Input\"] --> O[\"Orchestrator breaks down task\"]\n    O --> W1[\"Worker LLM\"]\n    O --> W2[\"Worker LLM\"]\n    W1 --> SY[\"Orchestrator synthesizes results\"]\n    W2 --> SY\n    SY --> OR[\"Result\"]\n  end\n\n  subgraph EO[\"Evaluator-optimizer\"]\n    EI[\"Input\"] --> GEN[\"Generator LLM\"]\n    GEN --> EV[\"Evaluator gives feedback\"]\n    EV -->|Refine| GEN\n    EV -->|Accept| ER[\"Result\"]\n  end",
+    "createdAt": "2026-10-05T01:01:27.636Z",
+    "updatedAt": "2026-10-05T01:01:27.636Z"
+  },
+  {
+    "id": "c41e698d-ecdb-467e-8b69-ea3ac28d1e0e",
+    "title": "Workflows or Agents? Choosing the Right Level of Complexity",
+    "source": "flowchart TD\n  S[\"Start with the simplest solution\"] --> Q{\"Would one LLM call with retrieval<br/>and examples meet the need?\"}\n  Q -->|Yes| L[\"Use one LLM call\"]\n  Q -->|No| D{\"Are the steps predictable<br/>and definable in code?\"}\n  D -->|Yes| W[\"Use a workflow<br/>Code directs the predefined path\"]\n  D -->|No| A[\"Consider an agent<br/>The LLM directs its process and tool use\"]\n  W --> WP[\"Favors predictability and consistency\"]\n  A --> AP[\"Adds flexibility, cost,<br/>and potential compounding errors\"]\n  WP --> M[\"Measure outcomes\"]\n  AP --> M\n  M --> I{\"Does added complexity<br/>improve outcomes?\"}\n  I -->|No| S\n  I -->|Yes| P[\"Keep the design as simple as possible\"]",
+    "createdAt": "2026-10-05T01:01:06.385Z",
+    "updatedAt": "2026-10-05T01:01:06.385Z"
+  }
+]
