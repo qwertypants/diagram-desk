@@ -2,8 +2,8 @@
  * Wiring: History API routing, the API client, the three panels, and the two
  * dialogs. The document, the window, `fetch` and the renderer all arrive as
  * arguments, so this module holds no browser-only imports and can be driven
- * from a test. `main.js` is the only module that imports Mermaid, which keeps
- * Mermaid (and its browser-only dependencies) out of the test process.
+ * from a test. The renderer compiles Archify through the local API, keeping native reader
+ * scripts isolated from both the application and the test process.
  */
 
 import { createApiClient } from './api.js';
@@ -18,16 +18,89 @@ export function createApp({ doc, win, fetch = globalThis.fetch, render }) {
   const api = createApiClient({ fetch });
   const dialogs = createDialogHost(doc);
   const stage = doc.getElementById('stage');
+  const masthead = doc.querySelector('.masthead');
+  const skipLink = doc.querySelector('.skip-link');
+  const desk = doc.querySelector('.desk');
+  const libraryRoot = doc.getElementById('library');
+  const libraryToggle = doc.getElementById('library-toggle');
+  const libraryBackdrop = doc.getElementById('library-backdrop');
 
   let currentPath = win.location.pathname;
   let editorOriginPath = libraryPath();
   let dirty = false;
 
   const library = createLibraryPanel({
-    root: doc.getElementById('library'),
+    root: libraryRoot,
     api,
     onOpen: (id) => navigate(diagramPath(id)),
     onCompose: () => navigate(composePath()),
+  });
+
+  const libraryClose = el(doc, 'button', {
+    type: 'button', class: 'mobile-drawer__close', text: 'Close library',
+    'aria-label': 'Close library',
+  });
+  libraryRoot?.insertBefore(libraryClose, libraryRoot.firstChild);
+
+  const isPhone = () => win.matchMedia
+    ? win.matchMedia('(max-width: 62rem)').matches
+    : win.innerWidth <= 992;
+  let drawerOpen = false;
+
+  function setDrawerOpen(open, { returnFocus = false } = {}) {
+    drawerOpen = Boolean(open && isPhone());
+    desk?.classList.toggle('mobile-drawer-open', drawerOpen);
+    if (libraryToggle) libraryToggle.setAttribute('aria-expanded', String(drawerOpen));
+    if (libraryRoot) {
+      if (drawerOpen) {
+        libraryRoot.setAttribute('role', 'dialog');
+        libraryRoot.setAttribute('aria-modal', 'true');
+      } else {
+        libraryRoot.removeAttribute('role');
+        libraryRoot.removeAttribute('aria-modal');
+      }
+    }
+    if (stage) stage.inert = drawerOpen;
+    if (masthead) masthead.inert = drawerOpen;
+    if (skipLink) skipLink.inert = drawerOpen;
+    if (drawerOpen) libraryClose.focus();
+    else if (returnFocus) libraryToggle?.focus();
+  }
+
+  libraryToggle?.addEventListener('click', () => setDrawerOpen(true));
+  libraryClose.addEventListener('click', () => setDrawerOpen(false, { returnFocus: true }));
+  libraryBackdrop?.addEventListener('click', () => setDrawerOpen(false, { returnFocus: true }));
+
+  doc.addEventListener('keydown', (event) => {
+    if (!drawerOpen) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setDrawerOpen(false, { returnFocus: true });
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(libraryRoot.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )).filter((node) => !node.hidden);
+    if (focusable.length === 0) {
+      event.preventDefault();
+      libraryClose.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (doc.activeElement === first || !libraryRoot.contains(doc.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (doc.activeElement === last || !libraryRoot.contains(doc.activeElement))) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  const resizeQuery = win.matchMedia?.('(max-width: 62rem)');
+  resizeQuery?.addEventListener?.('change', () => {
+    if (!isPhone()) setDrawerOpen(false);
   });
 
   const viewer = createViewerPanel({
@@ -49,6 +122,16 @@ export function createApp({ doc, win, fetch = globalThis.fetch, render }) {
 
   function mount(panelRoot) {
     stage.replaceChildren(panelRoot);
+  }
+
+  function focusViewerOrStage() {
+    const heading = doc.getElementById('viewer-title');
+    if (heading) {
+      heading.setAttribute('tabindex', '-1');
+      heading.focus();
+    } else {
+      stage.focus();
+    }
   }
 
   function notFoundPanel(path) {
@@ -82,11 +165,18 @@ export function createApp({ doc, win, fetch = globalThis.fetch, render }) {
 
   async function navigate(path, { replace = false, force = false } = {}) {
     if (!force && !(await confirmDiscard())) return false;
+    const route = parsePath(path);
+    const moveFocusToViewer = drawerOpen && isPhone() && route.view === VIEW.DIAGRAM;
     dirty = false;
     if (replace) win.history.replaceState({ path }, '', path);
     else win.history.pushState({ path }, '', path);
     currentPath = path;
-    await applyRoute(parsePath(path));
+    setDrawerOpen(false);
+    try {
+      await applyRoute(route);
+    } finally {
+      if (moveFocusToViewer && currentPath === path) focusViewerOrStage();
+    }
     return true;
   }
 
@@ -214,9 +304,16 @@ export function createApp({ doc, win, fetch = globalThis.fetch, render }) {
       win.history.replaceState({ path: currentPath }, '', currentPath);
       return;
     }
+    const route = parsePath(path);
+    const moveFocusToViewer = drawerOpen && isPhone() && route.view === VIEW.DIAGRAM;
     dirty = false;
     currentPath = path;
-    await applyRoute(parsePath(path));
+    setDrawerOpen(false);
+    try {
+      await applyRoute(route);
+    } finally {
+      if (moveFocusToViewer && currentPath === path) focusViewerOrStage();
+    }
   }
 
   function onBeforeUnload(event) {
@@ -237,6 +334,8 @@ export function createApp({ doc, win, fetch = globalThis.fetch, render }) {
       currentPath = canonical;
     }
 
+    if (isPhone() && currentPath === libraryPath()) setDrawerOpen(true);
+
     await applyRoute(initial).catch((error) => {
       viewer.showError(error.message);
     });
@@ -245,6 +344,11 @@ export function createApp({ doc, win, fetch = globalThis.fetch, render }) {
   return {
     start,
     navigate,
+    refreshTheme() {
+      const view = parsePath(currentPath).view;
+      if (view === VIEW.DIAGRAM) viewer.refreshTheme?.();
+      else if (view === VIEW.EDIT || view === VIEW.COMPOSE) editor.refreshTheme?.();
+    },
     get currentPath() {
       return currentPath;
     },

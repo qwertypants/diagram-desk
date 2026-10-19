@@ -709,13 +709,9 @@ body { background-image: none; }
 .lesson-editor p { color: var(--ink-soft); font-size: .85rem; }
 .preview .canvas { padding: 0; overflow: hidden; }
 .preview .archify-reader { min-height: 600px; }
-.library-toggle { display: none; margin-left: auto; }
 @media (max-width: 62rem) {
   .desk { height: auto; min-height: 100dvh; overflow: visible; }
   .desk__body { display: block; }
-  .library-toggle { display: inline-flex; }
-  .library { display: none; max-height: 65vh; }
-  .library.is-open { display: flex; }
   .stage { overflow: visible; padding: 1.25rem; }
   .lesson-notes { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
   .lesson-notes > * { grid-column: 1 !important; grid-row: auto; }

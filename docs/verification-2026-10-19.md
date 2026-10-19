@@ -6,8 +6,8 @@ sessions. No diagram examples execute real model or tool operations.
 ## Results
 
 - Production build passed.
-- All 159 unit, DOM, API, persistence, and migration tests passed.
-- All 118 integrated browser checks passed, including the 17 distinct catalog
+- All 165 unit, DOM, API, persistence, and migration tests passed.
+- All 124 integrated browser checks passed, including the 17 distinct catalog
   topics at desktop and phone sizes in both themes.
 - Every catalog candidate passed Archify's validation, delivery, strict artifact
   check, and browser check. `catalog/acceptance.json` binds those results to the
@@ -15,7 +15,8 @@ sessions. No diagram examples execute real model or tool operations.
   candidate while retaining separate saved identities.
 - Browser checks exercised create, edit, save, reload/deep links, search, invalid
   input, discard confirmation, deletion, node search, zoom, phone dragging,
-  two-finger pinch, SVG/PNG downloads, and on-demand mobile navigation.
+  two-finger pinch, SVG/PNG downloads, and the mobile library drawer, including
+  keyboard focus trapping, Escape/backdrop closing, and responsive resizing.
 - External runtime requests were blocked throughout the browser walkthrough;
   none were attempted. No browser errors were observed.
 - The real database was migrated and read back: 18 native records, with every
@@ -55,5 +56,5 @@ contains later edits. The running service uses the repository's real
   browser-dependent and were not part of the verified export set. SVG and PNG
   downloads were verified.
 - Local integration uses ordinary Git at the user's request. The implementation
-  and the remaining phone-navigation branch are being integrated onto `main`.
+  and the remaining phone-navigation branch are integrated onto `main`.
   No push or pull request is included.

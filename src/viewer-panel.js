@@ -25,7 +25,7 @@ export function createViewerPanel({ doc, render, onEdit, onDelete }) {
     const canvas = el(doc, 'div', { class: 'reader-host' });
     root.append(el(doc, 'header', { class: 'lesson-header' }, [
       el(doc, 'p', { class: 'eyebrow', text: `${diagram.type ?? 'ARCHIVE'} / SYSTEMS IN PRACTICE` }),
-      el(doc, 'h2', { class: 'viewer__title', text: diagram.title }),
+      el(doc, 'h2', { class: 'viewer__title', id: 'viewer-title', text: diagram.title }),
       el(doc, 'p', { class: 'lesson-deck', text: lesson?.summary ?? 'Explore the components, relationships, and decisions in this diagram.' }),
       el(doc, 'div', { class: 'viewer__actions' }, [
         el(doc, 'button', { class: 'btn', text: 'Edit', onclick: () => onEdit(diagram.id) }),

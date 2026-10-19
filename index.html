@@ -6,17 +6,19 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Diagram Desk</title>
     <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/mobile.css" />
   </head>
   <body>
     <a class="skip-link" href="#stage">Skip to the diagram</a>
     <div class="desk">
       <header class="masthead">
         <h1 class="masthead__title">Diagram Desk</h1>
+        <button id="library-toggle" class="masthead__library-toggle" type="button" aria-controls="library" aria-expanded="false">Browse lessons</button>
         <p class="masthead__strap">A field guide to software &amp; AI systems</p>
-      <button id="library-toggle" class="btn library-toggle" aria-expanded="false" aria-controls="library">Browse lessons</button>
       </header>
       <div class="desk__body">
         <aside id="library" class="library" aria-labelledby="library-heading"></aside>
+        <button id="library-backdrop" class="mobile-drawer-backdrop" type="button" aria-label="Close library" tabindex="-1"></button>
         <main id="stage" class="stage" tabindex="-1"></main>
       </div>
     </div>
