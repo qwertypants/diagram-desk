@@ -14,52 +14,44 @@ related: ["agent-tool-loop", "durable-recovery"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-A refund is a real side effect. The assistant may propose it, but approval, execution, and verification need separate owners.
+A support agent can propose a refund without having permission to issue it. Application policy, a specific human approval, and a verified external outcome are distinct parts of the operation. Keeping those boundaries visible prevents a model's plausible request from becoming unchecked authority over money.
 
-## The problem
+Imagine a customer asking for a $40 refund on order 4821 because a parcel arrived damaged. The assistant can read the order and investigate eligibility. Issuing the refund changes an external system, so our illustrative policy requires a support worker to approve that exact order and amount.
 
-A support assistant may read an order, but issuing a refund needs scoped human permission.
+## A proposal is input to policy
 
-## Read the architecture
+**Refund request** leads to **Load order context**, then **Propose tool call**. The application loads records it is permitted to read. The model might propose a refund operation with an order identifier, amount, and reason. Treat that proposal as data to validate.
 
-Find the authorization gate before the refund and the receipt or reconciliation path after it.
+At **Policy permits?**, ordinary application code checks whether the operation is available to this user and whether its arguments are acceptable. The order must belong to the relevant account, the amount must fit the policy, and the operation must remain within the investigation's limits. A valid JSON object can still request an unauthorized refund.
 
-<DiagramEmbed slug="permissioned-support-agent" title={'A support agent that earns permission'} />
+OWASP's [excessive-agency guidance](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) recommends limiting capabilities and enforcing authorization outside the model. For our example, narrow lookup and refund tools make the permitted operations easier to check than a general-purpose administrative command.
 
-### Walk through it
+Start on the application lane, then follow the refund branch down into human control. After execution, compare the receipt path with the timeout path.
 
-#### 1. Propose and authorize
+<DiagramEmbed slug="permissioned-support-agent" title="A support agent that earns permission" heading="Follow the $40 decision" cue="Policy permits? can allow read-only work, require Human approves? for a refund, or Explain denial. A timeout goes to Reconcile outcome before Check receipt." />
 
-Load order context. Treat the model’s proposed tool call as data. Check the operation, arguments, caller scope, and budget in application code.
+## Consent has a scope
 
-#### 2. Approve and execute
+The **read-only / allowed** branch can proceed without refund consent when policy permits the proposed lookup. The **refund needs consent** branch reaches **Human approves?**. Approval should describe the actual operation: refund $40 on order 4821, to the intended destination, for the stated reason.
 
-Read-only permitted work can proceed. A refund requires approval for that specific order and amount. Denied or forbidden requests stop.
+If the model later changes the amount to $80 or selects another order, the prior approval no longer describes the operation. Require a new decision rather than treating approval as a session-wide switch. Denial leads to **Explain denial**. A human's willingness to approve also cannot override a forbidden operation at **Policy permits?**; those checks serve different responsibilities.
 
-#### 3. Verify or reconcile
+The chart shows the approval branch but leaves persistence, expiry, and the approval interface unspecified. A production implementation needs to bind the decision to operation identity and validated arguments. Temporal's [human-in-the-loop tutorial](https://learn.temporal.io/tutorials/ai/building-durable-ai-applications/human-in-the-loop/) provides a concrete example of durably waiting for human input; it does not supply this refund policy for you.
 
-Execute the refund with an idempotency key. Check the receipt. After a timeout, look up the original operation before attempting another effect.
+## Execute once in meaning, even if delivery repeats
 
-## Design decisions
+After approval, **Execute with key** sends the operation with an idempotency key: a stable identifier for this logical refund. Repeating the same intended request with the same key can let the receiving service recognize a retry instead of creating another refund. The exact behavior depends on that service's contract.
 
-- Bind approval to the exact operation and arguments.
-- Use an external receipt to substantiate success.
+For example, [Stripe's idempotent-request documentation](https://docs.stripe.com/api/idempotent_requests) explains how its API stores results for a key and checks repeated parameters. That is a specific API contract, not a promise that an arbitrary refund provider supports the same behavior. Choose and persist an operation identity before sending the effect, and verify the actual provider's retention and lookup rules.
 
-## Failure modes
+Suppose the provider applies the $40 refund but its response disappears. The assistant sees a timeout. It cannot conclude that no refund happened. The chart sends this case to **Reconcile outcome**, then **Check receipt** via **look up key**. Reconciliation means finding out what happened to the original operation before deciding what to do next.
 
-- Prompt injection can propose an unauthorized tool call.
-- An expired approval must not authorize changed arguments.
-- An uncertain refund must not be retried with a fresh key.
+A new key would describe a new operation to many APIs. Creating one merely because the first response was lost risks a second refund. If the provider cannot establish an outcome yet, report the uncertainty and preserve it for investigation. The chart does not draw every unresolved terminal case; it does not justify declaring success or blindly repeating the effect.
 
-## Key takeaways
+## The loop has an ending
 
-- The model suggests; the application authorizes and executes.
-- Budgets and terminal states bound the loop.
+**Check receipt** reaches **Report outcome** only through **verified**. Check the amount, order, and provider status, not merely whether the network request returned. A receipt that refers to another operation cannot substantiate this refund.
 
-## Further reading
+The **more work** arrow returns to **Propose tool call**, allowing further investigation. **Budget exhausted** bounds that loop. Set limits on calls, elapsed time, or spend in application code. Reaching a limit should produce an honest statement about confirmed facts and unfinished work.
 
-- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
-- [Durable human approval](https://learn.temporal.io/tutorials/ai/building-durable-ai-applications/human-in-the-loop/)
-- [Temporal retry policies](https://docs.temporal.io/encyclopedia/retry-policies)
-
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+Use this pattern when an assistant combines investigation with consequential actions. If the task is only to display an order's status, a fixed read-only workflow may be easier. The extra approval and recovery work earns its place when it protects a real boundary. This is a hypothetical support policy and illustrative workflow, not a connected refund service.

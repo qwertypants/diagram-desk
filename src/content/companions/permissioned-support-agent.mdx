@@ -1,0 +1,24 @@
+---
+title: "Who permits the refund?"
+description: "Policy, human consent, and a verified receipt protect different boundaries."
+diagram: "permissioned-support-agent"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+The model can propose a refund. Application policy decides whether the proposal is permitted, a human approves the specific consequential action, and the application checks what the external service actually did.
+
+For a hypothetical $40 refund on order 4821, approval should identify that order and amount. An approval for $40 does not authorize a later $80 proposal. A forbidden operation remains forbidden even if someone clicks an approval button.
+
+<DiagramEmbed slug="permissioned-support-agent" title="A support agent that earns permission" heading="Find permission before the effect" cue="Trace refund needs consent to Human approves?, then Execute with key. Compare its receipt and timeout branches before following Report outcome." companion={true} />
+
+**Execute with key** uses a stable operation identifier so a supported retry can refer to the same logical refund. A timeout is an unknown outcome: the provider may have applied the refund before the reply was lost. **Reconcile outcome** looks up the original operation before **Check receipt**.
+
+Success requires a receipt matching the approved order, amount, and outcome. **More work** can return to another proposal, but **Budget exhausted** limits investigation. If the outcome stays uncertain, the application must preserve and report that uncertainty; this chart does not show every intervention path.
+
+Read-only work can take the policy's allowed branch. The human-consent branch exists for this example's refund policy, not as a requirement for every tool call.
+
+## Sources
+
+- [OWASP: Excessive agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) covers authorization outside the model.
+- [Stripe: Idempotent requests](https://docs.stripe.com/api/idempotent_requests) documents one provider's retry contract.

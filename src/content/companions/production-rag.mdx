@@ -1,0 +1,23 @@
+---
+title: "Why RAG has two pipelines"
+description: "Prepare searchable evidence first, then select context for a particular question."
+diagram: "production-rag"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Retrieval-augmented generation, or RAG, connects document preparation to answering a question. Both paths must work: a model cannot use a new policy that never reached the search index, and a well-maintained index cannot help if retrieval selects the wrong passage.
+
+Consider an employee asking whether a conference hotel can exceed the usual expense limit. The handbook may contain a general limit, an exception, and an archived rule. Matching the word “hotel” does not establish which rule applies.
+
+<DiagramEmbed slug="production-rag" title="Production RAG System" heading="Follow preparation, then the question" cue="Start with Documents along the bottom. Then trace User to Embed query and back through Retrieve, Rerank, and Build prompt." companion={true} />
+
+**Chunk** divides documents into selectable passages. **Embed + index** makes them searchable in **Vector store**. The request path retrieves candidates and reranks them before **Build prompt** combines the chosen text with **Original query**. That separate query input preserves what the employee actually asked.
+
+The main boundary is between finding evidence and using it correctly. If the conference exception is missing, fix ingestion or retrieval. If it arrives but the answer omits its approval condition, investigate generation and **Validate**. The dashed **Traces** connections help distinguish those cases.
+
+The chart leaves permission filtering and index freshness policies implicit. Its boxes do not guarantee either. A faithful answer based on an obsolete document is still obsolete advice.
+
+## Source
+
+- [Anthropic: Contextual retrieval](https://www.anthropic.com/engineering/contextual-retrieval) describes passage context, retrieval, and reranking.

@@ -1,0 +1,25 @@
+---
+title: "What do parallel researchers hand back?"
+description: "Owned questions and inspectable evidence make parallel research useful."
+diagram: "coordinated-research"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Parallel researchers should return evidence that another reader can inspect, including source locations, conditions, and uncertainty. A final conclusion without those details is difficult to combine or challenge.
+
+Suppose a team is considering a search-service migration. One worker checks required features in official documentation. Another investigates limitations and recovery requirements. These scopes can proceed independently, but both must refer to the same product versions and decision criteria.
+
+<DiagramEmbed slug="coordinated-research" title="Research agents with owned work" heading="Trace findings into one answer" cue="Follow the two owned scopes to Evidence + sources. Then compare sufficient, gap remains, and limit: report gap around coverage review." companion={true} />
+
+**Bounded work plan** defines the assignments. **Evidence + sources** preserves what workers found. **Check coverage** asks whether those findings address the original question; the number of sources alone cannot answer that.
+
+A documented backup feature and a documented restore restriction may both be true. **Synthesize answer** should retain the condition rather than selecting the more confident worker. It has one owner responsible for the resulting claims.
+
+A **worker failure** reaches **Retry or report gap**. If budget or time prevents another attempt, the result should explicitly say that part of the investigation is incomplete. Missing counterevidence is not evidence that no risk exists.
+
+The design is useful for broad, divisible research. A simple lookup or a tightly dependent chain of questions may work better with one researcher.
+
+## Source
+
+- [Anthropic: Multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system) discusses scoped delegation, coordination costs, and evidence-based synthesis.

@@ -14,49 +14,42 @@ related: ["evidence-grounded-rag", "ai-evaluation"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-Retrieval-augmented generation works only if the document pipeline and request pipeline agree on freshness, access, and relevance.
+A retrieval-augmented generation system, usually shortened to RAG, answers with documents selected at request time. Its reliability depends on two connected processes: making useful passages searchable, then choosing the right passages for one question. A fluent answer cannot compensate for a missing policy or an obsolete index.
 
-## The problem
+Imagine an employee asking an internal assistant, “Can I expense a hotel above the usual limit for a conference?” The company has a travel handbook, regional exceptions, and an older policy that still appears in archived files. The assistant needs the applicable exception and its conditions. A passage mentioning hotels is only the beginning.
 
-A model needs up-to-date documents that cannot all fit in its context window.
+## Prepare something worth retrieving
 
-## Read the architecture
+The bottom row begins at **Documents**, then **Parse + clean**, **Chunk**, and **Embed + index**. Parsing extracts readable text; cleaning removes artifacts such as repeated page furniture. Chunking divides documents into passages that can be selected individually. An embedding is a numerical representation used to search for passages with related meaning.
 
-Read ingestion first, then trace an authorized query through retrieval, prompt construction, and response checks.
+In our example, a chunk containing “Exceptions require manager approval” needs enough surrounding context to identify which expenses and policy version it concerns. Cutting it away from its section heading makes the text less useful even if every word survives. During preparation, retain document identifiers, section context, and source locations so selected text can lead back to its origin.
 
-<DiagramEmbed slug="production-rag" title={'Production RAG System'} />
+**Embed + index** writes into **Vector store**, joining preparation to the request path. Updating the handbook in a file system does not automatically update that store. Decide how changes, deletions, and superseded versions reach the index. The chart shows the connection, not a freshness guarantee or a complete access-control design.
 
-### Walk through it
+Read the preparation row first. Then start at **User**, follow the top row to **Embed query**, and return along the middle row toward **LLM**. Notice the separate **Original query** input to **Build prompt**.
 
-#### 1. Prepare documents
+<DiagramEmbed slug="production-rag" title="Production RAG System" heading="Connect the corpus to one question" cue="Documents feeds Vector store through preparation. The query selects passages; Original query stays available when Build prompt assembles the model input." />
 
-Documents are parsed, cleaned, chunked, embedded, and indexed into the vector store.
+## Select context for this employee
 
-#### 2. Retrieve for a query
+The request crosses **App** and **Auth + limit** before reaching **Orchestrator**, the application component that coordinates retrieval and generation. Authentication establishes who is asking; rate limits bound request volume. The application also needs a way to restrict documents to the caller's permissions. That enforcement is not separately detailed here, so do not interpret the chart's auth box as proof that every retrieved passage is authorized.
 
-The app authenticates and rate-limits the request. The orchestrator embeds the query, retrieves candidates, and reranks or filters them.
+**Embed query** represents the employee's question for vector search. **Retrieve** collects candidates from **Vector store**. **Rerank** then reorders or filters those candidates for this particular question. Retrieval might find both the ordinary hotel limit and a conference exception; reranking should help the relevant exception reach the final context.
 
-#### 3. Build and check
+Reranking adds another computation. Its value depends on whether better passage selection improves the answers enough to justify the delay and cost. Anthropic's [contextual retrieval discussion](https://www.anthropic.com/engineering/contextual-retrieval) explains chunk context, semantic retrieval, and reranking. Its reported gains belong to its experiments; they are not measurements of this illustrative system.
 
-The prompt builder receives the original query and selected passages. The model response is validated before returning through the API. Traces cover orchestration, retrieval, and model calls.
+**Build prompt** combines selected passages with **Original query**. This extra input matters: a passage about conference expenses does not carry the employee's actual question. Without the original request, the model might summarize hotel policy rather than answer whether the exception applies.
 
-## Design decisions
+## A plausible passage can still produce a wrong answer
 
-- Indexing and serving have different latency and freshness requirements.
-- Reranking can improve context selection at an additional latency and compute cost.
+Suppose retrieval selects an archived policy allowing a higher limit without approval. The **LLM** may follow that text faithfully and still give the employee obsolete advice. **Validate** cannot recover the current exception if it never arrived. In this example, validation should check whether the answer preserves the approval requirement and identifies which policy supports it; stale-source detection needs document version and freshness information too.
 
-## Failure modes
+A different failure occurs when the right passage arrives but the model drops “with prior manager approval.” Now retrieval succeeded and answer generation failed. Changing chunk size to fix that mistake could waste effort. The dashed **Traces** connections help preserve which passages retrieval returned, which reached the prompt, and what the model answered. Protect trace contents according to the same sensitivity as the underlying documents.
 
-- Relevant-looking documents may be stale or unauthorized.
-- Response validation cannot repair missing evidence.
+Create separate evaluation examples for these boundaries. For the hotel question, check that the current exception is retrieved, survives selection, and appears with its conditions in the answer. Add a question the documents cannot answer and verify that the system explains the gap. A high overall answer score can hide a specific retrieval weakness.
 
-## Key takeaways
+## When this pipeline is worth operating
 
-- Evaluate retrieval quality separately from answer quality.
+RAG is useful when questions range across a corpus that changes or is too large to supply whole. If the assistant only answers from one short handbook, directly supplying that handbook may be simpler. If an expense decision needs live account balances or formal approval, document retrieval alone cannot perform that transaction.
 
-## Further reading
-
-- [Contextual retrieval](https://www.anthropic.com/engineering/contextual-retrieval)
-- [Demystifying evaluations for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+The operational question is whether the right, permitted, current evidence reaches the model. Start there before adding a more elaborate generator. This chart and hotel scenario illustrate design responsibilities; they do not implement a production expense service.

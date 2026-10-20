@@ -1,0 +1,24 @@
+---
+title: "When does a passage count as evidence?"
+description: "Permission, relevance, and support for a claim require separate checks."
+diagram: "evidence-grounded-rag"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A passage counts as usable evidence when the user may access it and it supports the answer being requested. Similarity alone establishes neither condition.
+
+Imagine a support engineer asking whether a connector exports comments. A customer-specific contract might contain the answer, but belong to another tenant, a separate customer organization. A permitted public guide might mention export without saying anything about comments. The first passage is unauthorized; the second is insufficient.
+
+<DiagramEmbed slug="evidence-grounded-rag" title="Answer only from usable evidence" heading="Find the two evidence boundaries" cue="Follow allowed scope from Authorize query. Then compare Enough evidence? with the later Grounding checks: they answer different questions." companion={true} />
+
+**Hybrid retrieval** combines textual and semantic search. **Rerank evidence** selects useful candidates for the query. **Enough evidence?** asks whether those candidates can justify the requested answer. If a connector version is missing, **Ask or abstain** can request it or explain what the documents do not establish.
+
+**Cited answer** still needs **Grounding checks**. A real citation about support beginning in version 4 does not support a claim about every version. Check the conditions of each claim, not just whether its source exists.
+
+The permission boundary also depends on fresh access metadata. If a document's access changes but the index or cache does not, the retrieval path can use an obsolete permission decision. This chart identifies responsibilities without specifying a complete revocation or caching mechanism.
+
+## Sources
+
+- [Microsoft: Query-time access control](https://learn.microsoft.com/en-us/azure/search/search-query-access-control-rbac-enforcement) describes permission metadata and freshness limits.
+- [Anthropic: Contextual retrieval](https://www.anthropic.com/engineering/contextual-retrieval) explains hybrid search.

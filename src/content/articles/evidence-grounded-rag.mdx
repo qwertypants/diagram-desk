@@ -14,53 +14,52 @@ related: ["production-rag", "ai-evaluation"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-Retrieving a plausible passage is insufficient. The assistant must establish that it may use the passage and that it supports the claim.
+A retrieved passage becomes usable evidence only when the caller may access it and it supports the requested claim. Those are separate decisions. A private document can be highly relevant, and a permitted document can be too vague to justify an answer.
 
-## The problem
+Consider a software vendor whose internal assistant serves several customer organizations, or tenants. A support engineer asks, “Does the Atlas connector preserve comments during export for our customer?” The knowledge base contains a public feature guide, a customer-specific exception, and a newer release note. A confident answer requires the right product version and the customer's permitted documents.
 
-An internal assistant must answer product questions without leaking documents from another tenant.
+## Keep identity attached to the question
 
-## Read the architecture
+The lower input starts at **User + tenant** and crosses **Authorize query** before reaching **Hybrid retrieval**. The application's authenticated identity determines the allowed scope. A tenant name supplied in generated text is not sufficient authorization.
 
-Follow document access metadata through retrieval, sufficiency, citation, and grounding checks.
+An access-control list, or ACL, describes who may read a document. The index needs a reliable relationship between each passage, its source, and the permissions that apply to it. Microsoft's [query-time access-control documentation](https://learn.microsoft.com/en-us/azure/search/search-query-access-control-rbac-enforcement) describes permission metadata used to filter results and the freshness problems created by delayed permission updates. That implementation is a product-specific preview; the responsibility to keep content and permissions aligned applies to our example independently.
 
-<DiagramEmbed slug="evidence-grounded-rag" title={'Answer only from usable evidence'} />
+Imagine a contract exception belonging to another customer saying comment export is supported. It may be the most similar text in the index. It still must not reach this user's model context. Filtering the final answer after generation is too late to prevent the model from receiving protected material.
 
-### Walk through it
+Trace the document path across the top, then the authorized query across the middle. Pause at **Enough evidence?** before following either branch.
 
-#### 1. Index
+<DiagramEmbed slug="evidence-grounded-rag" title="Answer only from usable evidence" heading="Separate permission from support" cue="Authorize query supplies allowed scope. Enough evidence? decides whether the ranked passages support an answer; Grounding checks inspect the answer and sources afterward." />
 
-Parse and chunk approved documents. Build lexical and vector representations with document versions and access metadata.
+## Find exact names and related meaning
 
-#### 2. Retrieve within scope
+**Source documents** pass through **Parse + chunk** into **Hybrid index**. Hybrid means the search combines textual matching with semantic matching, which looks for related meaning. The chart's **text + vectors** label shows these two representations.
 
-Authorize the caller and query. Apply tenant and document permissions during retrieval. Combine lexical and semantic candidates, then rerank using the query.
+For the Atlas question, an exact connector name helps distinguish Atlas from similarly described connectors. Semantic search can help connect “preserve comments” with a document phrased as “include discussion threads.” Neither method establishes that an export guarantee exists. They produce candidates for examination.
 
-#### 3. Decide before answering
+**Hybrid retrieval** sends **query + hits** to **Rerank evidence**, which prioritizes candidates for the actual question. A passage describing import support may look relevant while answering the opposite direction. The reranking step should have the query available to make that distinction. Its ranking is a selection aid, not proof that the selected text entails the requested claim.
 
-Check whether selected evidence can support the requested answer. Generate citations from the selected passages, or ask for clarification and abstain.
+## Decide what an answer would require
 
-#### 4. Check grounding
+At **Enough evidence?**, our assistant needs evidence about comment export, the connector, and the applicable version. Suppose the only permitted guide says “Exports include document content,” with no mention of comments. That supports a statement about document content. It does not establish that comments are included or excluded.
 
-Verify that cited documents exist and that answer claims are supported. Evaluate retrieval failures separately from generation failures.
+The **no: explain gap** arrow reaches **Ask or abstain**. Asking for the connector version could resolve ambiguity. If the necessary guarantee is absent, the assistant should say it could not establish comment support from the available documentation. An answer can explain what is known while making that boundary explicit.
 
-## Design decisions
+For this scenario, a practical sufficiency rule could require a passage that addresses export comments for the identified version. This is an example policy, not a universal confidence threshold. Test it with known-supported, known-unsupported, version-ambiguous, and undocumented questions. A rule that always abstains avoids unsupported claims but fails users whose questions the documents answer directly.
 
-- Hybrid retrieval balances exact identifiers and semantic similarity.
-- The sufficiency rule is task-specific and must be evaluated.
+## Citations need to support individual claims
 
-## Failure modes
+When evidence is sufficient, **Cited answer** receives **query + text**. **Grounding checks** then inspects **answer + sources**. Grounding means the answer's factual claims remain supported by the supplied evidence.
 
-- A high similarity score is not proof of factual support.
-- Stale access metadata can leak a revoked document.
+Suppose a release note says comment export became available in version 4. The answer “Atlas exports comments in every version” can cite a real release note and still overstate it. A useful check compares the version condition in the passage with the scope of the claim. Merely confirming that the citation URL exists would miss the error.
 
-## Key takeaways
+Document versions matter after answering too. Preserve the passage identifier and version used for a claim so later review can reconstruct what the assistant saw. If permissions are revoked, a cached result must not bypass the new access decision. Cache design and revocation handling are implementation responsibilities beyond this diagram's arrows.
 
-- A citation is useful only if it supports the claim.
+## Use the stricter path where uncertainty matters
+
+This architecture is useful when an unsupported answer or disclosure is consequential, especially across customer boundaries. For a small public FAQ, simpler retrieval with clear source links may be enough. The stricter design adds permission handling, evidence decisions, and evaluation work; those costs should serve a real information boundary.
+
+A useful outcome for the Atlas question is a bounded, sourced answer about the applicable version, or a precise account of the missing evidence. The example and chart illustrate those responsibilities rather than a deployed connector assistant.
 
 ## Further reading
 
-- [Contextual retrieval](https://www.anthropic.com/engineering/contextual-retrieval)
-- [Demystifying evaluations for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+- [Anthropic: Contextual retrieval](https://www.anthropic.com/engineering/contextual-retrieval) explains the complementary roles of lexical and semantic search.

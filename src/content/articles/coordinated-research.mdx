@@ -14,49 +14,50 @@ related: ["workflow-patterns", "trace-driven-evaluation"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-Parallel research helps when independent questions have clear owners and the final synthesis can retain their evidence and uncertainty.
+Parallel research is useful when the question has independent lines of investigation and one owner can assemble their evidence into an answer. Creating more agents does not by itself improve research. The work must have boundaries, and the synthesis must retain disagreements and gaps.
 
-## The problem
+Imagine a team evaluating whether to move an application from a hosted search service to a self-managed alternative. They need evidence about required features and operational risks before a meeting. One researcher can inspect the candidate's official feature documentation while another looks for documented limitations and migration hazards. Neither needs to wait for the other's first search.
 
-A research request has independent lines of investigation that exceed one context window.
+## Divide questions people can recognize
 
-## Read the architecture
+**Research question** enters **Lead agent**. The lead checks **Budget + deadline** before producing a **Bounded work plan**. In our example, the plan should specify the application requirements, the products and versions being compared, permitted sources, and when findings are due.
 
-Read the assignments, evidence returns, and coverage review as separate responsibilities.
+Give **Source researcher** ownership of feature evidence: which required operations are documented, under what configuration, and with which limitations. Give **Counterevidence** ownership of challenges: unsupported features, recovery requirements, and cases where the proposed migration might fail. Asking both to “research the search service” would invite duplicated work and leave the actual decision criteria unclear.
 
-<DiagramEmbed slug="coordinated-research" title={'Research agents with owned work'} />
+An assignment needs an expected return format. For each finding, ask for the claim, a source location, relevant conditions, and unresolved uncertainty. A compressed conclusion such as “the service supports backups” loses whether those backups include configuration or only indexed data. That distinction may determine whether the migration is acceptable.
 
-### Walk through it
+Follow the top row into the two worker scopes. Then trace their cited findings into the shared evidence area and across coverage review to synthesis.
 
-#### 1. Define owned work
+<DiagramEmbed slug="coordinated-research" title="Research agents with owned work" heading="Follow ownership into evidence" cue="Source researcher and Counterevidence return cited findings. Check coverage decides what is sufficient; Budget + deadline limits further assignments." />
 
-The lead decomposes the research question into bounded, independent assignments with required evidence and a shared deadline.
+## Preserve evidence between contexts
 
-#### 2. Gather independent findings
+Both workers return to **Evidence + sources**. This is the durable handoff in the diagram: the synthesizer should receive enough information to inspect why a finding was made. It should not have to trust a worker's confidence or repeat the entire investigation.
 
-A source researcher and counterevidence researcher work in separate contexts. Both return findings with source references, not only conclusions.
+Suppose the source researcher finds that snapshots exist. The counterevidence researcher finds that restoring them requires a compatible software version. Those findings can both be true. A useful synthesis says the backup capability exists and carries a compatibility condition. Flattening the second finding into “backups unsupported” would be as misleading as dropping it.
 
-#### 3. Review and synthesize
+Anthropic's [multi-agent research account](https://www.anthropic.com/engineering/multi-agent-research-system) describes explicit task boundaries and evidence returned by parallel workers. It also discusses coordination cost and tasks with too many dependencies. Our two-role arrangement illustrates those responsibilities; it is not a reproduction of that production system or its reported results.
 
-Coverage review combines findings and identifies gaps. Additional work needs remaining budget. A failed worker triggers a bounded retry or an explicit limitation in the final answer.
+The chart's database-shaped evidence node does not prescribe a storage technology. A structured document can be enough for a small investigation. The important property is that evidence survives a worker's context and remains available to the owner of the final answer.
 
-## Design decisions
+## Check coverage against the original decision
 
-- Parallelize independent research rather than every reasoning step.
-- Keep one owner for the synthesized answer.
+**Check coverage** receives merged evidence. It should compare findings with the question, rather than counting links. In the migration example, having many feature pages does not cover the recovery requirement. The review should identify that specific missing topic.
 
-## Failure modes
+The **gap remains** arrow returns to **Lead agent**. The lead checks the remaining budget before issuing more work. An assignment might now ask for the documented restore sequence and its version constraints. Because it depends on the earlier findings, this follow-up belongs after them; it was not independent work that should have run at the start.
 
-- Overlapping assignments waste tokens and repeat evidence.
-- A synthesis can lose uncertainty or contradictory findings.
+When coverage is **sufficient**, **Synthesize answer** owns the final account. Sufficient does not mean every uncertainty disappeared. For an exploratory decision, the right answer may recommend a small migration trial and explain what it must establish. For a factual question, sufficiency may require a much narrower set of sources.
 
-## Key takeaways
+## A failed worker leaves a gap
 
-- More workers help only when work can be usefully divided.
+**Counterevidence** has a **worker failure** path to **Retry or report gap**, which returns an **explicit gap** to the evidence area. Suppose its browser session fails before it checks restore limitations. The final answer must not imply that an independent risk review found none.
 
-## Further reading
+A retry is useful when the failure is temporary and enough time remains. If the meeting is imminent, an honest limitation may be more useful than another investigation that cannot finish. The **limit: report gap** path from **Budget + deadline** to synthesis makes stopping part of the design.
 
-- [Multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)
-- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+Measure the result by whether the answer covers the requested criteria, supports its claims, and makes open questions visible. Multiple workers agreeing is weak evidence when they repeated the same search or relied on the same unverified summary.
 
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+## Choose parallelism where it helps
+
+This arrangement fits broad questions with separable evidence. A single researcher is often enough to answer where one documented setting lives. A task where every next action depends on the previous result may gain little from simultaneous workers.
+
+Before adding agents, write the two assignments you would give them and describe how their findings combine. If those boundaries remain vague, improve the question first. The search-migration scenario here is hypothetical; the diagram describes coordination responsibilities, not a benchmark or finished research service.
