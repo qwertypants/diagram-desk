@@ -17,9 +17,11 @@ database, API, credentials, or CMS.
 
 The workflow installs Node 24 dependencies from the lockfile, audits packages,
 checks content and types, and builds and verifies both root and Pages output.
-It then browser-checks the prefixed output at desktop and phone widths, including
-every embedded reader and legacy redirect. Only the verified Pages output is
-uploaded. Pull requests do not upload or deploy.
+The final content checks expect 17 articles, 17 companion pages, 17 standalone
+readers, and all 36 legacy redirect routes. It then browser-checks the prefixed
+output at desktop and phone widths, including companion navigation, canvas-only
+reader navigation, every embedded reader, and legacy redirects. Only the
+verified Pages output is uploaded. Pull requests do not upload or deploy.
 The deploy job alone receives Pages write and OIDC permissions. No personal
 access token or repository secret is required.
 
@@ -54,15 +56,20 @@ shared `withBase` helper. Astro handles its bundled styles under the same base.
 ## Verify a deployment
 
 - Browse the home, articles, topics, and an individual topic page.
-- Open an article, use its embedded diagram controls, then open the full reader.
+- Open an article, follow its companion link, and return to the full article.
+  From the companion, open the canvas-only reader and exercise its controls.
 - Follow a legacy `/diagrams/<UUID>/` or `/diagrams/<UUID>/edit/` link and
   confirm it reaches the matching article. These redirects are static HTML.
 - Repeat at phone width; confirm the article fits the screen and reader controls
   remain usable. Inspect browser console and network failures.
 
-The static checker verifies the 17 articles and readers, 36 legacy routes, source
-identity metadata, and generated internal link/asset/iframe/redirect targets.
-It does not check the availability of external reference sites.
+The final static checker verifies 17 articles, 17 companions, 17 readers, 36
+legacy routes, source identity metadata, external-link decoration, and generated
+internal link/asset/iframe/redirect targets. It does not check the availability
+of external reference sites. Run `npm test` for the complete local check and
+build. With the prefixed preview running as above, run
+`npm run test:browser -- http://localhost:4321/diagram-desk/` for navigation and
+interaction coverage. For a root preview, use `http://localhost:4321/`.
 
 ## Troubleshooting and rollback
 

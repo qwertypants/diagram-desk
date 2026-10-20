@@ -29,7 +29,7 @@ Run `npm test` for the complete automated check. See the [architecture guide](do
 
 ## Read and author
 
-Browse by article or topic. Each lesson explains the engineering problem, walks through its diagram, and records decisions and failure modes. The reader is embedded in the article, with a link to open it at full size.
+Browse by article or topic. Each lesson explains the engineering problem, walks through its diagram, and records decisions and failure modes. The reader is embedded in the article. Its full-view link opens a short standalone companion with the interactive diagram, a link back to the full lesson, and a canvas-only view.
 
 ### Create a lesson with your coding agent
 
@@ -59,7 +59,8 @@ To add an article:
 1. Add an Archify JSON definition at `catalog/diagrams/<slug>.json` and a matching entry in `catalog/index.json`. Use an existing definition as a starting point and keep its native diagram type consistent with `diagram_type`.
 2. Add `src/content/articles/<slug>.mdx` with the fields validated by `src/content.config.ts`: `title`, `description`, `pubDate`, `topic`, `tags`, `difficulty`, `objectives`, `takeaways`, `diagram`, and `legacyIds`. `related` is optional. Set `diagram` to the catalog slug.
 3. Import `DiagramEmbed` from `../../components/DiagramEmbed.astro` in the MDX body. After the problem and a short reading cue, embed the primary diagram with `<DiagramEmbed slug="<slug>" title="<article title>" />`. You can embed another existing catalog diagram later in the article when a second view helps explain the concept. Preserve source references where relevant.
-4. Run `npm run check` and `npm run build`, then inspect the article and reader at desktop and mobile widths.
+4. Add `src/content/companions/<slug>.mdx` with `title`, `description`, and `diagram` frontmatter. Write a short standalone explanation and import `DiagramEmbed` with `companion={true}`, a topic-specific `heading`, and a reading `cue`. See [Writing lessons and diagram companions](docs/writing-lessons.md).
+5. Run `npm test`, then inspect the article, companion, and reader at desktop and mobile widths.
 
 The old in-browser **New diagram**, edit, save, and delete workflow has been removed. Edit MDX and JSON in the repository and commit them together. Existing `/diagrams/<UUID>/` and `/diagrams/<UUID>/edit/` links lead to the corresponding article; there is no editing API behind the latter URL.
 
@@ -69,10 +70,10 @@ The old in-browser **New diagram**, edit, save, and delete workflow has been rem
 | --- | --- |
 | `npm run dev` | Build Archify readers and start Astro development server |
 | `npm run check` | Check migration coverage and run `astro check` |
-| `npm run check:migration` | Check the 17 article and 18 legacy ID mapping |
+| `npm run check:migration` | Check article/companion relationships and all 18 legacy ID mappings |
 | `npm run build` | Build readers and static Astro site into `dist/` |
 | `npm run preview` | Serve an existing static build locally |
-| `npm test` | Check content and types, build the site, and verify static article, reader, and legacy routes |
+| `npm test` | Check content and types, build the site, and verify static article, companion, reader, and legacy routes |
 | `npm run test:browser -- <site-url>/` | Check navigation, all readers, zoom, dark mode, and legacy links at desktop and phone widths against a running site |
 
 `npm run check:catalog` is a separate native diagram acceptance tool. It requires local Chrome or Chromium and writes evidence under `.archify/`; it is useful when changing a catalog diagram, but it is not part of the standard CI check.
