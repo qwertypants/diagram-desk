@@ -1,0 +1,8 @@
+---
+import { withBase } from '../../lib/urls';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+const articles = await getCollection('articles');
+const topics: string[] = [...new Set<string>(articles.map(item => String(item.data.topic)))].sort();
+---
+<BaseLayout title="Topics" description="Browse visual engineering guides by topic." canonical="/topics/"><section class="page-intro wrap"><div class="eyebrow">A MAP OF THE LIBRARY</div><h1>Choose a path.<br /><em>Follow the questions.</em></h1><p>Browse the subjects behind the systems. Every topic brings together practical decisions, failure modes, and architecture you can explore.</p></section><section class="topic-directory wrap">{topics.map((topic,index) => { const count = articles.filter(article => article.data.topic === topic).length; return <a href={withBase(`/topics/${topic.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}/`)} class="topic-row"><span class="topic-index">{String(index+1).padStart(2,'0')}</span><span class="topic-name">{topic}</span><span class="topic-count">{count} {count===1?'guide':'guides'}</span><span class="topic-arrow" aria-hidden="true">↗</span></a> })}</section></BaseLayout>

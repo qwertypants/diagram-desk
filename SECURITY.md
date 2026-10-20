@@ -2,56 +2,23 @@
 
 ## Supported versions
 
-Fixes land on the latest release.
-
-| Version | Supported |
-| --- | --- |
-| latest on the default branch | Yes |
-| older commits and tags | No |
+Security fixes target the latest release on the default branch. Older commits and tags are not supported.
 
 ## Reporting a vulnerability
 
-**Please do not open a public issue for a security problem.**
+Please do not open a public issue for a security problem. Use [GitHub's private vulnerability reporting](https://github.com/qwertypants/diagram-desk/security/advisories/new). If unavailable, use a private contact method on the repository profile. If none is listed, request a private reporting channel in an issue without posting vulnerability details.
 
-Open a private vulnerability report via GitHub's
-"Report a vulnerability" button on the Security tab of the repository. If that
-is not available to you, use a private contact method listed on the repository's
-GitHub profile. If none is listed, open an issue asking for a private reporting
-channel without including vulnerability details.
-
-Please include:
-
-- what the problem is and what an attacker gains
-- the exact steps or input needed to reproduce it
-- the version, commit, or branch you tested
-
-You can expect an acknowledgement within a few days. Once a fix exists, a patch
-will be published and the report credited in the release notes unless you would
-rather stay anonymous.
+Include the impact, reproduction steps or input, and the version or commit tested. We credit reporters in release notes unless they prefer otherwise. This is a community-maintained project with no guaranteed response time.
 
 ## Threat model
 
-Diagram Desk is a **single-user local tool**. Knowing this makes most of the
-design decisions obvious, and it is worth stating plainly:
+Diagram Desk builds a static public site from version controlled MDX articles and Archify JSON. The deployed site has no database, authentication, write API, or user-specific data. Its main trust boundary is the build: contributors and maintainers review source content, diagrams, scripts, and dependencies before publishing generated HTML and JavaScript.
 
-- The server binds `127.0.0.1` and has no authentication. Anyone who can reach
-  the port can read and delete every saved diagram. This is by design — the port
-  is loopback-only.
-- **Do not expose the port directly to a network.** The server sends no CORS
-  headers and rejects writes whose `content-type` is not `application/json`,
-  which blocks the simple-request shapes a hostile page can send. That is a
-  defense in depth, not an access control. If you need remote access, put an
-  authenticating reverse proxy in front of it.
-- Diagrams are rendered Mermaid source. Mermaid runs in the browser; a
-  Content-Security-Policy is set to block external origins. Do not relax it.
-- Deletion is permanent and there is no undo. Back up `data/diagrams.sqlite` if
-  a diagram matters to you.
-- The SQLite file holds whatever you save. Treat it as private data.
+- Treat MDX, catalog JSON, and external references as public content. Do not commit secrets or private records.
+- Archify readers contain generated HTML and JavaScript. Article embeds use an iframe sandbox with scripts and downloads allowed, without same-origin access. Review diagram changes and dependency updates, then test the built output before publishing.
+- GitHub Pages serves public static files. This repository does not configure custom HTTP security response headers on Pages. For control over those headers, choose a host or proxy that supports them. The former application's server headers do not apply to this static deployment.
+- Article styling requests fonts from Google Fonts. External reference links also contact third-party sites when followed. No account, write API, or analytics service is configured by this application.
+- External reference links may lead away from the site. Readers should verify those destinations independently.
+- Build and preview commands run local tools and are intended for trusted repository contributions. Do not execute unreviewed pull request code with privileged credentials.
 
-## What is out of scope
-
-- Running the server on a shared or hostile machine — see the threat model.
-- Missing authentication on a loopback-only local server.
-- Denial of service through local access.
-- Vulnerabilities in Mermaid itself; report those
-  [upstream](https://github.com/mermaid-js/mermaid/security).
+Vulnerabilities in vendored Archify or other dependencies should be reported privately here and, when appropriate, upstream.

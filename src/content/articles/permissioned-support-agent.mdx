@@ -1,0 +1,65 @@
+---
+title: "A support agent that earns permission"
+description: "Authorization belongs before execution, and a timeout requires reconciliation before retrying."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["agents", "authorization", "idempotency"]
+difficulty: "advanced"
+objectives: ["Locate authorization before a side effect.", "Explain why a timeout is an unknown outcome."]
+takeaways: ["The model suggests; the application authorizes and executes.", "Budgets and terminal states bound the loop."]
+diagram: "permissioned-support-agent"
+legacyIds: ["a1c00000-0000-4000-8000-000000000012"]
+related: ["agent-tool-loop", "durable-recovery"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A refund is a real side effect. The assistant may propose it, but approval, execution, and verification need separate owners.
+
+## The problem
+
+A support assistant may read an order, but issuing a refund needs scoped human permission.
+
+## Read the architecture
+
+Find the authorization gate before the refund and the receipt or reconciliation path after it.
+
+<DiagramEmbed slug="permissioned-support-agent" title={'A support agent that earns permission'} />
+
+### Walk through it
+
+#### 1. Propose and authorize
+
+Load order context. Treat the model’s proposed tool call as data. Check the operation, arguments, caller scope, and budget in application code.
+
+#### 2. Approve and execute
+
+Read-only permitted work can proceed. A refund requires approval for that specific order and amount. Denied or forbidden requests stop.
+
+#### 3. Verify or reconcile
+
+Execute the refund with an idempotency key. Check the receipt. After a timeout, look up the original operation before attempting another effect.
+
+## Design decisions
+
+- Bind approval to the exact operation and arguments.
+- Use an external receipt to substantiate success.
+
+## Failure modes
+
+- Prompt injection can propose an unauthorized tool call.
+- An expired approval must not authorize changed arguments.
+- An uncertain refund must not be retried with a fresh key.
+
+## Key takeaways
+
+- The model suggests; the application authorizes and executes.
+- Budgets and terminal states bound the loop.
+
+## Further reading
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+- [Durable human approval](https://learn.temporal.io/tutorials/ai/building-durable-ai-applications/human-in-the-loop/)
+- [Temporal retry policies](https://docs.temporal.io/encyclopedia/retry-policies)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

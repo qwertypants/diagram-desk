@@ -1,6 +1,8 @@
 # Dependencies and build output
 node_modules/
 dist/
+.astro/
+public/diagrams/
 
 # Local database and any test artifacts
 data/
@@ -16,6 +18,10 @@ npm-debug.log*
 # Worktrees and local agent/tool state
 .worktrees/
 .superpowers/
+# Local planning notes and task checklists
+/tasks/
+/docs/plans/
+/docs/superpowers/
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
 

@@ -1,11 +1,11 @@
 ---
 name: diagram-from-discussion
-description: Use when someone wants to talk through an issue and have a new diagram created and saved in the text2diagram app.
+description: Use when someone wants to discuss an issue and author a new Diagram Desk lesson with a native Archify diagram.
 ---
 
 # Diagram from Discussion
 
-Turn the user's description of an issue into a native Archify diagram in the running text2diagram app. Finish with a verified link to the saved diagram.
+Turn the user's description of an issue into a native Archify diagram and MDX lesson in this static repository. The former in-browser editor and save API are retired. Follow the repository source workflow in [CONTRIBUTING.md](../../../CONTRIBUTING.md).
 
 ## Interview the issue
 
@@ -15,21 +15,15 @@ Do not fill gaps with invented causes, steps, or relationships. Ask when an unkn
 
 Once the model is clear, give a short plain-language summary of what the diagram will show. Correct it if the user points out a mismatch.
 
-## Draft and review in the app
+## Draft and review the source
 
-Use the user's existing browser session and the app's visible interface. Do not create or save the diagram through an API, database, or direct storage edit. Preserve any unrelated unsaved editor work; if the app warns that navigation would discard it, cancel and ask the user how to proceed.
+1. Read an existing `catalog/diagrams/<slug>.json`, its entry in `catalog/index.json`, and its MDX article as examples. Use the vendored Archify schema and CLI documentation for the chosen native diagram type. Keep labels, relationships, and direction faithful to the discussion.
+2. Add the native JSON, catalog entry, and article together. Follow the required frontmatter and embed format in `README.md`. New lessons do not need invented legacy UUIDs; preserve existing legacy mappings.
+3. Run `npm test`. Start or rebuild the local preview, open the actual article and reader, and inspect the rendered diagram. Correct errors before requesting review.
+4. Show the rendered draft and ask whether it represents the issue correctly. Apply requested changes and preview again. Get approval before committing or publishing the new lesson.
 
-1. Open **New diagram** in the app.
-2. Choose the matching diagram type and enter a concise title and native Archify JSON grounded in the conversation. Use the installed Archify skill and the app's starter for the chosen type. Keep labels clear and relationships/direction faithful to what the user said.
-   Add optional learning notes as JSON when they help explain decisions, failure modes, or sources. The selected type must match `diagram_type`; source requires a native `meta.title` and portable `meta.output`.
-3. Wait for the app's preview to render successfully. If Archify fails, fix the source in the editor and wait for a successful preview. Never treat source text alone as proof that the diagram works.
-4. Show the rendered draft to the user and ask whether it represents the issue correctly before saving. Make requested changes, preview again, and get approval for the revised draft.
-5. Save only after the user approves the rendered draft.
-
-If the app or its browser session is unavailable, stop before saving and tell the user what is unavailable. Do not claim completion or invent a link. If saving fails, report the app's visible error and keep the draft available where possible.
+Do not call a retired API or write a SQLite database. Preserve unrelated source work. If the preview cannot run, report that limit and leave a reviewable source draft; do not invent a live link.
 
 ## Verify and return the link
 
-After saving, confirm the app has navigated to the new diagram's viewer and that the saved title and rendered diagram are visible. Capture the actual URL from the browser address bar/current page. The app's saved diagram route is `/diagrams/<id>`; do not guess an ID or origin.
-
-Return the exact URL as a clickable Markdown link and identify the diagram by title. Only provide a link after the saved viewer has loaded successfully. If the app is local, the link is reachable only where that app is running; say so briefly when relevant.
+Confirm the article title, rendered reader, and reader controls in the browser. Return the verified article URL and, when useful, its full reader URL. URLs must include the configured hosting base. Identify whether the link is a local preview or a published page. Do not claim publication until a deployment succeeds and its public URL has been checked.

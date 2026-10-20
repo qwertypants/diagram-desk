@@ -1,0 +1,62 @@
+---
+title: "AI System with evaluation"
+description: "Production observations become evaluation cases before proposed changes return to production."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["evaluation", "observability", "release decisions"]
+difficulty: "intermediate"
+objectives: ["Separate live serving from offline grading.", "Combine deterministic, model, and human evidence."]
+takeaways: ["A release decision needs task-specific acceptance criteria."]
+diagram: "ai-evaluation"
+legacyIds: ["1b3b1152-e9e1-4c29-887b-82b32debf9bf", "f5e29a3e-e996-42bd-a38f-ae4294d89b19"]
+related: ["trace-driven-evaluation", "effective-agent-principles"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A good evaluation loop begins with a real user task, follows the evidence of a failure, and tests a proposed change before release.
+
+## The problem
+
+A prompt or model update can improve average scores while breaking important user tasks.
+
+## Read the architecture
+
+Follow the production response into sampled cases, then compare each grading path before the release decision.
+
+<DiagramEmbed slug="ai-evaluation" title={'AI System with evaluation'} />
+
+### Walk through it
+
+#### 1. Observe
+
+Production traffic passes through the AI application and model. Responses and request context are recorded under an explicit data policy.
+
+#### 2. Grade
+
+Sampled production cases and a golden dataset feed deterministic checks, an LLM judge, and human review. Their results reach a dashboard.
+
+#### 3. Decide
+
+A detected regression sends prompt, model, or retrieval changes back through evaluation. A passing decision permits deployment.
+
+## Design decisions
+
+- Use deterministic checks for properties that have a clear exact answer.
+- Calibrate model judges against human review and inspect individual failures.
+
+## Failure modes
+
+- An aggregate score can conceal a severe regression in a small segment.
+- Production logs can contain sensitive data; sampling requires redaction and retention policies.
+
+## Key takeaways
+
+- A release decision needs task-specific acceptance criteria.
+
+## Further reading
+
+- [Demystifying evaluations for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+- [OpenTelemetry GenAI conventions](https://github.com/open-telemetry/semantic-conventions-genai)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

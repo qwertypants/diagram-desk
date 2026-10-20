@@ -16,7 +16,7 @@ body:
     attributes:
       label: What happened
       description: What did you see? Include the exact wording of any error.
-      placeholder: Clicking Save produced an error banner reading "..."
+      placeholder: The diagram on /articles/ai-evaluation/ does not respond to zoom.
     validations:
       required: true
 
@@ -24,7 +24,7 @@ body:
     id: expected
     attributes:
       label: What you expected instead
-      placeholder: Save returned me to the diagram view with the new title.
+      placeholder: The diagram zooms when I press the zoom-in control.
     validations:
       required: true
 
@@ -34,19 +34,18 @@ body:
       label: Steps to reproduce
       description: Starting from a fresh clone, what did you do?
       placeholder: |
-        1. npm start
-        2. Open /new
-        3. Paste the Mermaid source below
-        4. Click Save
+        1. Open the article URL
+        2. Scroll to the diagram
+        3. Press the zoom-in control
     validations:
       required: true
 
   - type: textarea
-    id: mermaid-source
+    id: diagram-source
     attributes:
-      label: Mermaid source
-      description: If the problem involves a diagram, paste the exact source that triggers it.
-      render: mermaid
+      label: Article URL, diagram slug, or Archify JSON
+      description: If the problem involves a diagram, include its URL or catalog slug and any changed JSON.
+      render: text
 
   - type: textarea
     id: console

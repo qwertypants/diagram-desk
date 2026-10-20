@@ -1,0 +1,62 @@
+---
+title: "Async AI processing"
+description: "A durable job record and worker-owned writes make asynchronous AI work observable."
+pubDate: "2026-10-19"
+topic: "Distributed systems"
+tags: ["jobs", "queues", "retries"]
+difficulty: "intermediate"
+objectives: ["Separate accepting a job from completing it.", "Trace retries to a bounded terminal outcome."]
+takeaways: ["Retries do not create exactly-once side effects."]
+diagram: "async-ai"
+legacyIds: ["394c9b3a-89c3-47da-b514-e70e328320cc"]
+related: ["durable-recovery", "offline-job-conflict"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A slow model call outlives the request that started it. A job record lets the caller observe progress while workers do the work.
+
+## The problem
+
+Long model calls must continue after the initial HTTP request ends.
+
+## Read the architecture
+
+Trace acceptance, worker execution, retries, and the status read as distinct paths.
+
+<DiagramEmbed slug="async-ai" title={'Async AI processing'} />
+
+### Walk through it
+
+#### 1. Accept
+
+The API records the job and enqueues work. A production design should close the dual-write gap with an outbox or equivalent mechanism.
+
+#### 2. Execute
+
+The queue distributes work to three workers. Each worker calls the AI service and owns persistence of its returned result and job status.
+
+#### 3. Recover and observe
+
+Failed work enters the retry queue. Retryable work returns to the job queue; exhausted work goes to the dead-letter queue. The status endpoint reads the job database.
+
+## Design decisions
+
+- Workers, rather than the external model provider, write application results.
+- A dead-letter queue retains work that needs investigation.
+
+## Failure modes
+
+- Delivery can repeat; writes need idempotency.
+- The original retry path illustrates one worker; the same policy applies to all three.
+
+## Key takeaways
+
+- Retries do not create exactly-once side effects.
+
+## Further reading
+
+- [Temporal retry policies](https://docs.temporal.io/encyclopedia/retry-policies)
+- [Transactional outbox pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

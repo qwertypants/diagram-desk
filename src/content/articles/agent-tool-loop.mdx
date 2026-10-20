@@ -1,0 +1,61 @@
+---
+title: "Agentic AI systems with tools"
+description: "The model proposes actions. The application owns execution and validates the result."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["agents", "tools", "authorization"]
+difficulty: "intermediate"
+objectives: ["Trace the tool loop back to the model.", "Identify where execution and response validation belong."]
+takeaways: ["Tool results are feedback, not a guarantee of correctness."]
+diagram: "agent-tool-loop"
+legacyIds: ["9c861823-1ce1-4588-a36f-580dc2edd252"]
+related: ["permissioned-support-agent", "plan-act-check"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+The useful boundary is where a proposed action becomes an actual tool call. The model can request one; application code decides whether it runs.
+
+## The problem
+
+A support assistant needs internal data and external tools without treating model output as executable authority.
+
+## Read the architecture
+
+Start at the request, follow one tool decision out and back, then locate the checks before the answer leaves the system.
+
+<DiagramEmbed slug="agent-tool-loop" title={'Agentic AI systems with tools'} />
+
+### Walk through it
+
+#### 1. Request and context
+
+The API hands the request to the orchestrator, which loads context before calling the model.
+
+#### 2. Tool routing
+
+A tool decision selects the database, retrieval, external API, or compute capability. Results return to the model for another decision.
+
+#### 3. Response and evidence
+
+A no-tool decision produces a response. Guardrails run before returning it; tracing observes the agent, model, and tools.
+
+## Design decisions
+
+- Keep tool execution in application code so tool arguments can be checked.
+- Trace the complete loop, including failed calls and stopping reasons.
+
+## Failure modes
+
+- A repeated tool loop needs an iteration and cost budget.
+- Response guardrails alone cannot authorize a side effect.
+
+## Key takeaways
+
+- Tool results are feedback, not a guarantee of correctness.
+
+## Further reading
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

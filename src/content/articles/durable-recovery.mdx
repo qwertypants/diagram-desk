@@ -1,0 +1,62 @@
+---
+title: "An approval that survives a crash"
+description: "Persist workflow decisions so a restart neither loses approval nor duplicates a side effect."
+pubDate: "2026-10-19"
+topic: "Distributed systems"
+tags: ["durable workflows", "approval", "retries"]
+difficulty: "advanced"
+objectives: ["Distinguish waiting, retrying, and unknown outcome.", "Trace every path to a terminal result."]
+takeaways: ["Durability preserves state; idempotency controls repeated effects."]
+diagram: "durable-recovery"
+legacyIds: ["a1c00000-0000-4000-8000-000000000016"]
+related: ["permissioned-support-agent", "async-ai"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A restart must preserve an approval decision without repeating an uncertain external action. Durable state and idempotency solve different parts of that problem.
+
+## The problem
+
+A long-running job waits for approval and may crash while an external operation is in flight.
+
+## Read the architecture
+
+Follow the persisted approval through execution, unknown outcome, reconciliation, and terminal state.
+
+<DiagramEmbed slug="durable-recovery" title={'An approval that survives a crash'} />
+
+### Walk through it
+
+#### 1. Await approval
+
+Persist the requested operation and approval state. A restart restores the existing decision. A rejection or expired deadline ends the job.
+
+#### 2. Execute and recover
+
+Run the approved operation with an idempotency key. A known transient failure can back off within a deadline; an unknown outcome must be reconciled first.
+
+#### 3. Check the result
+
+A verified receipt reaches completion. Exhausted retry budgets and invalid outcomes become explicit intervention states.
+
+## Design decisions
+
+- Persist approval and external-operation identity before execution.
+- Retry activities that can safely repeat; do not infer exactly-once execution from a durable workflow.
+
+## Failure modes
+
+- A crash between applying an effect and recording its receipt creates uncertainty.
+- Permanent errors need correction rather than repeated retries.
+
+## Key takeaways
+
+- Durability preserves state; idempotency controls repeated effects.
+
+## Further reading
+
+- [Durable human approval](https://learn.temporal.io/tutorials/ai/building-durable-ai-applications/human-in-the-loop/)
+- [Temporal retry policies](https://docs.temporal.io/encyclopedia/retry-policies)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

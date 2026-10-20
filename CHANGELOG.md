@@ -8,7 +8,21 @@ and this project adheres to
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- Static Astro publication with 17 MDX articles, native Archify readers, topic navigation, and 36 legacy URL redirects.
+- GitHub Pages deployment after dependency audit, type/content checks, and verified root and repository-path builds.
+- Hosting and architecture guides, current contribution and security policies, and updated issue templates.
+- Dark mode follows the device appearance setting and updates immediately when
+  that setting changes, with matching page, article, and diagram-frame colors.
+
+### Changed
+
+- Removed the SQLite API and browser create/edit/delete workflow. Authoring now uses MDX and native Archify JSON in the repository.
+- Retained legacy diagram IDs as links to canonical articles.
+- Added base-aware page, reader, and redirect URLs for GitHub Pages.
+- Updated the vulnerable transitive HTTP cache dependency to its patched release.
+- Kept planning and task directories local instead of tracking them in future commits.
 
 ## [1.0.0] - 2026-10-02
 

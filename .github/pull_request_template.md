@@ -14,12 +14,13 @@ Closes #
 
 - [ ] `npm test` passes
 - [ ] `npm run build` passes
-- [ ] Browser walkthrough run against a live server (`npm run test:browser`), if this changes what a user sees or does
+- [ ] `npm run test:browser -- <preview-url>/` passes for UI or hosting changes
+- [ ] Static pages and diagrams inspected at desktop and phone sizes, if this changes the reading experience
 
 ## Checklist
 
 - [ ] Tests added or updated for the new behavior
-- [ ] `docs/api-contract.md` updated, if an endpoint, validation rule, or status code changed
+- [ ] Content collection schema and migration checks updated, if article metadata changes
 - [ ] `README.md` updated, if setup, testing, or configuration changed
 - [ ] No new runtime dependency (or the reason is explained above)
 - [ ] `CHANGELOG.md` updated under `[Unreleased]`

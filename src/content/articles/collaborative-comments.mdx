@@ -1,0 +1,61 @@
+---
+title: "Collaborative Comments and Version History"
+description: "Comments need durable anchors and historical context, not only a live document position."
+pubDate: "2026-10-19"
+topic: "Collaboration"
+tags: ["collaboration", "version history", "anchors"]
+difficulty: "intermediate"
+objectives: ["Separate current content, edit history, and comment state.", "Explain why text anchors need their own resolver."]
+takeaways: ["A merge engine does not by itself implement comment semantics."]
+diagram: "collaborative-comments"
+legacyIds: ["2bdda3f0-3861-4c9f-81d5-34b18aa4a16e"]
+related: []
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A comment refers to a piece of meaning in a changing document. Keeping that reference valid requires more than storing a character offset.
+
+## The problem
+
+Concurrent edits move or delete text while collaborators discuss it.
+
+## Read the architecture
+
+Separate the live document, committed history, and comment anchor paths before tracing a moved or deleted anchor.
+
+<DiagramEmbed slug="collaborative-comments" title={'Collaborative Comments and Version History'} />
+
+### Walk through it
+
+#### 1. Live edits
+
+Collaborators edit through the collaboration engine. It merges updates into the current document and broadcasts them.
+
+#### 2. History
+
+Committed edits produce version records. A comment retains the version at its creation.
+
+#### 3. Anchors
+
+The resolver consumes document updates and comment anchors, then records moved or deleted-anchor outcomes.
+
+## Design decisions
+
+- Store comment state separately from document history.
+- Keep a deleted anchor as an explicit unresolved outcome rather than silently moving a comment.
+
+## Failure modes
+
+- A numeric offset alone becomes wrong after concurrent edits.
+- Version retention and comment retention need compatible policies.
+
+## Key takeaways
+
+- A merge engine does not by itself implement comment semantics.
+
+## Further reading
+
+- [Yjs shared types and document updates](https://docs.yjs.dev/api/document-updates)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

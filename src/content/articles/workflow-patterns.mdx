@@ -1,0 +1,61 @@
+---
+title: "Workflow Patterns: Five Ways to Compose LLM Calls"
+description: "Five composition patterns distribute control and evaluation in different ways."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["workflows", "parallelism", "evaluation"]
+difficulty: "intermediate"
+objectives: ["Compare chaining, routing, parallelization, orchestration, and refinement."]
+takeaways: ["Parallel sectioning and repeated voting solve different problems."]
+diagram: "workflow-patterns"
+legacyIds: ["9cebff49-6910-46e2-b238-02efc1cb4fac"]
+related: ["workflow-or-agent", "coordinated-research"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Composition helps when one call cannot do the whole job. Each pattern places control, aggregation, and feedback in a different place.
+
+## The problem
+
+A single model call is insufficient, but unrestricted autonomy is unnecessary.
+
+## Read the architecture
+
+Compare the lanes as alternatives rather than as stages of one pipeline.
+
+<DiagramEmbed slug="workflow-patterns" title={'Workflow Patterns: Five Ways to Compose LLM Calls'} />
+
+### Walk through it
+
+#### 1. Chaining and routing
+
+Chaining passes work through ordered calls and optional gates. Routing classifies input before choosing specialized work.
+
+#### 2. Parallelization
+
+Sectioning assigns different subtasks. Voting repeats the same task. Each requires an aggregation step.
+
+#### 3. Orchestration and refinement
+
+Orchestrator-workers decomposes tasks dynamically and synthesizes worker results. Evaluator-optimizer feeds critique back to the generator until accepted.
+
+## Design decisions
+
+- Use separate visual lanes so independent patterns cannot be mistaken for one runtime pipeline.
+- Give a refinement loop a stopping budget.
+
+## Failure modes
+
+- Voting can repeat correlated errors.
+- A judge can prefer fluent but incorrect output.
+
+## Key takeaways
+
+- Parallel sectioning and repeated voting solve different problems.
+
+## Further reading
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

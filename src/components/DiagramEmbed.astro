@@ -1,0 +1,11 @@
+---
+import { withBase } from '../lib/urls';
+const { slug, title } = Astro.props as { slug: string; title: string };
+const url = withBase(`/diagrams/${slug}/reader.html`);
+---
+<section class="diagram-section" aria-labelledby="diagram-heading">
+  <div class="section-eyebrow">THE SYSTEM, VISUALIZED</div>
+  <div class="diagram-heading-row"><h2 id="diagram-heading">Explore the architecture</h2><a href={url} target="_blank" rel="noopener noreferrer">Open full view <span aria-hidden="true">↗</span></a></div>
+  <p>Follow the relationships and flows in this interactive diagram of {title.toLowerCase()}. The article’s explanation and takeaways provide a text alternative.</p>
+  <div class="diagram-frame"><iframe src={url} title={`Interactive architecture diagram for ${title}`} loading="lazy" sandbox="allow-scripts allow-downloads"></iframe></div>
+</section>

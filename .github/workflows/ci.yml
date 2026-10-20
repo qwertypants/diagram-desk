@@ -1,4 +1,4 @@
-name: CI
+name: CI and GitHub Pages
 
 on:
   push:
@@ -11,11 +11,11 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  test:
-    name: Test and build
+  static:
+    name: Check and build static site
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -28,53 +28,76 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Unit and DOM tests
-        run: npm test
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
 
-      - name: Build
+      - name: Check content migration and Astro project
+        run: npm run check
+
+      - name: Build static site and Archify readers
         run: npm run build
 
-  browser:
-    name: Browser walkthrough
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
+      - name: Verify static routes and Archify readers
+        run: node scripts/check-static.mjs
 
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      # No browser download: scripts/browser-check.mjs launches the installed
-      # Google Chrome (Playwright's `chrome` channel), which the ubuntu runner
-      # image already provides. The Playwright driver itself comes from npm ci.
-
-      - name: Build
-        run: npm run build
-
-      - name: Start the server
-        run: node server/index.js &
+      - name: Configure repository hosting path
         env:
-          DIAGRAMS_DB: ${{ runner.temp }}/diagrams-ci.sqlite
-
-      - name: Wait for the server
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
         run: |
-          for _ in $(seq 1 30); do
-            if curl --silent --fail http://127.0.0.1:4317/api/diagrams > /dev/null; then
-              echo "server is up"
-              exit 0
+          echo "SITE_URL=https://${REPO_OWNER,,}.github.io" >> "$GITHUB_ENV"
+          if [[ "${REPO_NAME,,}" == "${REPO_OWNER,,}.github.io" ]]; then
+            echo "BASE_PATH=/" >> "$GITHUB_ENV"
+          else
+            echo "BASE_PATH=/$REPO_NAME/" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build and verify GitHub Pages output
+        run: |
+          npm run build
+          node scripts/check-static.mjs
+
+      - name: Install browser for reader verification
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify reading and diagram interactions
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4321 > "$RUNNER_TEMP/diagram-preview.log" 2>&1 &
+          ready=false
+          for attempt in {1..30}; do
+            if curl --silent --fail "http://127.0.0.1:4321${BASE_PATH}" > /dev/null; then
+              ready=true
+              break
             fi
             sleep 1
           done
-          echo "server did not come up on http://127.0.0.1:4317" >&2
-          exit 1
+          if [[ "$ready" != true ]]; then
+            cat "$RUNNER_TEMP/diagram-preview.log"
+            exit 1
+          fi
+          npm run test:browser -- "http://127.0.0.1:4321${BASE_PATH}"
 
-      - name: Run the browser walkthrough
-        run: npm run test:browser
+      - name: Upload verified Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
 
-      - name: Stop the server
-        if: always()
-        run: pkill -f 'node server/index.js' || true
+  deploy:
+    name: Publish GitHub Pages
+    needs: static
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - name: Deploy verified artifact
+        id: deployment
+        uses: actions/deploy-pages@v5

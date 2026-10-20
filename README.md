@@ -1,11 +1,8 @@
 # Diagram Desk
 
-An offline visual learning library for software and AI systems. Explore an
-interactive Archify diagram, follow a guided reading path, and examine the
-engineering decisions and failure modes behind it.
+A static technical learning library about software and AI systems. Seventeen authored articles pair explanations and engineering trade-offs with interactive Archify diagrams. The original 18 diagram IDs resolve to their canonical articles; two IDs referred to the same evaluation lesson.
 
-The library includes all 13 original diagrams and five new production-oriented
-lessons. Both original evaluation records keep their own identity.
+[Read the library](https://qwertypants.github.io/diagram-desk/) · [Source and issues](https://github.com/qwertypants/diagram-desk) · [Contribute](CONTRIBUTING.md) · [Deploy your own copy](docs/deployment.md)
 
 ## Run locally
 
@@ -13,125 +10,66 @@ Requires Node.js 24 or newer and npm.
 
 ```sh
 npm ci
-npm start
+npm run dev
 ```
 
-Open [Diagram Desk](http://127.0.0.1:4317). A fresh database starts with 18 saved
-records. Deleting or editing a lesson persists across restarts. The app does not
-reseed an initialized library.
-
-Everything runs on this machine. The server binds loopback, stores data in
-SQLite, and compiles diagrams with the vendored Archify 3.2.0 distribution.
-No global Archify installation, account, telemetry, model API, or CDN is needed.
-Reference links open external documentation only when the reader chooses them.
-
-## Migrate an existing library
-
-Stop the running server before migration, then run:
+Open the URL printed by Astro (normally <http://localhost:4321/>). To inspect the deployable output:
 
 ```sh
-npm run migrate:archify                 # inspect the proposed conversion
-npm run migrate:archify -- --apply      # back up, then convert transactionally
-npm start
+npm run check
+npm run build
+npm run preview
 ```
 
-The migration recognizes the original records by ID and source digest. It
-preserves their IDs, titles, and creation/update timestamps, including the
-identical evaluation records. Unknown or edited legacy source stops the
-migration without overwriting it. Review that content and add a checked mapping
-before retrying. No general-purpose Mermaid converter runs at application time.
+Run `npm test` for the complete automated check. See the [architecture guide](docs/architecture.md) for the source layout and build process.
 
-The apply command prints the SQLite backup path. To restore it, stop the server,
-preserve the current database, and copy that backup to `DIAGRAMS_DB` or
-`data/diagrams.sqlite`. Do not restore over a running SQLite connection.
-
-Catalog acceptance is bound to candidate source digests in
-[`catalog/acceptance.json`](catalog/acceptance.json). After changing a catalog
-candidate, run `npm run check:catalog` before applying a migration. It requires
-local Chrome or Chromium and writes detailed evidence under `.archify/`.
+`npm run dev` and `npm run build` render the version controlled Archify JSON in `catalog/diagrams/` into standalone readers under `public/diagrams/`. Astro then serves or generates the article, topic, index, and legacy URL pages. The production output is `dist/`; it can be hosted as static files without Node, SQLite, an API, or a CMS.
 
 ## Read and author
 
-Choose a lesson in the library. Objectives explain what to look for; the
-numbered reading path explains the flow; decisions and failure modes provide
-context. Use native node search and focus to inspect dense architecture diagrams.
+Browse by article or topic. Each lesson explains the engineering problem, walks through its diagram, and records decisions and failure modes. The reader is embedded in the article, with a link to open it at full size.
 
-The native reader provides node focus, search, relationship exploration,
-light/dark themes, motion controls, and exports. Open **Open full reader** when
-you need more room. Reduced-motion settings retain static diagram meaning.
+To add an article:
 
-**New diagram** opens an Archify JSON editor. Choose a diagram type and load its
-starter, or paste a native candidate. The selected type must match
-`diagram_type`. The preview validates and renders locally; an invalid preview
-blocks Save. Optional learning notes are edited separately as JSON.
+1. Add an Archify JSON definition at `catalog/diagrams/<slug>.json` and a matching entry in `catalog/index.json`. Use an existing definition as a starting point and keep its native diagram type consistent with `diagram_type`.
+2. Add `src/content/articles/<slug>.mdx` with the fields validated by `src/content.config.ts`: `title`, `description`, `pubDate`, `topic`, `tags`, `difficulty`, `objectives`, `takeaways`, `diagram`, and `legacyIds`. `related` is optional. Set `diagram` to the catalog slug.
+3. Import `DiagramEmbed` from `../../components/DiagramEmbed.astro` in the MDX body. After the problem and a short reading cue, embed the primary diagram with `<DiagramEmbed slug="<slug>" title="<article title>" />`. You can embed another existing catalog diagram later in the article when a second view helps explain the concept. Preserve source references where relevant.
+4. Run `npm run check` and `npm run build`, then inspect the article and reader at desktop and mobile widths.
 
-Learning-note fields are `summary`, `problem`, `objectives`, `walkthrough`,
-`decisions`, `failureModes`, `takeaways`, `scope`, and `references`. Reading steps
-have `title` and `detail`; references have `title` and an HTTP(S) `url`.
+The old in-browser **New diagram**, edit, save, and delete workflow has been removed. Edit MDX and JSON in the repository and commit them together. Existing `/diagrams/<UUID>/` and `/diagrams/<UUID>/edit/` links lead to the corresponding article; there is no editing API behind the latter URL.
 
-A starter replaces the source in the editor. Save or copy work you want to keep
-before loading one. The application title and native `meta.title` are separate;
-edit both when renaming the diagram itself.
+## Development commands
 
-## Five new lessons
-
-- **A support agent that earns permission:** authorization before tools,
-  operation-specific human approval, receipts, and uncertain outcomes.
-- **Answer only from usable evidence:** ingestion, scoped hybrid retrieval,
-  reranking, evidence sufficiency, citations, and grounding checks.
-- **Research agents with owned work:** bounded delegation, independent evidence,
-  coverage review, synthesis, and explicit gaps.
-- **Find the regression behind the answer:** trace correlation, production
-  sampling, fixed evaluation cases, and release decisions.
-- **An approval that survives a crash:** durable approval, retry budgets,
-  receipt reconciliation, and terminal outcomes.
-
-All designs are educational examples. Sources establish individual practices;
-they do not claim that these exact composite systems are deployed. The
-[migration audit](docs/archify-migration.md) records preserved meaning and
-corrections for every original topic.
-
-## Configuration and development
-
-| Setting | Default |
+| Command | Purpose |
 | --- | --- |
-| `PORT` | `4317` |
-| `DIAGRAMS_DB` | `data/diagrams.sqlite`, relative to the repository root |
+| `npm run dev` | Build Archify readers and start Astro development server |
+| `npm run check` | Check migration coverage and run `astro check` |
+| `npm run check:migration` | Check the 17 article and 18 legacy ID mapping |
+| `npm run build` | Build readers and static Astro site into `dist/` |
+| `npm run preview` | Serve an existing static build locally |
+| `npm test` | Check content and types, build the site, and verify static article, reader, and legacy routes |
+| `npm run test:browser -- <site-url>/` | Check navigation, all readers, zoom, dark mode, and legacy links at desktop and phone widths against a running site |
 
-```sh
-npm test                    # unit, DOM, persistence, migration, and API tests
-npm run build               # static client into dist/
-npm run serve               # serve an existing build
-npm run test:browser        # own temporary server/database; Chrome required
-npm run check:catalog       # native acceptance gates for every catalog candidate
-```
+`npm run check:catalog` is a separate native diagram acceptance tool. It requires local Chrome or Chromium and writes evidence under `.archify/`; it is useful when changing a catalog diagram, but it is not part of the standard CI check.
 
-The browser walkthrough captures every catalog topic at desktop and mobile
-sizes, in both themes, while blocking external runtime requests. Evidence lives
-in `.archify/browser/`. `tilt up` remains an optional development entry point for
-the same local Node process, with catalog, starter, and renderer dependencies.
+For the browser walkthrough, install its browser once with `npx playwright install chromium`, start `npm run preview` in another terminal, then run `npm run test:browser -- http://localhost:4321/`. Screenshots are written under ignored `.archify/pages-check/`.
+
+Tilt is optional: `tilt up` starts the Astro development server. No database or application server is involved.
+
+## GitHub Pages
+
+The [CI and Pages workflow](.github/workflows/ci.yml) checks the root build and the repository-prefixed build. Successful pushes to `main` publish the verified `dist/` artifact to GitHub Pages. Pull requests run checks without deploying.
+
+Forks derive their GitHub Pages origin and path from the repository owner and name. Enable **Settings → Pages → Source → GitHub Actions** before publishing. The [deployment guide](docs/deployment.md) covers setup, local previews, troubleshooting, and rollback.
 
 ## Architecture and limits
 
-The client uses vanilla ES modules and the History API. The Node HTTP server
-provides the [JSON API](docs/api-contract.md), static assets, a bounded preview
-cache, and isolated native readers. SQLite stores canonical source and lesson
-metadata. Compilation uses private temporary directories, a 30-second timeout,
-and at most two concurrent render processes. Cached previews expire after ten
-minutes; saved readers regenerate from source after restart.
+Astro content collections validate the MDX article metadata. The catalog and native Archify JSON are version controlled. The build invokes vendored Archify and publishes each interactive reader as static HTML, embedded by the corresponding article. Reader behavior is provided by the generated Archify page; article pages stay mostly static.
 
-Readers run in opaque sandboxed frames with compiler-script hashes and no
-network access. The host application keeps its restrictive script policy.
-Browser restrictions in opaque frames can limit persistent native preferences,
-clipboard actions, or video capture. PNG/SVG downloads and touch interaction are
-checked separately. The mobile experience contains the native diagram and
-provides readable lesson text; dense diagrams require pan/zoom or the full
-reader. Archify does not promise a complete phone-specific presentation mode.
+The former local SQLite library and CRUD editor are no longer available. Content changes require a repository edit and rebuild. Existing API consumers need to migrate to static article and reader URLs. The [migration audit](docs/archify-migration.md) records how the original topics were preserved.
 
-The server is for one trusted local user and has no authentication. Public
-exposure requires an authenticated reverse proxy. See [SECURITY.md](SECURITY.md).
+The site has no user accounts or private content storage. Treat article text, JSON, and links as public deployment assets. See [SECURITY.md](SECURITY.md).
 
 ## License
 
-The application is MIT licensed. Archify is vendored under its MIT license with
-upstream third-party notices intact in `vendor/archify/`.
+The application, articles, and diagram sources are [MIT licensed](LICENSE). Archify is vendored under its [MIT license](vendor/archify/LICENSE), with [upstream third-party notices](vendor/archify/THIRD_PARTY_NOTICES.md). Referenced publications and external assets retain their own licenses.

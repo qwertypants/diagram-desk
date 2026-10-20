@@ -1,0 +1,59 @@
+---
+title: "Workflows or Agents? Choosing the Right Level of Complexity"
+description: "Use the least complex approach that measurably solves the task."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["workflows", "agents", "complexity"]
+difficulty: "beginner"
+objectives: ["Distinguish predefined control flow from model-directed control.", "Make added complexity earn its cost."]
+takeaways: ["Complexity is a cost to justify with outcomes."]
+diagram: "workflow-or-agent"
+legacyIds: ["c41e698d-ecdb-467e-8b69-ea3ac28d1e0e"]
+related: ["workflow-patterns", "effective-agent-principles"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Start with the smallest approach that meets the task. Add model-directed control only when measured outcomes justify it.
+
+## The problem
+
+A flexible agent can be expensive and unpredictable when a fixed workflow would suffice.
+
+## Read the architecture
+
+Follow the decision from one call through predictable workflows to agent-directed work and back to evaluation.
+
+<DiagramEmbed slug="workflow-or-agent" title={'Workflows or Agents? Choosing the Right Level of Complexity'} />
+
+### Walk through it
+
+#### 1. Try one call
+
+Check whether retrieval and examples make a single model call sufficient.
+
+#### 2. Choose control
+
+Use code-directed workflows for predictable steps; consider an agent when the process itself must be discovered.
+
+#### 3. Measure
+
+Evaluate outcomes. If added complexity does not improve them, return to the simpler design.
+
+## Design decisions
+
+- Workflows favor predictability; agents trade some control for flexibility.
+
+## Failure modes
+
+- A sophisticated demonstration may fail repeated task evaluation.
+
+## Key takeaways
+
+- Complexity is a cost to justify with outcomes.
+
+## Further reading
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

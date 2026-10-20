@@ -1,5 +1,10 @@
 # Verification: Archify learning library
 
+Historical record of the retired local editor. These API, database, and browser
+workflow results do not describe the current static publication. See
+[the architecture guide](architecture.md) and [deployment guide](deployment.md)
+for the current app.
+
 Verified on October 19, 2026 using the local Node runtime and isolated Chrome
 sessions. No diagram examples execute real model or tool operations.
 

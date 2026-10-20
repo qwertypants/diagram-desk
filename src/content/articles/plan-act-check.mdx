@@ -1,0 +1,61 @@
+---
+title: "Autonomous Agent: Plan, Act, Check, and Stop"
+description: "An agent loop must return to observed results and have explicit ways to stop."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["agents", "feedback", "stopping rules"]
+difficulty: "beginner"
+objectives: ["Find the feedback edge.", "Distinguish success, a blocker, and a budget stop."]
+takeaways: ["A credible completion claim requires external evidence."]
+diagram: "plan-act-check"
+legacyIds: ["e6fa751f-e194-4c40-be26-abf59874b526"]
+related: ["workflow-or-agent", "effective-agent-principles"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+An agent becomes dependable when its next step depends on observed results and every loop has a clear end.
+
+## The problem
+
+Open-ended work cannot be safely expressed as an endless sequence of model calls.
+
+## Read the architecture
+
+Locate the feedback edge from tools to assessment, then follow each terminal path.
+
+<DiagramEmbed slug="plan-act-check" title={'Autonomous Agent: Plan, Act, Check, and Stop'} />
+
+### Walk through it
+
+#### 1. Clarify and plan
+
+A human request becomes a clarified task and an initial plan.
+
+#### 2. Act and inspect
+
+Tools affect the environment. Tool results and code execution provide observations for assessing progress.
+
+#### 3. Continue or stop
+
+Continue by replanning; pause at a checkpoint; stop on completion or a reached limit. Human feedback can restart planning.
+
+## Design decisions
+
+- Assess actual tool results rather than treating a plan as progress.
+- Make maximum iterations or cost an explicit stopping rule.
+
+## Failure modes
+
+- A successful tool call may still fail the user objective.
+- A checkpoint without a resume condition leaves ambiguous state.
+
+## Key takeaways
+
+- A credible completion claim requires external evidence.
+
+## Further reading
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

@@ -1,0 +1,60 @@
+---
+title: "Stream AI in chat"
+description: "Streaming transports partial output before the complete response can be validated."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["streaming", "chat", "validation"]
+difficulty: "intermediate"
+objectives: ["Follow chunks through each hop.", "Distinguish a partial display from a validated final result."]
+takeaways: ["Streaming improves perceived responsiveness, not model correctness."]
+diagram: "streaming-chat"
+legacyIds: ["ecc6c5ad-1bc9-4366-9318-0c0c9eeaf188"]
+related: ["agent-tool-loop"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A stream can make an answer feel immediate while its final correctness is still unknown. Treat partial and complete states differently.
+
+## The problem
+
+A chat interface should stay responsive during a long model response.
+
+## Read the architecture
+
+Follow one chunk from provider to UI, then compare that path with completion and validation.
+
+<DiagramEmbed slug="streaming-chat" title={'Stream AI in chat'} />
+
+### Walk through it
+
+#### 1. Request
+
+The UI submits a message through the backend and orchestrator to the provider.
+
+#### 2. Chunks
+
+Each chunk returns through the orchestrator and backend. SSE and WebSocket are alternative transports, not interchangeable protocol names.
+
+#### 3. Completion
+
+The orchestrator validates the complete result before final metadata reaches the UI. A partial reply is not yet final.
+
+## Design decisions
+
+- Keep cancellation and provider errors visible to the client.
+
+## Failure modes
+
+- A disconnected stream can leave a partial answer.
+- Validation after completion cannot retract tokens already displayed.
+
+## Key takeaways
+
+- Streaming improves perceived responsiveness, not model correctness.
+
+## Further reading
+
+- [Server-sent events](https://html.spec.whatwg.org/multipage/server-sent-events.html)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

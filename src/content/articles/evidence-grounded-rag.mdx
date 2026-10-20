@@ -1,0 +1,66 @@
+---
+title: "Answer only from usable evidence"
+description: "Retrieval quality, access control, and evidence sufficiency are separate decisions."
+pubDate: "2026-10-19"
+topic: "Retrieval"
+tags: ["RAG", "access control", "citations"]
+difficulty: "advanced"
+objectives: ["Connect ingestion to a versioned searchable corpus.", "Identify what happens when evidence is weak."]
+takeaways: ["A citation is useful only if it supports the claim."]
+diagram: "evidence-grounded-rag"
+legacyIds: ["a1c00000-0000-4000-8000-000000000013"]
+related: ["production-rag", "ai-evaluation"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Retrieving a plausible passage is insufficient. The assistant must establish that it may use the passage and that it supports the claim.
+
+## The problem
+
+An internal assistant must answer product questions without leaking documents from another tenant.
+
+## Read the architecture
+
+Follow document access metadata through retrieval, sufficiency, citation, and grounding checks.
+
+<DiagramEmbed slug="evidence-grounded-rag" title={'Answer only from usable evidence'} />
+
+### Walk through it
+
+#### 1. Index
+
+Parse and chunk approved documents. Build lexical and vector representations with document versions and access metadata.
+
+#### 2. Retrieve within scope
+
+Authorize the caller and query. Apply tenant and document permissions during retrieval. Combine lexical and semantic candidates, then rerank using the query.
+
+#### 3. Decide before answering
+
+Check whether selected evidence can support the requested answer. Generate citations from the selected passages, or ask for clarification and abstain.
+
+#### 4. Check grounding
+
+Verify that cited documents exist and that answer claims are supported. Evaluate retrieval failures separately from generation failures.
+
+## Design decisions
+
+- Hybrid retrieval balances exact identifiers and semantic similarity.
+- The sufficiency rule is task-specific and must be evaluated.
+
+## Failure modes
+
+- A high similarity score is not proof of factual support.
+- Stale access metadata can leak a revoked document.
+
+## Key takeaways
+
+- A citation is useful only if it supports the claim.
+
+## Further reading
+
+- [Contextual retrieval](https://www.anthropic.com/engineering/contextual-retrieval)
+- [Demystifying evaluations for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

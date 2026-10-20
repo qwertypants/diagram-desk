@@ -1,0 +1,62 @@
+---
+title: "Production RAG System"
+description: "Retrieval has two linked paths: preparing the corpus and answering a specific query."
+pubDate: "2026-10-19"
+topic: "Retrieval"
+tags: ["RAG", "ingestion", "reranking"]
+difficulty: "intermediate"
+objectives: ["Distinguish ingestion from online retrieval.", "Explain retrieval, reranking, and response checks."]
+takeaways: ["Evaluate retrieval quality separately from answer quality."]
+diagram: "production-rag"
+legacyIds: ["f6036a09-80ec-4c58-b460-e500c39323fe"]
+related: ["evidence-grounded-rag", "ai-evaluation"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Retrieval-augmented generation works only if the document pipeline and request pipeline agree on freshness, access, and relevance.
+
+## The problem
+
+A model needs up-to-date documents that cannot all fit in its context window.
+
+## Read the architecture
+
+Read ingestion first, then trace an authorized query through retrieval, prompt construction, and response checks.
+
+<DiagramEmbed slug="production-rag" title={'Production RAG System'} />
+
+### Walk through it
+
+#### 1. Prepare documents
+
+Documents are parsed, cleaned, chunked, embedded, and indexed into the vector store.
+
+#### 2. Retrieve for a query
+
+The app authenticates and rate-limits the request. The orchestrator embeds the query, retrieves candidates, and reranks or filters them.
+
+#### 3. Build and check
+
+The prompt builder receives the original query and selected passages. The model response is validated before returning through the API. Traces cover orchestration, retrieval, and model calls.
+
+## Design decisions
+
+- Indexing and serving have different latency and freshness requirements.
+- Reranking can improve context selection at an additional latency and compute cost.
+
+## Failure modes
+
+- Relevant-looking documents may be stale or unauthorized.
+- Response validation cannot repair missing evidence.
+
+## Key takeaways
+
+- Evaluate retrieval quality separately from answer quality.
+
+## Further reading
+
+- [Contextual retrieval](https://www.anthropic.com/engineering/contextual-retrieval)
+- [Demystifying evaluations for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

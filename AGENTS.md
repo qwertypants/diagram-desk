@@ -1,4 +1,37 @@
+# Working on Diagram Desk
+
+Diagram Desk is a public, static Astro learning library. Articles are authored in
+`src/content/articles/` as MDX; native diagram JSON lives in `catalog/diagrams/`.
+`scripts/build-readers.mjs` renders the vendored Archify readers before Astro
+builds the site into `dist/`. The former SQLite API and browser editor are retired.
+
+## Scope and repository hygiene
+
+- Keep documentation consistent with the current static app and its npm scripts.
 - Use standard Git in this repository.
+- Inspect the working tree before editing. Preserve unrelated and pre-existing work;
+  commit explicit paths or hunks. Do not publish another session's work without
+  authorization to include it.
+- Keep plans, design notes, and task checklists local under `tasks/`, `docs/plans/`,
+  or `docs/superpowers/`. These directories are ignored. Do not force-add them.
+- Preserve unfinished local plans; create a separate named subdirectory for new work.
+- Commit durable user and contributor documentation under `docs/` or at the root.
+- Keep generated readers, build output, acceptance evidence, and secrets untracked.
+- Do not push, publish, or change repository settings without user authorization.
+
+## Verification and deployment
+
+- Use Node.js 24 or newer and install dependencies with `npm ci`.
+- `npm test` checks migration coverage and Astro types, builds the static site,
+  and checks generated routes and readers. Do not restore retired server tests.
+- For UI or deployment changes, inspect the built site at desktop and mobile sizes.
+  Exercise article/topic navigation, diagram embeds and full view, and legacy links.
+- Support both a root deployment and a GitHub Pages repository path. Verify local
+  links, assets, reader URLs, canonical URLs, and redirects under that prefix.
+- Publish `dist/` through GitHub Actions only after verification passes. Pull
+  requests must not receive deployment credentials or publish the production site.
+- Confirm the deployed URL and reader interactions before claiming publication is
+  complete. Report local verification and live deployment results separately.
 
 <!-- graft:start -->
 ## Graft — repo context graph

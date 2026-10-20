@@ -1,0 +1,62 @@
+---
+title: "Research agents with owned work"
+description: "Parallel workers need explicit ownership, bounded effort, and evidence that survives synthesis."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["multi-agent", "research", "evidence"]
+difficulty: "intermediate"
+objectives: ["Separate decomposition from synthesis.", "Follow evidence through partial failure."]
+takeaways: ["More workers help only when work can be usefully divided."]
+diagram: "coordinated-research"
+legacyIds: ["a1c00000-0000-4000-8000-000000000014"]
+related: ["workflow-patterns", "trace-driven-evaluation"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Parallel research helps when independent questions have clear owners and the final synthesis can retain their evidence and uncertainty.
+
+## The problem
+
+A research request has independent lines of investigation that exceed one context window.
+
+## Read the architecture
+
+Read the assignments, evidence returns, and coverage review as separate responsibilities.
+
+<DiagramEmbed slug="coordinated-research" title={'Research agents with owned work'} />
+
+### Walk through it
+
+#### 1. Define owned work
+
+The lead decomposes the research question into bounded, independent assignments with required evidence and a shared deadline.
+
+#### 2. Gather independent findings
+
+A source researcher and counterevidence researcher work in separate contexts. Both return findings with source references, not only conclusions.
+
+#### 3. Review and synthesize
+
+Coverage review combines findings and identifies gaps. Additional work needs remaining budget. A failed worker triggers a bounded retry or an explicit limitation in the final answer.
+
+## Design decisions
+
+- Parallelize independent research rather than every reasoning step.
+- Keep one owner for the synthesized answer.
+
+## Failure modes
+
+- Overlapping assignments waste tokens and repeat evidence.
+- A synthesis can lose uncertainty or contradictory findings.
+
+## Key takeaways
+
+- More workers help only when work can be usefully divided.
+
+## Further reading
+
+- [Multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

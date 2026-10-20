@@ -1,15 +1,14 @@
 {
   "name": "diagram-desk",
   "version": "1.0.0",
-  "description": "A local visual learning library for software and AI systems, powered by Archify.",
+  "description": "A static technical learning platform with interactive Archify diagrams.",
   "keywords": [
     "archify",
     "diagrams",
     "learning",
     "architecture",
-    "sqlite",
-    "local-first",
-    "offline"
+    "astro",
+    "articles"
   ],
   "license": "MIT",
   "author": "Diagram Desk contributors",
@@ -18,25 +17,38 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "vite build",
-    "start": "vite build && node server/index.js",
-    "serve": "node server/index.js",
-    "test": "node --test",
-    "test:browser": "node scripts/browser-check.mjs",
-    "migrate:archify": "node scripts/migrate-archify.mjs",
-    "check:catalog": "node scripts/check-catalog.mjs"
+    "dev": "node scripts/build-readers.mjs && astro dev",
+    "build": "node scripts/build-readers.mjs && astro build",
+    "preview": "astro preview",
+    "check": "node scripts/check-migration.mjs && astro check",
+    "check:migration": "node scripts/check-migration.mjs",
+    "check:catalog": "node scripts/check-catalog.mjs",
+    "test": "npm run check && npm run build && node scripts/check-static.mjs",
+    "test:browser": "node scripts/check-browser.mjs"
   },
   "files": [
-    "index.html",
     "src",
-    "server",
     "dist",
+    "public",
+    "scripts",
     "vendor/archify",
     "catalog"
   ],
+  "dependencies": {
+    "@astrojs/mdx": "^8.0.2",
+    "astro": "^7.3.4"
+  },
   "devDependencies": {
-    "jsdom": "^30.1.1",
+    "@astrojs/check": "^0.9.10",
     "playwright": "^1.63.0",
-    "vite": "^8.3.2"
+    "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qwertypants/diagram-desk.git"
+  },
+  "homepage": "https://qwertypants.github.io/diagram-desk/",
+  "bugs": {
+    "url": "https://github.com/qwertypants/diagram-desk/issues"
   }
 }

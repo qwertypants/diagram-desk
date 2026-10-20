@@ -1,81 +1,41 @@
 # Contributing to Diagram Desk
 
-Thanks for taking the time. This is a small project and contributions are very
-welcome — bug reports and documentation fixes count just as much as code.
+Contributions to articles, diagrams, code, and documentation are welcome. By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). Contributions are licensed under the [MIT license](LICENSE).
 
-By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
+## Set up
 
-## Getting set up
-
-You need Node.js 24 or newer.
-
-Clone or download the repository, then from its root run:
+Use Node.js 24 or newer. From the repository root:
 
 ```sh
 npm ci
-npm start
+npm run dev
 ```
 
-Then open <http://127.0.0.1:4317>. The SQLite file is created on first run, so
-there is no setup beyond `npm ci`.
+Open the URL printed by Astro (normally <http://localhost:4321/>).
 
-## Before you open a pull request
+## Add or revise a lesson
 
-Run both suites:
+Articles live in `src/content/articles/` as MDX. Their frontmatter is validated by `src/content.config.ts`; use a nearby article as a model. Keep objectives, explanation, diagram, failure modes, and takeaways connected so the visual teaches a specific idea.
+
+Native Archify JSON lives in `catalog/diagrams/` and is indexed by `catalog/index.json`. Set the article's `diagram` field to the matching catalog slug. The build renders that JSON into `public/diagrams/<slug>/reader.html`. Check the reader at desktop and mobile widths, including keyboard access and readable context around the frame. Add meaningful text alternatives in the article for relationships conveyed by the diagram.
+
+The former browser editor and SQLite API have been removed. Edit the source files and commit the article and diagram together. Existing legacy IDs are mapped to canonical articles; preserve that mapping when changing a migrated lesson.
+
+## Before a pull request
 
 ```sh
-npm test            # unit + DOM tests, must be green
-npm run build       # the client must still build
+npm test
+npm audit --audit-level=high
 ```
 
-For anything that changes what a user sees or does, also run the browser
-walkthrough against a running server:
+For changes to a page or diagram, inspect the built site with `npm run preview` on desktop and mobile. `npm run check:catalog` is available for native diagram acceptance and needs local Chrome or Chromium. It is separate from the standard checks. CI runs content and type checks, a dependency audit, and verified production builds on Node 24 at both root and repository paths.
 
-```sh
-npm start           # in one terminal
-npm run test:browser # in another
-```
+Use `withBase` from `src/lib/urls.ts` for application paths in templates. Keep external links and in-page anchors unchanged. For hosting changes, follow the repository-path preview in [the deployment guide](docs/deployment.md), including the static URL checker. The [architecture guide](docs/architecture.md) explains the build boundaries.
 
-It needs a local Google Chrome install (the Playwright devDependency provides
-the driver, not the browser).
+Keep task lists and planning notes local in `tasks/`, `docs/plans/`, or `docs/superpowers/`; these directories are ignored. Commit durable documentation and relevant source changes. Do not commit `dist/`, generated `public/diagrams/`, local databases, `.env` files, or `.archify/` evidence.
 
-## Ground rules
+Make each pull request a coherent change. Explain what changed, why, and any verification you could not perform. Update the README when setup or authoring steps change.
 
-**Add a test for new behavior and for every bug you fix.** The suite is fast and
-runs in about a second; a change that isn't covered will be asked for a test
-before it can merge.
+## Reporting issues
 
-**Keep it dependency-free where you can.** The runtime dependency list is
-deliberately one package long (Mermaid). Adding another needs a good reason in
-the pull request description. The server uses `node:http` and `node:sqlite`
-only — no web framework.
-
-**Follow the style of the file you are in.** Match the existing formatting and
-naming. Comments explain *why*, not *what*.
-
-**Update the docs you invalidate.** `docs/api-contract.md` is a binding
-contract: if you change an endpoint, its validation, or an error status, update
-that document in the same pull request. If you change setup, testing, or
-configuration, update `README.md`.
-
-## Reporting bugs
-
-Use the bug report template. The most useful thing you can include is what you
-expected, what happened instead, and how to reproduce it — and if it involves
-Mermaid source, paste the exact source that fails.
-
-## Pull requests
-
-- One logical change per pull request.
-- Write a description that says what changed and why.
-- Note anything you deliberately left out.
-- CI runs the tests and the build on Node 24. Green is required.
-
-## Reporting security issues
-
-Please do not open a public issue. Follow [SECURITY.md](SECURITY.md).
-
-## License
-
-By contributing you agree that your contributions are licensed under the
-project's [MIT license](LICENSE).
+For a bug, include the article URL or catalog slug, what you expected, what happened, and steps to reproduce. For security issues, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.

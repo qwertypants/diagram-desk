@@ -1,0 +1,59 @@
+---
+title: "Effective Agents: Design Principles and Practice"
+description: "Choose agentic work that has clear success criteria, feedback, and human oversight."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["agents", "tool design", "oversight"]
+difficulty: "beginner"
+objectives: ["Connect simplicity and tool design to reliability.", "Apply fit criteria to support and coding work."]
+takeaways: ["Tool design is part of product reliability."]
+diagram: "effective-agent-principles"
+legacyIds: ["fe3c76da-5763-4014-b013-8785a4f89cb3"]
+related: ["workflow-or-agent", "plan-act-check"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Autonomy is useful when the system can inspect its work, ask for help, and stop. Tool design and feedback matter as much as the model.
+
+## The problem
+
+An agent can take actions without making its reasoning or outcomes understandable.
+
+## Read the architecture
+
+Read the choices in order: understandable control, observed feedback, and evidence that the use case fits.
+
+<DiagramEmbed slug="effective-agent-principles" title={'Effective Agents: Design Principles and Practice'} />
+
+### Walk through it
+
+#### 1. Keep control understandable
+
+Begin with a simple design. Expose meaningful steps and design, document, and test tools.
+
+#### 2. Use feedback
+
+Evaluate environment observations and retain human checkpoints.
+
+#### 3. Check fit
+
+Support retrieves context and performs permitted actions; coding uses test feedback and review. Other use cases need the same success and oversight criteria.
+
+## Design decisions
+
+- Increase autonomy only where observations let the system assess progress.
+
+## Failure modes
+
+- More agents and tools can increase compounding errors.
+
+## Key takeaways
+
+- Tool design is part of product reliability.
+
+## Further reading
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

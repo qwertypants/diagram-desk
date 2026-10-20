@@ -1,0 +1,62 @@
+---
+title: "Find the regression behind the answer"
+description: "Correlated traces explain a request; evaluations decide whether a proposed change improves the task."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["tracing", "evaluation", "regressions"]
+difficulty: "intermediate"
+objectives: ["Separate runtime observation from offline judgment.", "Follow production failures into a repeatable evaluation set."]
+takeaways: ["Keep the inputs and grading criteria stable when comparing candidates."]
+diagram: "trace-driven-evaluation"
+legacyIds: ["a1c00000-0000-4000-8000-000000000015"]
+related: ["ai-evaluation", "production-rag"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A trace explains one request; an evaluation asks whether a change improves many representative tasks. Both are needed to investigate a regression.
+
+## The problem
+
+Users report worse answers after a model update even though the average dashboard score is stable.
+
+## Read the architecture
+
+Move from the observed failure to a fixed case, then compare candidates by segment.
+
+<DiagramEmbed slug="trace-driven-evaluation" title={'Find the regression behind the answer'} />
+
+### Walk through it
+
+#### 1. Observe the request
+
+Propagate trace context across retrieval, model, and tool operations. Record errors and token usage while applying content-redaction policy.
+
+#### 2. Build the evaluation
+
+Select representative failures and add them to a fixed dataset. Replay the candidate model or prompt against the same tasks.
+
+#### 3. Review the change
+
+Compare task success, latency, and cost by segment. Inspect failures and human-calibrated judge results before promoting or holding the release.
+
+## Design decisions
+
+- Traces diagnose behavior; they do not replace a task rubric.
+- Token usage is observed data; monetary cost also needs a dated provider price model.
+
+## Failure modes
+
+- Sampling only easy requests misses rare severe failures.
+- An LLM judge can reward convincing but incorrect answers.
+
+## Key takeaways
+
+- Keep the inputs and grading criteria stable when comparing candidates.
+
+## Further reading
+
+- [OpenTelemetry GenAI conventions](https://github.com/open-telemetry/semantic-conventions-genai)
+- [Demystifying evaluations for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

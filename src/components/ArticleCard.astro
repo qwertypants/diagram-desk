@@ -1,0 +1,13 @@
+---
+import { withBase } from '../lib/urls';
+import type { CollectionEntry } from 'astro:content';
+const { article, index } = Astro.props as { article: CollectionEntry<'articles'>; index?: number };
+---
+<article class="article-card">
+  <a class="card-link" href={withBase(`/articles/${article.id}/`)} aria-label={`Read ${article.data.title}`}>
+    <span class="card-top"><span class="card-number">{String((index ?? 0) + 1).padStart(2, '0')}</span><span class="card-topic">{article.data.topic}</span></span>
+    <h3>{article.data.title}</h3>
+    <p>{article.data.description}</p>
+    <span class="card-bottom"><span>{article.data.difficulty}</span><span class="card-arrow" aria-hidden="true">↗</span></span>
+  </a>
+</article>

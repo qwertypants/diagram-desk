@@ -1,0 +1,8 @@
+---
+import { withBase } from '../../../../lib/urls';
+import legacy from '../../../../legacy-ids.json';
+export function getStaticPaths() { return Object.entries(legacy).map(([id,slug]) => ({ params: { id }, props: { slug } })); }
+const { slug } = Astro.props;
+const target = withBase(`/articles/${slug}/`);
+---
+<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><meta http-equiv="refresh" content={`0;url=${target}`} /><meta name="robots" content="noindex" /><link rel="canonical" href={target} /><title>Article moved — Diagram Desk</title></head><body><main><h1>This guide has moved.</h1><p>Continue to <a href={target}>the article</a>.</p></main></body></html>

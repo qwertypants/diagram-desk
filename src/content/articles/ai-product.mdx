@@ -1,0 +1,61 @@
+---
+title: "Full AI product architecture"
+description: "An AI product combines ordinary application infrastructure with model, retrieval, and tool boundaries."
+pubDate: "2026-10-19"
+topic: "AI systems"
+tags: ["architecture", "retrieval", "background jobs"]
+difficulty: "intermediate"
+objectives: ["Distinguish application state from model context.", "Follow synchronous and background request paths."]
+takeaways: ["Each dependency adds an ownership and failure boundary."]
+diagram: "ai-product"
+legacyIds: ["b23c6133-f00e-44c8-957f-2534fdf1cc15"]
+related: ["production-rag", "async-ai"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+An AI feature still depends on ordinary product boundaries: identity, state, jobs, and operational evidence. The model is one component among them.
+
+## The problem
+
+An interactive product also needs authentication, durable jobs, model routing, and evidence about quality.
+
+## Read the architecture
+
+Follow a protected request from the gateway through application state into AI execution, then inspect the separate background path.
+
+<DiagramEmbed slug="ai-product" title={'Full AI product architecture'} />
+
+### Walk through it
+
+#### 1. Application boundary
+
+The client reaches the gateway. Authentication must succeed before the application service handles protected work.
+
+#### 2. AI execution
+
+The orchestrator builds prompts, retrieves indexed context, and invokes permitted tools. A model gateway selects a provider.
+
+#### 3. Background and feedback
+
+The application queues background jobs; workers call the orchestrator. Application, model, and tool traces feed evaluation.
+
+## Design decisions
+
+- Keep the model gateway separate from application authorization.
+- Persist business state in the application database rather than relying on model memory.
+
+## Failure modes
+
+- Fallback providers may have different tool and context contracts.
+- A queue acknowledgement does not prove that a job completed.
+
+## Key takeaways
+
+- Each dependency adds an ownership and failure boundary.
+
+## Further reading
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+
+> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.

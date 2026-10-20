@@ -1,0 +1,65 @@
+---
+title: "When a Job Completes While It Moves"
+description: "Reassignment and completion change different fields; reconcile them without dispatching twice."
+pubDate: "2026-10-19"
+topic: "Distributed systems"
+tags: ["offline", "conflicts", "idempotency"]
+difficulty: "advanced"
+objectives: ["Trace durable offline actions and server reconciliation.", "Distinguish assignment changes from completion status."]
+takeaways: ["Concurrent changes require domain policy, not only version checks."]
+diagram: "offline-job-conflict"
+legacyIds: ["3434f23e-7e21-4660-8695-beb392d95d1b"]
+related: ["async-ai", "durable-recovery"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Two valid actions can cross in time: a dispatcher moves a job while a technician completes it offline. The domain must say what each action changes.
+
+## The problem
+
+A technician completes a job offline while a dispatcher moves it to another truck.
+
+## Read the architecture
+
+Trace the two writers separately before following reconnect, reconciliation, and closure.
+
+<DiagramEmbed slug="offline-job-conflict" title={'When a Job Completes While It Moves'} />
+
+### Walk through it
+
+#### 1. Two concurrent writers
+
+The dispatcher supersedes Truck A, activates Truck B, and writes an outbox event in one transaction. The technician records completion and a note in a local store.
+
+#### 2. Reconnect
+
+The technician queues an idempotent action with a base version, pulls events after a cursor, and submits completion. Wake-up messages only prompt pulling.
+
+#### 3. Reconcile
+
+The server checks the idempotency key and base version. An unchanged status permits completion while the newer assignment is retained. Their disagreement creates a review item.
+
+#### 4. Close the stale dispatch
+
+The dispatcher closes Truck B’s stale assignment. Completion stands, including technician, time, and note; the customer is not dispatched twice.
+
+## Design decisions
+
+- Treat assignment conflict and completion acceptance as field-level decisions, not mutually exclusive whole-record outcomes.
+- Use an outbox for committed events and a cursor for durable catch-up.
+
+## Failure modes
+
+- Blindly retrying a completion can duplicate effects without an idempotency key.
+- A wake-up notification is not a durable event log.
+
+## Key takeaways
+
+- Concurrent changes require domain policy, not only version checks.
+
+## Further reading
+
+- [Transactional outbox pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
+
+> **Scope:** Illustrative field-service policy. The original intended outcome is retained; field-level conflict handling is clarified.

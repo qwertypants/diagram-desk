@@ -1,0 +1,20 @@
+{
+  "1b3b1152-e9e1-4c29-887b-82b32debf9bf": "ai-evaluation",
+  "2bdda3f0-3861-4c9f-81d5-34b18aa4a16e": "collaborative-comments",
+  "3434f23e-7e21-4660-8695-beb392d95d1b": "offline-job-conflict",
+  "394c9b3a-89c3-47da-b514-e70e328320cc": "async-ai",
+  "9c861823-1ce1-4588-a36f-580dc2edd252": "agent-tool-loop",
+  "9cebff49-6910-46e2-b238-02efc1cb4fac": "workflow-patterns",
+  "a1c00000-0000-4000-8000-000000000012": "permissioned-support-agent",
+  "a1c00000-0000-4000-8000-000000000013": "evidence-grounded-rag",
+  "a1c00000-0000-4000-8000-000000000014": "coordinated-research",
+  "a1c00000-0000-4000-8000-000000000015": "trace-driven-evaluation",
+  "a1c00000-0000-4000-8000-000000000016": "durable-recovery",
+  "b23c6133-f00e-44c8-957f-2534fdf1cc15": "ai-product",
+  "c41e698d-ecdb-467e-8b69-ea3ac28d1e0e": "workflow-or-agent",
+  "e6fa751f-e194-4c40-be26-abf59874b526": "plan-act-check",
+  "ecc6c5ad-1bc9-4366-9318-0c0c9eeaf188": "streaming-chat",
+  "f5e29a3e-e996-42bd-a38f-ae4294d89b19": "ai-evaluation",
+  "f6036a09-80ec-4c58-b460-e500c39323fe": "production-rag",
+  "fe3c76da-5763-4014-b013-8785a4f89cb3": "effective-agent-principles"
+}
