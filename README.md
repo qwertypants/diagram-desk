@@ -54,7 +54,6 @@ The old in-browser **New diagram**, edit, save, and delete workflow has been rem
 
 For the browser walkthrough, install its browser once with `npx playwright install chromium`, start `npm run preview` in another terminal, then run `npm run test:browser -- http://localhost:4321/`. Screenshots are written under ignored `.archify/pages-check/`.
 
-Tilt is optional: `tilt up` starts the Astro development server. No database or application server is involved.
 
 ## GitHub Pages
 
