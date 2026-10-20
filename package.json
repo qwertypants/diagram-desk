@@ -18,12 +18,12 @@
   },
   "scripts": {
     "dev": "node scripts/build-readers.mjs && astro dev",
-    "build": "node scripts/build-readers.mjs && astro build",
+    "build": "node scripts/build-readers.mjs && astro build && node scripts/decorate-external-links.mjs",
     "preview": "astro preview",
     "check": "node scripts/check-migration.mjs && astro check",
     "check:migration": "node scripts/check-migration.mjs",
     "check:catalog": "node scripts/check-catalog.mjs",
-    "test": "npm run check && npm run build && node scripts/check-static.mjs",
+    "test": "node --test scripts/external-links.test.mjs && npm run check && npm run build && node scripts/check-static.mjs",
     "test:browser": "node scripts/check-browser.mjs"
   },
   "files": [
@@ -40,8 +40,10 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "parse5": "^8.0.1",
     "playwright": "^1.63.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "yaml": "^2.9.1"
   },
   "repository": {
     "type": "git",
