@@ -19,4 +19,13 @@ const articles = defineCollection({
   }),
 });
 
-export const collections = { articles };
+const companions = defineCollection({
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/companions' }),
+  schema: z.object({
+    title: z.string().trim().min(1),
+    description: z.string().trim().min(1),
+    diagram: z.string().trim().min(1),
+  }),
+});
+
+export const collections = { articles, companions };

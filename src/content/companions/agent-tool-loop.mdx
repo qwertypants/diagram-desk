@@ -1,0 +1,24 @@
+---
+title: "Who decides whether a tool call runs?"
+description: "The model proposes an operation; application code checks permission, executes it, and feeds the outcome back."
+diagram: "agent-tool-loop"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+For the application-managed tools shown here, application code decides whether a proposed call actually runs. The model chooses an operation and supplies arguments. The code must check them against the signed-in user's permissions before execution.
+
+Consider a customer asking for a delivery update. A proposed order lookup can identify the right order number while still requesting an order that belongs to someone else. Correct argument format does not establish access.
+
+Begin at **User Request**. Follow **Need a tool?** through **Yes**, then trace **Tool Result** back to the large language model, **LLM**. This return arrow explains why a lookup does not necessarily finish the conversation.
+
+<DiagramEmbed slug="agent-tool-loop" title="Agentic AI systems with tools" heading="Find the execution boundary" cue="Tool Router dispatches permitted calls. Tool Result returns feedback; No leads toward the final answer." companion={true} />
+
+The **Tool Router** and tool handlers need to enforce permissions; the diagram does not show a separate authorization node. A database result might supply a tracking number, prompting another call to **External API** for the latest carrier status. The four tool branches are alternatives, not a checklist.
+
+**Validate response** checks the answer after generation. It cannot authorize an earlier lookup or undo a disclosure. The orchestrator also needs stopping limits, which this chart leaves implicit. A failed lookup or exhausted budget should produce an honest account of what remains unknown.
+
+## Sources
+
+- [Anthropic's tool-use overview](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview) explains application execution and the result round trip.
+- [OWASP's excessive-agency guidance](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) explains permission enforcement outside the model.

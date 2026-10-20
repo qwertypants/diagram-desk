@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
+import { inspectExternalLinks } from './external-links.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const dist = join(root, 'dist');
@@ -7,6 +8,7 @@ const catalog = JSON.parse(readFileSync(join(root, 'catalog/index.json'), 'utf8'
 const legacyIds = JSON.parse(readFileSync(join(root, 'src/legacy-ids.json'), 'utf8'));
 const base = `/${(process.env.BASE_PATH || '/').split('/').filter(Boolean).join('/')}`.replace(/\/$/, '');
 const origin = new URL(process.env.SITE_URL || 'http://localhost:4321').origin;
+const companionNames = readdirSync(join(root, 'src/content/companions')).filter(name => name.endsWith('.mdx')).map(name => name.slice(0, -4));
 
 function checkFile(path) {
   if (!existsSync(path)) throw new Error(`Missing static output: ${path}`);
@@ -25,6 +27,15 @@ for (const article of catalog) {
   }
   if (!reader.includes('diagram-source-sha256')) {
     throw new Error(`Reader lacks source identity: ${article.slug}`);
+  }
+  if (companionNames.includes(article.slug)) {
+    const companion = checkFile(join(dist, 'diagrams', article.slug, 'index.html'));
+    for (const target of [`${base}/articles/${article.slug}/`, `${base}/diagrams/${article.slug}/reader.html`]) {
+      if (!companion.includes(target)) throw new Error(`Companion ${article.slug} lacks ${target}`);
+    }
+    if (!page.includes(`${base}/diagrams/${article.slug}/`)) throw new Error(`Article lacks companion link: ${article.slug}`);
+    const canonical = companion.match(/<link\b(?=[^>]*rel=["']canonical["'])[^>]*href=["']([^"']+)/i)?.[1];
+    if (canonical !== `${origin}${base}/diagrams/${article.slug}/`) throw new Error(`Wrong companion canonical: ${article.slug}: ${canonical}`);
   }
 }
 
@@ -49,7 +60,10 @@ let checkedLinks = 0;
 for (const file of htmlFiles(dist)) {
   const route = relative(dist, file).replaceAll('\\', '/').replace(/index\.html$/, '');
   const pageUrl = new URL(`${base}/${route}`, origin);
-  const html = readFileSync(file, 'utf8')
+  const source = readFileSync(file, 'utf8');
+  const violations = inspectExternalLinks(source, pageUrl.href);
+  if (violations.length) throw new Error(`External link contract in ${relative(dist, file)}: ${JSON.stringify(violations)}`);
+  const html = source
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/(<script\b[^>]*>)[\s\S]*?<\/script>/gi, '$1</script>')
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
@@ -73,4 +87,4 @@ for (const file of htmlFiles(dist)) {
   }
 }
 
-console.log(`Static output at ${base || '/'}: ${catalog.length} articles, ${catalog.length} Archify readers, ${Object.keys(legacyIds).length * 2} legacy routes; ${checkedLinks} internal URLs verified.`);
+console.log(`Static output at ${base || '/'}: ${catalog.length} articles, ${companionNames.length} companions, ${catalog.length} Archify readers, ${Object.keys(legacyIds).length * 2} legacy routes; ${checkedLinks} internal URLs and all external link notices verified.`);

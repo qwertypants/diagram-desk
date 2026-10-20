@@ -619,10 +619,18 @@ iframe {
   min-width: 0;
 }
 .learning-box {
-  padding: 28px 35px;
+  padding: 20px 28px;
   background: var(--learning-surface);
   border-left: 3px solid var(--learning-border);
-  margin-bottom: 60px;
+  margin-bottom: 36px;
+}
+.learning-box summary {
+  cursor: pointer;
+  line-height: 1.7;
+}
+.learning-box summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 5px;
 }
 .learning-box ul {
   margin: 16px 0 0;
@@ -679,15 +687,67 @@ iframe {
   background: var(--frame-surface);
 }
 .prose {
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.85;
   color: var(--prose);
 }
 .prose > * {
-  max-width: 72ch;
+  max-width: 68ch;
 }
 .prose > .diagram-section {
   max-width: none;
+}
+.prose :where(p, li, a) {
+  overflow-wrap: anywhere;
+}
+.companion-page {
+  padding-block: 45px 100px;
+}
+.companion-header {
+  max-width: 850px;
+  margin-inline: auto;
+}
+.companion-header .article-breadcrumb {
+  margin-bottom: 50px;
+}
+.companion-header h1 {
+  margin: 22px 0;
+  font: 500 clamp(2.5rem, 4.5vw, 4.5rem)/1.12 "Playfair Display", Georgia, serif;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+}
+.companion-deck {
+  max-width: 65ch;
+  color: var(--muted);
+  font-size: 19px;
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+.companion-content > :not(.diagram-section),
+.companion-followup {
+  width: min(100%, 68ch);
+  margin-inline: auto;
+}
+.companion-content > .diagram-section {
+  margin-block: 40px;
+}
+.companion-content .diagram-frame iframe {
+  height: min(720px, 75vh);
+  min-height: 480px;
+}
+.companion-followup {
+  border-top: 1px solid var(--line);
+  margin-top: 45px;
+  padding-top: 26px;
+}
+.companion-followup a {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--prose-link);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-size: 17px;
+  line-height: 1.6;
 }
 .prose h2,
 .prose h3 {
@@ -894,6 +954,7 @@ iframe {
   }
   .article-breadcrumb {
     margin-bottom: 65px;
+    flex-wrap: wrap;
   }
   .article-hero h1 {
     font-size: clamp(2.8rem, 11vw, 4.5rem);
@@ -927,7 +988,24 @@ iframe {
     height: 65vh;
   }
   .prose {
-    font-size: 15px;
+    font-size: 16px;
+  }
+  .companion-page {
+    padding-block: 32px 65px;
+  }
+  .companion-header .article-breadcrumb {
+    margin-bottom: 36px;
+  }
+  .companion-deck {
+    font-size: 17px;
+  }
+  .companion-content .diagram-frame iframe {
+    height: 70vh;
+    min-height: 420px;
+  }
+  .diagram-frame {
+    padding: 3px;
+    box-shadow: 5px 5px 0 var(--frame-shadow);
   }
   .related-section {
     padding: 65px 0;

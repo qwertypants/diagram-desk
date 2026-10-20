@@ -1,0 +1,25 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/urls';
+
+interface Props {
+  companion: CollectionEntry<'companions'>;
+  article: CollectionEntry<'articles'>;
+}
+const { companion, article } = Astro.props;
+const { Content } = await render(companion);
+const articleUrl = withBase(`/articles/${article.id}/`);
+---
+<BaseLayout title={companion.data.title} description={companion.data.description} canonical={`/diagrams/${companion.id}/`}>
+  <article class="companion-page wrap">
+    <header class="companion-header">
+      <div class="article-breadcrumb"><a href={withBase('/articles/')}>The library</a><span aria-hidden="true">/</span><a href={articleUrl}>Full article</a></div>
+      <div class="eyebrow">A DIAGRAM FIELD NOTE</div>
+      <h1>{companion.data.title}</h1>
+      <p class="companion-deck">{companion.data.description}</p>
+    </header>
+    <div class="companion-content prose"><Content /></div>
+    <footer class="companion-followup"><div class="eyebrow">GO DEEPER</div><a href={articleUrl}>Read the full article: {article.data.title} <span aria-hidden="true">→</span></a></footer>
+  </article>
+</BaseLayout>
