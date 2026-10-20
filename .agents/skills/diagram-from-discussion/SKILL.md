@@ -7,6 +7,12 @@ description: Use when someone wants to discuss an issue and author a new Diagram
 
 Turn the user's description of an issue into a native Archify diagram and MDX lesson in this static repository. The former in-browser editor and save API are retired. Follow the repository source workflow in [CONTRIBUTING.md](../../../CONTRIBUTING.md).
 
+## Load the bundled Archify skill
+
+Before authoring a diagram, read and follow [the bundled Archify skill](../../../vendor/archify/SKILL.md). It ships with this repository, so users do not need a separate global Archify skill installation. Read its referenced files relative to `vendor/archify/`, and run its CLI as `node vendor/archify/bin/archify.mjs` from the repository root. Use this bundled version even if another Archify skill is installed globally, so the instructions, schemas, and renderer match.
+
+Keep the lesson's durable JSON in `catalog/diagrams/`; use ignored `.archify/` paths for Archify preview output and acceptance evidence. Follow Archify's native diagram validation and delivery instructions, then verify the article through this repository's build and preview workflow below. If the bundled skill or CLI is missing, report the missing path and restore the repository's vendored files before authoring; do not silently substitute another version.
+
 ## Interview the issue
 
 Start by inviting the user to describe the issue in their own words. Ask one focused question per turn. Clarify only details needed to represent the issue accurately: the people or systems involved, what triggers the issue, the important steps or dependencies, decisions, effects, and the outcome they want to understand. Use a concrete recent example when it helps.

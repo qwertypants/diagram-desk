@@ -9,6 +9,8 @@ A static technical learning library about software and AI systems. Seventeen aut
 Requires Node.js 24 or newer and npm.
 
 ```sh
+git clone https://github.com/qwertypants/diagram-desk.git
+cd diagram-desk
 npm ci
 npm run dev
 ```
@@ -28,6 +30,29 @@ Run `npm test` for the complete automated check. See the [architecture guide](do
 ## Read and author
 
 Browse by article or topic. Each lesson explains the engineering problem, walks through its diagram, and records decisions and failure modes. The reader is embedded in the article, with a link to open it at full size.
+
+### Create a lesson with your coding agent
+
+After local setup, open your coding agent in the cloned repository and invoke the included [diagram-from-discussion skill](.agents/skills/diagram-from-discussion/SKILL.md). In Codex, try:
+
+```text
+$diagram-from-discussion Help me explain how our support team handles
+an escalated ticket, from the initial report through resolution.
+```
+
+The agent asks focused questions, drafts the native diagram and MDX lesson, runs checks, and opens a local preview for your review. It asks for approval before committing or publishing.
+
+The workflow loads the [bundled Archify skill](vendor/archify/SKILL.md) and uses the matching CLI, schemas, and examples in `vendor/archify/`. No separate global Archify installation is required.
+
+If your agent does not discover the skill, paste this instead:
+
+```text
+Read and follow .agents/skills/diagram-from-discussion/SKILL.md,
+including its bundled Archify skill dependency. Help me turn an issue
+into a diagram and lesson. Start by asking me about the issue.
+```
+
+### Author a lesson manually
 
 To add an article:
 

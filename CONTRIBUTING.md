@@ -15,6 +15,8 @@ Open the URL printed by Astro (normally <http://localhost:4321/>).
 
 ## Add or revise a lesson
 
+For guided authoring, invoke `diagram-from-discussion` from this repository. Its instructions are in [`.agents/skills/diagram-from-discussion/SKILL.md`](.agents/skills/diagram-from-discussion/SKILL.md). The workflow explicitly loads the [bundled Archify skill](vendor/archify/SKILL.md) and uses its matching CLI, schemas, and examples under `vendor/archify/`. No separate global Archify skill installation is required. If your agent does not discover the discussion skill automatically, ask it to read and follow that file.
+
 Articles live in `src/content/articles/` as MDX. Their frontmatter is validated by `src/content.config.ts`; use a nearby article as a model. Keep objectives, explanation, diagram, failure modes, and takeaways connected so the visual teaches a specific idea.
 
 Native Archify JSON lives in `catalog/diagrams/` and is indexed by `catalog/index.json`. Set the article's `diagram` field to the matching catalog slug. The build renders that JSON into `public/diagrams/<slug>/reader.html`. Check the reader at desktop and mobile widths, including keyboard access and readable context around the frame. Add meaningful text alternatives in the article for relationships conveyed by the diagram.
