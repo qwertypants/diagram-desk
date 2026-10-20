@@ -838,7 +838,7 @@ iframe {
   line-height: 1.6;
 }
 .takeaways li:before {
-  content: "↗";
+  content: "→";
   position: absolute;
   left: 0;
   color: var(--accent);

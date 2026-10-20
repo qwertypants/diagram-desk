@@ -17,5 +17,5 @@ const fullViewUrl = hasCompanion ? withBase(`/diagrams/${slug}/`) : url;
   <div class="section-eyebrow">INTERACTIVE DIAGRAM</div>
   <div class="diagram-heading-row"><h2 id="diagram-heading">{heading}</h2><a href={companion ? url : fullViewUrl}>{companion ? 'Open canvas only' : 'Open full view'} <span aria-hidden="true">→</span></a></div>
   {cue && <p class="diagram-cue">{cue}</p>}
-  <div class="diagram-frame"><iframe src={url} title={`Interactive diagram for ${title}`} loading="lazy" sandbox="allow-scripts allow-downloads"></iframe></div>
+  <div class="diagram-frame"><iframe src={url} title={`Interactive diagram for ${title}`} loading="lazy" sandbox="allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe></div>
 </section>

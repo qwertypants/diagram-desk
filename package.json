@@ -23,7 +23,7 @@
     "check": "node scripts/check-migration.mjs && astro check",
     "check:migration": "node scripts/check-migration.mjs",
     "check:catalog": "node scripts/check-catalog.mjs",
-    "test": "node --test scripts/external-links.test.mjs && npm run check && npm run build && node scripts/check-static.mjs",
+    "test": "node --test scripts/*.test.mjs && npm run check && npm run build && node scripts/check-static.mjs",
     "test:browser": "node scripts/check-browser.mjs"
   },
   "files": [

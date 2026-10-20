@@ -31,6 +31,9 @@ jobs:
       - name: Audit dependencies
         run: npm audit --audit-level=high
 
+      - name: Check content and external-link behavior
+        run: node --test scripts/*.test.mjs
+
       - name: Check content migration and Astro project
         run: npm run check
 
