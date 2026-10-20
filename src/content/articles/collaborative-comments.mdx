@@ -14,48 +14,50 @@ related: []
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-A comment refers to a piece of meaning in a changing document. Keeping that reference valid requires more than storing a character offset.
+A collaborative editor must keep comments connected to the text people meant to discuss as that text changes. Merging edits into a shared document is only one responsibility. The application also needs historical context and explicit rules for moved or deleted comment anchors.
 
-## The problem
+Imagine Priya highlighting “launch on Friday” in a shared project brief and asking whether the date is realistic. Luis inserts a new paragraph above it. Another collaborator later deletes the launch sentence. Priya's comment should move with the intended passage after the insertion, and its discussion should remain understandable after deletion.
 
-Concurrent edits move or delete text while collaborators discuss it.
+## Three kinds of state serve different questions
 
-## Read the architecture
+The top path runs from **Collaborators** through **Editor** to **Merge + broadcast**, then **Current document**. The merge component combines updates and distributes them so collaborators can work toward a shared current view. This path answers what the document says now.
 
-Separate the live document, committed history, and comment anchor paths before tracing a moved or deleted anchor.
+A second path leads to **Version history** and **Version store**. It answers what the document said at a relevant earlier point. The **version at comment creation** connection to **Comment threads** makes the relationship explicit: a comment should retain enough context to explain its original target.
 
-<DiagramEmbed slug="collaborative-comments" title={'Collaborative Comments and Version History'} />
+The third path connects **Comment threads**, **Anchor resolver**, and **Comments + anchors**. An anchor is the stored reference from a comment to its document location. Resolving it means interpreting that reference against the current document and its changes.
 
-### Walk through it
+Read the live-content path first, then the history path, then the resolver's inputs. Keeping these questions separate makes the chart easier to follow than treating every arrow as one edit sequence.
 
-#### 1. Live edits
+<DiagramEmbed slug="collaborative-comments" title="Collaborative Comments and Version History" heading="Track a comment through an edit" cue="Merge + broadcast updates Current document and Version history. Anchor resolver also needs the comment reference and document context to locate its target." />
 
-Collaborators edit through the collaboration engine. It merges updates into the current document and broadcasts them.
+## Why an offset loses the conversation
 
-#### 2. History
+Suppose Priya's highlighted sentence starts at character 120. Storing only “start 120, end 135” looks sufficient until Luis inserts text earlier in the document. Those numbers now refer to something else. The comment may appear beside an unrelated sentence even though its record was never edited.
 
-Committed edits produce version records. A comment retains the version at its creation.
+Yjs's [relative-position documentation](https://docs.yjs.dev/api/relative-positions) describes references attached to shared-document elements rather than ordinary integer positions. It also documents that resolving a position can return no result when it cannot be referenced or its type was deleted. That API is one possible building block, not an implementation of the entire comment lifecycle.
 
-#### 3. Anchors
+In our editor, a durable anchor could use the merge system's stable reference together with a creation-version identifier and a short original quotation. The resolver then determines where to render the marker after updates. The diagram leaves the exact encoding unspecified. Choose a representation supported by the underlying editor rather than attempting to repair every offset independently.
 
-The resolver consumes document updates and comment anchors, then records moved or deleted-anchor outcomes.
+Insertion at a selection boundary needs a rule too. If someone adds words immediately before “launch,” should the highlight expand or stay on the original phrase? The desired behavior depends on what the comment refers to. Define and demonstrate it with actual editing examples; convergence alone does not establish intuitive selection behavior.
 
-## Design decisions
+## Deletion needs an honest outcome
 
-- Store comment state separately from document history.
-- Keep a deleted anchor as an explicit unresolved outcome rather than silently moving a comment.
+Now a collaborator removes “launch on Friday.” The editor can merge that deletion successfully while the comment still asks a meaningful question about the previous plan. Silently attaching the thread to the nearest surviving sentence would imply that Priya commented on text she never selected.
 
-## Failure modes
+An explicit unresolved or deleted-anchor state preserves that distinction. The interface could show the original quoted text and link to its creation version, while explaining that the passage is no longer in the current document. A person might later reattach or resolve the thread. These are proposed product behaviors for our example; the chart names the resolver and store but does not prescribe their full state machine.
 
-- A numeric offset alone becomes wrong after concurrent edits.
-- Version retention and comment retention need compatible policies.
+Treat thread resolution separately from anchor deletion. “This passage was removed” does not necessarily mean the scheduling concern was addressed. Similarly, restoring an old document version should not erase replies written after that version. Comment state and document history have different timelines.
 
-## Key takeaways
+## Synchronization is necessary but insufficient
 
-- A merge engine does not by itself implement comment semantics.
+Yjs's [document-update documentation](https://docs.yjs.dev/api/document-updates) describes updates that can be applied in different orders and repeatedly while clients converge once they receive all updates. Such properties help distribute editing state. They do not decide whether deleting a paragraph resolves a discussion or what historical text a comment should show.
 
-## Further reading
+The diagram's **Merge + broadcast** feeds **Anchor resolver** as well as the current document and history. That connection makes anchor maintenance part of processing document changes. The resolver also needs the thread's reference and appropriate current content. Updating only the text view can leave comment markers stale.
 
-- [Yjs shared types and document updates](https://docs.yjs.dev/api/document-updates)
+For Priya's scenario, useful checks include inserting text before a comment, editing inside its range, deleting the target, disconnecting one client, and later synchronizing both. Inspect the comment's meaning and visibility, not only whether both clients display identical text.
 
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+## Decide what history promises
+
+Retaining a version identifier is useful only if the corresponding context remains available. If document history is pruned while comments are retained, decide whether the original quotation or a permitted snapshot is enough to explain the thread. Access rules still apply to historical content; a comment should not expose a removed confidential passage to an unauthorized viewer.
+
+A simple editor may avoid some complexity by attaching comments to whole document blocks with stable identities. Fine-grained selections require more careful movement and deletion behavior. Choose that precision because readers need it. This architecture and project-brief scenario are illustrative; they do not claim a particular collaboration algorithm or complete retention policy.

@@ -1,0 +1,26 @@
+---
+title: "What should resume after a crash?"
+description: "Restore the approval and operation identity, then recover according to what is known."
+diagram: "durable-recovery"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+After a crash, resume the recorded workflow state. Do not treat an existing approval or an uncertain external action as a new request.
+
+Imagine a manager approving a paid translation order. The application must remember which document, languages, and quoted cost were approved, even if it restarts hours later. It also needs a stable identity for the provider operation.
+
+<DiagramEmbed slug="durable-recovery" title="An approval that survives a crash" heading="Read the recovery branches separately" cue="Follow Awaiting approval to Executing, then compare retryable failure with unknown outcome. Completed requires a verified Check outcome." companion={true} />
+
+A known **retryable failure** enters **Backoff** and can return to execution within its deadline. An **unknown outcome** enters **Reconcile receipt** because the provider may have accepted the order before its reply disappeared.
+
+A found receipt goes to **Check outcome**. Confirmation that nothing was applied permits a retry through backoff. Continued uncertainty needs its own waiting or intervention policy, which the chart does not fully specify.
+
+**Denied**, **Expired**, and **Needs intervention** describe different endings. None should appear to the user as successful completion. **Completed** follows only after the receipt matches the intended operation.
+
+Durability preserves progress. Idempotency means that retrying the same operation does not repeat its effect, and reconciliation establishes what happened externally. These responsibilities remain separate even when a workflow framework manages the recorded state.
+
+## Sources
+
+- [Temporal: Workflow execution](https://docs.temporal.io/workflow-execution) explains durable recovery.
+- [Temporal: Retry policies](https://docs.temporal.io/encyclopedia/retry-policies) explains retry behavior and bounds.

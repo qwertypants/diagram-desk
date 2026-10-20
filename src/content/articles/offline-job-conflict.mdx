@@ -14,52 +14,46 @@ related: ["async-ai", "durable-recovery"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-Two valid actions can cross in time: a dispatcher moves a job while a technician completes it offline. The domain must say what each action changes.
+Two valid actions can disagree without one being disposable. When a dispatcher reassigns a job while a technician completes it offline, the system must decide what each action means. A version mismatch identifies concurrency; the business rules determine whether completion, assignment, or both should stand.
 
-## The problem
+Imagine technician Maya repairing a heater assigned to Truck A. Her tablet loses connectivity. While she finishes the repair, a dispatcher moves the job to Truck B because the office has not received an update. Maya records completion with the repair time and a note. On reconnect, the server sees a newer assignment and an older-based completion.
 
-A technician completes a job offline while a dispatcher moves it to another truck.
+## Preserve both actions before reconciling
 
-## Read the architecture
+At **Job scheduled**, the workflow splits into two writers. In **Dispatch transaction**, **Move A to B** leads through **One transaction** to **Supersede A; B live** and **Write outbox**. Treat the visible sequence as changes within that transaction's boundary: the assignment update and its event intent must agree.
 
-Trace the two writers separately before following reconnect, reconciliation, and closure.
+An outbox is a durable record that an event needs delivery, committed with the business change. AWS's [transactional outbox guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html) explains why independently saving a change and sending a message can leave the systems inconsistent. Here, a later delivery failure should not erase the office's assignment or the intent to notify clients.
 
-<DiagramEmbed slug="offline-job-conflict" title={'When a Job Completes While It Moves'} />
+Meanwhile, **Complete offline** reaches **Write local store**, then **Queue durable action**. Maya's tablet stores the fact and the pending submission locally. Her note should survive closing the app before reconnect. The interface can acknowledge that it is saved locally while clearly showing that server acceptance is still pending.
 
-### Walk through it
+Trace the two upper lanes independently before following reconnect. Their actions occur without seeing each other; the bottom lanes resolve that disagreement.
 
-#### 1. Two concurrent writers
+<DiagramEmbed slug="offline-job-conflict" title="When a Job Completes While It Moves" heading="Follow two valid writers" cue="Dispatch changes assignment while the tablet records completion. At Field-level check, separate Status unchanged from assignment changed before following the review path." />
 
-The dispatcher supersedes Truck A, activates Truck B, and writes an outbox event in one transaction. The technician records completion and a note in a local store.
+## Catch-up is different from a notification
 
-#### 2. Reconnect
+**Wake-up fan-out** has a dashed **Wake-up only** connection to **Pull after cursor**. A wake-up tells a client to check for changes. It is not the durable change history itself. If Maya misses the notification, reconnect should still let her pull events after the last position she processed.
 
-The technician queues an idempotent action with a base version, pulls events after a cursor, and submits completion. Wake-up messages only prompt pulling.
+A cursor is a saved position in that event stream. After **Reconnect**, the tablet uses it to obtain newer server changes, then **Send completion** submits the locally recorded action. Reading the latest assignment helps explain the conflict, but should not silently delete the technician's pending fact.
 
-#### 3. Reconcile
+The completion request needs an action identity and the version on which Maya acted. If the response disappears, she can resend the same logical action. **Check key + version** can recognize an already processed submission and return its recorded outcome. A fresh identity on every retry would defeat that recognition.
 
-The server checks the idempotency key and base version. An unchanged status permits completion while the newer assignment is retained. Their disagreement creates a review item.
+The diagram does not specify the event storage, cursor expiry, or local database. A real offline application needs recovery for a cursor that is too old and clear ownership checks for submitted actions. Those omissions do not change the central concurrency decision.
 
-#### 4. Close the stale dispatch
+## A whole-record overwrite loses meaning
 
-The dispatcher closes Truck B’s stale assignment. Completion stands, including technician, time, and note; the customer is not dispatched twice.
+The server reaches **Field-level check**. In this illustrated policy, the job's completion status has not changed since Maya's base version, so **Status unchanged** permits **Accept completion**. The newer assignment is retained separately through **Retain assignment** and **assignment changed**.
 
-## Design decisions
+Why retain an assignment that is now stale? Because it records the dispatcher's real action and lets the system resolve it explicitly. Accepting Maya's entire older record could revert Truck B to Truck A without explanation. Rejecting her entire completion could erase useful evidence of work that actually happened. Neither whole-record outcome captures both actions.
 
-- Treat assignment conflict and completion acceptance as field-level decisions, not mutually exclusive whole-record outcomes.
-- Use an outbox for committed events and a cursor for durable catch-up.
+The server records **Status complete** and **Append audit event**. The audit event should preserve who completed the work, when it was recorded, the submitted note, and the conflict decision. This is an example domain policy: it assumes the completion remains acceptable despite reassignment. A safety-critical dispatch system might require different validation or human acceptance before changing status.
 
-## Failure modes
+## Close the operational disagreement
 
-- Blindly retrying a completion can duplicate effects without an idempotency key.
-- A wake-up notification is not a durable event log.
+Both the completion audit and the retained assignment lead to **Create review item**. The dispatcher can inspect why Truck B is still assigned to completed work, then **Close B assignment**. **Completion stands** means Maya's accepted work remains recorded while the unnecessary follow-up dispatch is closed.
 
-## Key takeaways
+The review item is operational work with an owner. Merely logging a conflict would leave Truck B's driver uncertain about whether to travel. Define who sees the item and what happens until it is resolved; the diagram does not make notifications or human response instantaneous.
 
-- Concurrent changes require domain policy, not only version checks.
+Also distinguish this case from two competing completions or a cancelled job. The chart's acceptance branch depends on unchanged status. A different status conflict needs another rule, rather than automatically applying this example's result.
 
-## Further reading
-
-- [Transactional outbox pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
-
-> **Scope:** Illustrative field-service policy. The original intended outcome is retained; field-level conflict handling is clarified.
+This design is useful when people must act during disconnection and concurrent changes affect different responsibilities. If offline edits are unnecessary, requiring a current server decision before completion is simpler. When offline operation is essential, keep action identities, durable local facts, and field-specific policy together. The heater repair is hypothetical, and the chart describes one chosen reconciliation policy.

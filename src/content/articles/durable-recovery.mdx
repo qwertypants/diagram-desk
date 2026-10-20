@@ -14,49 +14,44 @@ related: ["permissioned-support-agent", "async-ai"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-A restart must preserve an approval decision without repeating an uncertain external action. Durable state and idempotency solve different parts of that problem.
+A workflow that survives a crash must preserve what has already been decided and distinguish a failed action from an action whose result is unknown. Durable state makes recovery possible. Idempotency and reconciliation prevent recovery from repeating an external effect accidentally.
 
-## The problem
+Imagine an application preparing a paid translation order. A manager must approve its quoted cost before the application submits it to a translation provider. Approval might take hours. The application could restart while waiting, or lose its connection immediately after the provider accepts the order. These interruptions require different responses.
 
-A long-running job waits for approval and may crash while an external operation is in flight.
+## Persist the decision you are waiting for
 
-## Read the architecture
+The lifecycle starts at **Queued**, then reaches **Awaiting approval** through **request consent**. Store the intended operation, its validated arguments, approval status, and deadline so they survive the process that first received the request. Holding a promise in a web server's memory is not durable waiting.
 
-Follow the persisted approval through execution, unknown outcome, reconciliation, and terminal state.
+For the translation order, approval should refer to the document, languages, quoted cost, and intended provider operation. If the quote changes, the stored decision no longer describes the new request. Reusing an approval silently would change its meaning.
 
-<DiagramEmbed slug="durable-recovery" title={'An approval that survives a crash'} />
+The **approved** path reaches **Executing**. **Denied** and **Expired** are distinct terminal outcomes: one records a decision, while the other records that no acceptable decision arrived before the deadline. After a restart, the application should restore the existing state rather than ask again as if the job were new.
 
-### Walk through it
+Read the main path across the top. Then compare the three ways execution can leave it: a known retryable failure, an unknown outcome, and an ordinary receipt.
 
-#### 1. Await approval
+<DiagramEmbed slug="durable-recovery" title="An approval that survives a crash" heading="Distinguish waiting from uncertainty" cue="Executing can reach Backoff or Reconcile receipt for different reasons. Only a verified Check outcome leads to Completed." />
 
-Persist the requested operation and approval state. A restart restores the existing decision. A rejection or expired deadline ends the job.
+## Durable recovery preserves progress
 
-#### 2. Execute and recover
+A durable workflow stores enough history or state to resume after a failure. Temporal's [workflow execution documentation](https://docs.temporal.io/workflow-execution) describes recovery using recorded event history and replay. Its [human-in-the-loop example](https://learn.temporal.io/tutorials/ai/building-durable-ai-applications/human-in-the-loop/) demonstrates waiting for a human decision. Other implementations can use explicit state records and durable messages; this diagram does not require a particular framework.
 
-Run the approved operation with an idempotency key. A known transient failure can back off within a deadline; an unknown outcome must be reconciled first.
+The key distinction is between restoring workflow progress and guaranteeing a single external effect. A workflow engine can remember that it scheduled an activity while the provider has independently accepted its request. If the response disappears before completion is recorded, the application still needs to determine what happened externally.
 
-#### 3. Check the result
+Before **Executing**, persist a stable operation identity and use the provider's supported idempotency mechanism when available. Repeated transmission should refer to the same approved translation order. The provider's rules for deduplication and retention matter; the workflow's durable history cannot impose those rules on another system.
 
-A verified receipt reaches completion. Exhausted retry budgets and invalid outcomes become explicit intervention states.
+## Retry a known failure, reconcile an unknown outcome
 
-## Design decisions
+Suppose the provider explicitly rejects a submission because its service is temporarily unavailable, without accepting an order. That known **retryable failure** can enter **Backoff**. Backoff means waiting before another attempt instead of immediately adding load to an unavailable dependency. The **within deadline** branch permits another execution; **budget exhausted** ends at **Needs intervention**.
 
-- Persist approval and external-operation identity before execution.
-- Retry activities that can safely repeat; do not infer exactly-once execution from a durable workflow.
+Now suppose submission times out after the request was sent. The provider may already have created the order. That case follows **unknown outcome** to **Reconcile receipt**. Reconciliation means consulting an authoritative record for the original operation rather than guessing from the missing response.
 
-## Failure modes
+If a receipt is found, **receipt found** reaches **Check outcome**. If the provider confirms the operation was not applied, **confirmed not applied** can reach **Backoff** for another permitted attempt. If neither can be established, preserve the uncertainty. The diagram leaves that unresolved waiting and escalation policy unspecified; it does not authorize inventing a success or absence.
 
-- A crash between applying an effect and recording its receipt creates uncertainty.
-- Permanent errors need correction rather than repeated retries.
+A timeout and an explicit rejection can look similar in a log labeled “request failed.” They are different facts. Store the operation identifier and the reason for recovery so the next process makes the right choice.
 
-## Key takeaways
+## Completion needs evidence
 
-- Durability preserves state; idempotency controls repeated effects.
+**Check outcome** validates a receipt against the approved request. For the translation order, check that it identifies the intended document, languages, cost agreement, and accepted provider state. A successful HTTP response containing the wrong order is an **invalid outcome**, which reaches **Needs intervention**. Only **verified** reaches **Completed**.
 
-## Further reading
+Temporal's [retry policy documentation](https://docs.temporal.io/encyclopedia/retry-policies) distinguishes retryable and non-retryable errors and allows retry bounds. The general design choice here is to spend retry effort on failures that can improve with another attempt. A malformed document or withdrawn approval needs correction or a new decision, not repeated submission.
 
-- [Durable human approval](https://learn.temporal.io/tutorials/ai/building-durable-ai-applications/human-in-the-loop/)
-- [Temporal retry policies](https://docs.temporal.io/encyclopedia/retry-policies)
-
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+This lifecycle is useful when work spans human waiting and consequential external calls. A local calculation with no side effects may only need a durable job record and a safe rerun. For the translation example, define exactly what is preserved, what can safely repeat, and which external record establishes success. The diagram is an illustrative lifecycle, not an implemented ordering service.

@@ -1,0 +1,23 @@
+---
+title: "Can completion survive reassignment?"
+description: "Keep the technician’s completed work and resolve the newer dispatch as a separate decision."
+diagram: "offline-job-conflict"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+In this illustrated field-service policy, an offline completion can be accepted even when the assignment changed. The server considers what changed in each field instead of selecting one entire record as the winner.
+
+Maya repairs a heater while her tablet is offline. The dispatcher, unaware of that progress, moves the job from Truck A to Truck B. Maya's completion and the new assignment can both describe real actions.
+
+<DiagramEmbed slug="offline-job-conflict" title="When a Job Completes While It Moves" heading="Separate the two changes" cue="Follow Complete offline and Move A to B independently. Then trace Field-level check to accepted status, retained assignment, and the review that closes B." companion={true} />
+
+The tablet saves completion locally and queues a durable action. Reconnecting pulls server events after a cursor, the saved position in that history, then sends the action with its stable identity and base version. A wake-up message only prompts catch-up; it does not replace the event history.
+
+At **Field-level check**, **Status unchanged** allows **Accept completion**, while **assignment changed** leads to **Retain assignment**. The completion is audited, and the disagreement creates a review item. **Close B assignment** ends the unnecessary dispatch while **Completion stands** preserves Maya's work and note.
+
+This is a chosen domain rule, not a general merge algorithm. If the job was cancelled or already completed, the unchanged-status condition would not hold and another policy would be needed. Version checking exposes the conflict; it cannot decide what the business should accept.
+
+## Source
+
+- [AWS: Transactional outbox](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html) explains committed changes and durable event delivery intent.

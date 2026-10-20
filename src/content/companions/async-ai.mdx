@@ -1,0 +1,26 @@
+---
+title: "What does an accepted job promise?"
+description: "A job identity lets slow work continue while the caller observes its recorded outcome."
+diagram: "async-ai"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Accepting a job means the application has taken responsibility for processing and tracking it. It does not mean the AI operation has completed.
+
+Consider an interview-summary request that takes longer than an HTTP connection can comfortably remain open. The user needs a job identifier so a later visit can retrieve the same status and result.
+
+<DiagramEmbed slug="async-ai" title="Async AI processing" heading="Follow one interview job" cue="Read API to Job database and Job queue, then follow one Worker. Status endpoint observes stored state; it does not run the model." companion={true} />
+
+A **Worker** calls **LLM / AI Service** and owns saving the output to **Results** and updating **Job database**. Three worker boxes show consumers that can share the workload, not three mandatory copies of each job.
+
+A failed attempt can enter **Retry queue**. Exhausted attempts reach **Dead-letter queue**, where work needs investigation. The application must still make the failure visible through its job state.
+
+Two gaps deserve attention. Writing the job and publishing its message are separate operations in this chart; an outbox or equivalent delivery design must connect them reliably. Also, a queue message can repeat. Result writes and job transitions need to recognize the same logical job instead of producing duplicate effects.
+
+**Status endpoint** reports recorded progress. A completed state should correspond to a saved, readable result. Provider success alone does not establish that the application saved it.
+
+## Sources
+
+- [AWS: Transactional outbox](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html).
+- [Amazon SQS: At-least-once delivery](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues-at-least-once-delivery.html).

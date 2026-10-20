@@ -1,0 +1,26 @@
+---
+title: "What keeps a comment attached?"
+description: "Live text, historical context, and comment anchors need coordinated handling."
+diagram: "collaborative-comments"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A comment needs a reference to the passage being discussed, not just its current character offset. Edits before that passage can move it; deleting it can leave a discussion that still matters.
+
+Priya comments on “launch on Friday” in a shared brief. Luis inserts a paragraph above it. The marker should follow the original text. If someone later deletes the sentence, attaching the thread to a nearby surviving sentence would misrepresent its meaning.
+
+<DiagramEmbed slug="collaborative-comments" title="Collaborative Comments and Version History" heading="Follow text, history, and anchors" cue="Compare Current document with Version store. Then follow Comment threads and document updates into Anchor resolver and Comments + anchors." companion={true} />
+
+**Merge + broadcast** combines edits for the live document. **Version history** preserves earlier context. **Comment threads** retains the version at creation, while **Anchor resolver** interprets the comment reference against document changes.
+
+A stable relative position can help an anchor survive insertions. It does not decide what the interface should do when the intended passage disappears. An explicit deleted or unresolved anchor can retain the original context without pretending the comment targets different text.
+
+Thread resolution is a separate decision: removing the launch sentence does not prove Priya's scheduling concern was answered. Retention matters too; keeping a historical version identifier is insufficient if its supporting context has been deleted.
+
+The diagram separates these responsibilities without prescribing a complete merge algorithm or comment policy.
+
+## Sources
+
+- [Yjs: Relative positions](https://docs.yjs.dev/api/relative-positions) explains stable references and missing resolutions.
+- [Yjs: Document updates](https://docs.yjs.dev/api/document-updates) explains synchronization properties.

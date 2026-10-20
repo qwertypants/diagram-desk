@@ -14,49 +14,44 @@ related: ["durable-recovery", "offline-job-conflict"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-A slow model call outlives the request that started it. A job record lets the caller observe progress while workers do the work.
+Asynchronous processing separates accepting a request from completing its work. The caller receives a durable job identity, workers perform the slow operation, and a status endpoint reports what the application has actually recorded. Returning from the first request is not evidence that the work succeeded.
 
-## The problem
+Imagine uploading a long interview recording and requesting an AI-generated summary. Processing might outlast the browser's request timeout. The user should be able to close the page, return later, and inspect the same job instead of accidentally starting another paid model call.
 
-Long model calls must continue after the initial HTTP request ends.
+## Acceptance creates an obligation
 
-## Read the architecture
+The diagram begins with **User** calling **API**. The API writes **Job database** and submits work to **Job queue**. For our example, a job record could identify the uploaded recording, the requested summary format, its owner, and an initial state. The response should provide a job identifier the user can query later.
 
-Trace acceptance, worker execution, retries, and the status read as distinct paths.
+There is a gap between those two writes. Suppose the database accepts the record but publishing to the queue fails. The interface might show “queued” forever even though no worker can receive it. Reversing the writes creates another problem: work might begin without the durable record the status endpoint needs.
 
-<DiagramEmbed slug="async-ai" title={'Async AI processing'} />
+The diagram draws these connections but does not close that gap. A transactional outbox is one possible implementation: write the job and an intent to publish in one database transaction, then deliver that intent separately. AWS's [transactional outbox guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html) describes this dual-write problem. The choice requires a real delivery mechanism; adding an “accepted” label does not solve it.
 
-### Walk through it
+Follow acceptance first, worker execution second, and polling third. The three worker boxes represent available consumers, not three required executions of each job.
 
-#### 1. Accept
+<DiagramEmbed slug="async-ai" title="Async AI processing" heading="Separate acceptance from completion" cue="Trace API to Job database and Job queue. Follow one Worker to LLM / AI Service and Results, then read status through Status endpoint." />
 
-The API records the job and enqueues work. A production design should close the dual-write gap with an outbox or equivalent mechanism.
+## Workers own application results
 
-#### 2. Execute
+**Job queue** distributes work to the **Worker** instances. A worker claims an interview job, calls **LLM / AI Service**, and receives the generated summary. It then writes **Results** and updates **Job database**. The provider generates output; application workers own whether that output becomes a saved result.
 
-The queue distributes work to three workers. Each worker calls the AI service and owns persistence of its returned result and job status.
+For this scenario, successful processing should mean the result is available and linked to the job, not merely that the external call returned. Imagine marking the job completed before saving the summary, then crashing. The status endpoint would claim success while the user had nothing to read. Define the persistence order and completion transition so the visible state corresponds to durable output.
 
-#### 3. Recover and observe
+The chart does not prescribe a locking or lease mechanism for claiming work. You still need a rule for concurrent workers and stale attempts. An attempt identifier can help prevent an older worker from overwriting a newer accepted result. That is an implementation decision, not a capability supplied by the arrows.
 
-Failed work enters the retry queue. Retryable work returns to the job queue; exhausted work goes to the dead-letter queue. The status endpoint reads the job database.
+## Repeated delivery is a normal case to design for
 
-## Design decisions
+Suppose a worker saves a summary and crashes before acknowledging the queue message. The job can be delivered again. Amazon SQS's [standard-queue documentation](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues-at-least-once-delivery.html) explicitly warns that messages may repeat and recommends idempotent processing. Other queues have their own contracts; check the one you use.
 
-- Workers, rather than the external model provider, write application results.
-- A dead-letter queue retains work that needs investigation.
+Idempotent means repeating an operation does not introduce an additional logical effect. For the interview job, a repeated delivery should find the already accepted result or write through a guarded completion operation. It should not create a second user-visible summary record under a new identity. Preventing another provider charge may require additional provider-side support or recording call state; deduplicating a database write alone cannot undo a repeated model call.
 
-## Failure modes
+The **Failure** edge reaches **Retry queue**, which can return work to **Job queue**. A temporary provider outage might justify another attempt. An unsupported recording format will not become valid merely by waiting. Classify failures so permanent input problems can be explained rather than retried indefinitely.
 
-- Delivery can repeat; writes need idempotency.
-- The original retry path illustrates one worker; the same policy applies to all three.
+The **Max retries** path ends in **Dead-letter queue**. That queue retains exhausted work for investigation; it does not repair it or necessarily update the user's job state by itself. Implement the status transition and decide who reviews those jobs. The retry edge is drawn from one worker to keep the diagram readable; the policy must apply consistently to every worker.
 
-## Key takeaways
+## Progress is a stored observation
 
-- Retries do not create exactly-once side effects.
+The user reads **Status endpoint**, which reads **Job database**. Polling this endpoint should report the same job after a reload. A state such as “running” means an attempt has started; it does not imply a reliable percentage complete. If the provider offers no meaningful progress signal, avoid inventing one.
 
-## Further reading
+**Logs + metrics** receives worker observations. Useful distinctions include time spent waiting in the queue, provider execution time, retry counts, and terminal failure. A fast model call does not make a job fast when it waited ten minutes for a worker.
 
-- [Temporal retry policies](https://docs.temporal.io/encyclopedia/retry-policies)
-- [Transactional outbox pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
-
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+This architecture is worthwhile when slow or bursty work must survive the original connection. A short, predictable operation may be simpler to serve synchronously. Before adding a queue, decide what acceptance promises, how users find the result, and what they see when work cannot finish. The interview service here is hypothetical; the diagram does not implement those guarantees.
