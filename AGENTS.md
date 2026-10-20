@@ -1,3 +1,5 @@
+- Use standard Git in this repository.
+
 <!-- graft:start -->
 ## Graft — repo context graph
 
