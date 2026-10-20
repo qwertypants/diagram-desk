@@ -1,6 +1,6 @@
 ---
 title: "Effective Agents: Design Principles and Practice"
-description: "Choose agentic work that has clear success criteria, feedback, and human oversight."
+description: "Apply simplicity, visible actions, narrow tools, observed feedback, and human checkpoints to a concrete support task."
 pubDate: "2026-10-19"
 topic: "AI systems"
 tags: ["agents", "tool design", "oversight"]
@@ -14,46 +14,51 @@ related: ["workflow-or-agent", "plan-act-check"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-Autonomy is useful when the system can inspect its work, ask for help, and stop. Tool design and feedback matter as much as the model.
+A useful agent needs more than the ability to choose actions. It needs tools whose effects are understandable, evidence that reveals whether those effects helped, and a way to return decisions to a person. These design choices determine whether autonomy serves the task.
 
-## The problem
+Imagine a support assistant handling a customer who received a duplicate shipment. It may need to inspect order records, explain return options, and prepare a support action. A plausible answer is easy to generate. A reliable resolution requires the right account, current records, a permitted action, and confirmation of what actually happened.
 
-An agent can take actions without making its reasoning or outcomes understandable.
+The chart reads as a sequence of design questions. Follow **Design deliberately** across the top, then **Ground the work**. Treat the bottom branches as examples of suitable tasks, not evidence that every support or coding problem needs an agent.
 
-## Read the architecture
+<DiagramEmbed slug="effective-agent-principles" title="Effective Agents: Design Principles and Practice" heading="Apply the principles to support work" cue="Follow the design choices into feedback and checkpoints before judging task fit." />
 
-Read the choices in order: understandable control, observed feedback, and evidence that the use case fits.
+## Simplicity makes decisions inspectable
 
-<DiagramEmbed slug="effective-agent-principles" title={'Effective Agents: Design Principles and Practice'} />
+At **Keep it simple**, choose the smallest process that can handle the duplicate-shipment case. A read-only assistant that summarizes the records for a support person may solve the immediate need. Add action-taking only if users need it and the product can check its outcome.
 
-### Walk through it
+Simplicity reduces the number of places where a mistake can hide. If one component reads an order and another proposes a return, a reviewer can compare the proposal to the record. Adding multiple delegating agents before finding a limitation creates more handoffs to inspect without establishing a better resolution.
 
-#### 1. Keep control understandable
+**Expose agent steps** means making relevant actions and results visible. A useful support view might say "Order record retrieved" and "Return prepared, awaiting confirmation." It should distinguish an attempted lookup from a successful one. A long narration of supposed thinking cannot substitute for records of the operations that ran.
 
-Begin with a simple design. Expose meaningful steps and design, document, and test tools.
+Expose what a person needs to verify or intervene. Internal prompts and sensitive customer details do not belong in every user-facing log. The design question is which evidence explains the current state without creating unnecessary disclosure.
 
-#### 2. Use feedback
+## Tools define what the agent can do
 
-Evaluate environment observations and retain human checkpoints.
+At **Design and test tools**, prefer an operation such as `prepare_return(order_id, item_id)` over a broad instruction channel that can change arbitrary records. Document required inputs, expected results, and failure behavior. If the assistant cannot tell whether a tool creates a draft or submits a return, it cannot reliably explain the outcome to the customer.
 
-#### 3. Check fit
+Test confusing cases at the tool boundary. Does the item belong to the given order? Is the operation allowed for this customer? What happens if a request repeats? The tool implementation and downstream services must enforce these rules; the model's choice of a valid-looking identifier is insufficient.
 
-Support retrieves context and performs permitted actions; coding uses test feedback and review. Other use cases need the same success and oversight criteria.
+For the duplicate shipment, the application might permit inspection and preparation automatically while requiring an explicit confirmation before a consequential submission. The appropriate checkpoint depends on the operation and the authorization already granted. A blanket request for approval before every harmless lookup can obstruct the task without protecting a meaningful boundary.
 
-## Design decisions
+## Feedback must be capable of disagreeing
 
-- Increase autonomy only where observations let the system assess progress.
+**Use real feedback** asks whether the system can detect that its attempted action did not achieve the goal. A tool reply saying "request accepted" might only mean a service queued work. A confirmed return identifier is different evidence. The assistant should report the state it actually observed.
 
-## Failure modes
+Suppose preparation fails because the item is outside the return window. A useful next step is to explain the restriction or ask for an exception decision. Repeating the same request with more confident wording does not change the policy. Feedback has value when it can cause a different decision.
 
-- More agents and tools can increase compounding errors.
+**Human checkpoints** let a person supply missing judgment or authorize work beyond the assistant's current scope. Present the relevant order facts and the proposed action so the decision is reviewable. Record whether the assistant is waiting, finished, or unable to proceed. A vague "human in the loop" promise does not identify who must do what next.
 
-## Key takeaways
+## Decide whether the task fits
 
-- Tool design is part of product reliability.
+At **Suitable task?**, the diagram branches to **Support actions**, **Coding with tests**, and **Assess other tasks**. Support can fit because records and action outcomes can be checked. Coding can fit because executing the changed software can reveal failures. Neither branch guarantees that every important requirement has an automatic test.
 
-## Further reading
+A code change can pass tests yet violate the intended behavior. A support action can satisfy a policy yet leave the customer confused. Combine machine-checkable outcomes with review where the goal requires judgment.
 
-- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+For another domain, ask what observation could prove the agent wrong and who can resolve uncertainty. If the only success signal is the model declaring confidence, improve the feedback design before expanding autonomy. The duplicate-shipment assistant earns more responsibility when its actions, limits, and outcomes are clear enough for the people relying on it.
 
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+## Sources
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) connects simplicity, transparent steps, tool design, feedback, and task fit.
+- [OWASP's excessive-agency guidance](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) supports narrow capabilities and application-enforced authorization.
+
+The support scenario and tool name are illustrative.

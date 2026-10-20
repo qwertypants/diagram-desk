@@ -1,0 +1,25 @@
+---
+title: "Who should choose the next step?"
+description: "Use a fixed workflow for a known process and model-directed control when intermediate evidence must shape the next action."
+diagram: "workflow-or-agent"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Application code should choose the next step when the process is known. A model-led agent can help when an investigation must adapt to what it discovers. Start by checking whether a single model call with the right context already solves the task.
+
+For example, drafting a support reply from supplied documentation may need one call. Classifying a ticket, retrieving its documentation, and drafting a reply can follow a fixed workflow. Investigating a missing export may need a changing sequence of job-status and delivery lookups.
+
+Follow **Start simple** through the two questions in the top lane. Then compare the workflow and agent paths as they converge on **Measure outcomes**.
+
+<DiagramEmbed slug="workflow-or-agent" title="Workflows or Agents? Choosing the Right Level of Complexity" heading="Compare the control paths" cue="Follow the questions, then compare both paths at Measure outcomes." companion={true} />
+
+**Predictable process** and **Flexibility and cost** describe different consequences of control. Neither establishes that an approach is better for your task. Compare actual resolutions, response time, and resource use on the same cases.
+
+The one-call branch ends early in this drawing, but it still needs evaluation as the baseline. **Better outcomes?** sends an unsuccessful comparison back to the start. **Keep it simple** means retain the least complicated approach that works, including an agent if its flexibility earns the cost.
+
+An agent still needs application-enforced permissions and stopping limits. Choosing actions and authorizing them are separate responsibilities.
+
+## Source
+
+[Anthropic's workflow and agent guidance](https://www.anthropic.com/engineering/building-effective-agents) explains the control distinction and the case for starting simply.

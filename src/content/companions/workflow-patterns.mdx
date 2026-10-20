@@ -1,0 +1,25 @@
+---
+title: "Which workflow shape fits the work?"
+description: "Compare ordered calls, routing, parallel work, dynamic decomposition, and feedback before combining them."
+diagram: "workflow-patterns"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Choose a workflow pattern by identifying what must depend on what. A release briefing may need facts before prose, independent risk reviews, or a revision after review. Those are different reasons to add model calls.
+
+Read one lane at a time from left to right. The lanes compare alternatives; they are not one long pipeline. The chart shows six lanes because parallelization has two variants within the five pattern families.
+
+<DiagramEmbed slug="workflow-patterns" title="Workflow Patterns: Five Ways to Compose LLM Calls" heading="Find the dependency" cue="Compare the lanes independently; the arrows describe how work depends on other work." companion={true} />
+
+**Prompt chaining** orders dependent work and checks a gate between calls. **Routing** classifies the input and chooses a specialist. A wrong classification can send otherwise competent work down the wrong branch.
+
+**Parallel sectioning** assigns different subtasks and aggregates their results. **Parallel voting** repeats the same task and combines judgments. Agreement can repeat a shared error, so a vote cannot replace source evidence.
+
+**Orchestrator-workers** decides how to decompose the particular input before synthesizing results. **Evaluator-optimizer** sends a draft back for refinement until a criterion is met. The latter needs explicit criteria and a stopping limit; an evaluator's preference alone does not prove correctness.
+
+For a briefing, extract facts before writing if the writing depends on them. Review independent concerns in parallel if they can stand alone. Add revision only when feedback can name what should change. Every merge and loop needs a defined failure outcome as well as a success path.
+
+## Source
+
+[Anthropic's composition patterns](https://www.anthropic.com/engineering/building-effective-agents) explain the five families and their intended uses.

@@ -1,0 +1,25 @@
+---
+title: "How does an agent know when to stop?"
+description: "Follow the feedback loop and distinguish an achieved task, a human checkpoint, and an exhausted budget."
+diagram: "plan-act-check"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+An agent should stop as complete when observed results satisfy the task. It should pause when a human decision is required, and report incomplete work when a limit prevents further action. These are distinct outcomes even if all three end the current run.
+
+For an agent repairing a CSV export, a file edit is an action. A downloaded CSV with the agreed headers and values is evidence about the outcome. The loop is useful only if that evidence changes what happens next.
+
+Follow **Plan next step**, **Act with tools**, **Observe results**, and **Assess progress**. Then inspect each exit from assessment.
+
+<DiagramEmbed slug="plan-act-check" title="Autonomous Agent: Plan, Act, Check, and Stop" heading="Read the stopping paths" cue="Begin at Clarify task and compare the exits from Assess progress." companion={true} />
+
+**Continue** returns to planning with new information. A failed export check should narrow or change the hypothesis rather than trigger another identical edit.
+
+**Complete** requires the observed outcome to meet the clarified task. **Human checkpoint** preserves progress while the person resolves a question or grants needed authorization; its return arrow resumes planning. **Limit reached** means the run exhausted a configured budget, not that it solved the problem.
+
+The application must enforce those limits and retain enough state for an honest handoff. A final message should identify what worked, what evidence was checked, and what remains unknown. The chart describes control flow; it does not guarantee that a particular check proves the user's goal.
+
+## Source
+
+[Anthropic's agent-loop guidance](https://www.anthropic.com/engineering/building-effective-agents) explains environment feedback, checkpoints, and stopping conditions.

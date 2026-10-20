@@ -1,6 +1,6 @@
 ---
 title: "Workflows or Agents? Choosing the Right Level of Complexity"
-description: "Use the least complex approach that measurably solves the task."
+description: "Choose between one model call, a fixed workflow, and an agent by examining what the task requires and comparing outcomes."
 pubDate: "2026-10-19"
 topic: "AI systems"
 tags: ["workflows", "agents", "complexity"]
@@ -14,46 +14,50 @@ related: ["workflow-patterns", "effective-agent-principles"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-Start with the smallest approach that meets the task. Add model-directed control only when measured outcomes justify it.
+A workflow lets application code choose the sequence of work. An agent lets a model choose some of the next steps. Pick between them by asking how much of the process you can specify in advance, then test whether the extra flexibility improves the result.
 
-## The problem
+Suppose a small software company wants help with incoming support tickets. The first request sounds broad: "Use AI to handle support." That could mean labeling a ticket, drafting a reply from documentation, or investigating a customer's account across several systems. Those tasks need different amounts of control. Giving all of them an autonomous agent would skip the most useful design question: what work actually requires a changing plan?
 
-A flexible agent can be expensive and unpredictable when a fixed workflow would suffice.
+## Start with an answerable task
 
-## Read the architecture
+Take a narrow version first. Given a ticket and the relevant product documentation, draft a reply for a support person to review. A single model call might handle that. The application can retrieve the documentation before the call; "one call" refers to the generation step, not to an application with no other code.
 
-Follow the decision from one call through predictable workflows to agent-directed work and back to evaluation.
+At **Start simple**, write down what a successful draft must contain. For a password-reset ticket, it should identify the documented reset procedure, avoid requesting the customer's password, and explain the next action. If the output fails because the prompt omitted the procedure, fix the missing context before adding a planning loop.
 
-<DiagramEmbed slug="workflow-or-agent" title={'Workflows or Agents? Choosing the Right Level of Complexity'} />
+Read the top lane as a choice about control. Follow **One call enough?** toward either **One model call** or **Predictable steps?**. The lower lanes compare the consequences of adding a workflow or an agent.
 
-### Walk through it
+<DiagramEmbed slug="workflow-or-agent" title="Workflows or Agents? Choosing the Right Level of Complexity" heading="Choose control for a support task" cue="Read the top lane first. Compare workflow and agent outcomes in the lower lanes." />
 
-#### 1. Try one call
+## Predictable work can still contain model calls
 
-Check whether retrieval and examples make a single model call sufficient.
+Now suppose the company wants to classify tickets, fetch documentation for their category, and draft a reply. The sequence is known even though the wording of each ticket differs. **Predictable steps?** leads to **Code-led workflow**.
 
-#### 2. Choose control
+Application code can require classification before retrieval and refuse to draft when no relevant document is available. Different models could perform classification and writing, but the code determines when those calls happen. A workflow therefore does not mean "no AI." It means that the process follows predefined control decisions.
 
-Use code-directed workflows for predictable steps; consider an agent when the process itself must be discovered.
+The **Predictable process** node names the benefit. A support engineer can inspect which stage failed and decide what to retry. The cost is that an unexpected ticket may not fit the available branches. For example, a billing issue mislabeled as a login issue can receive the wrong documents unless the workflow provides a fallback or review path.
 
-#### 3. Measure
+That limitation may be acceptable. A visible "needs human review" result can serve customers better than an assistant improvising account operations it was never designed to perform.
 
-Evaluate outcomes. If added complexity does not improve them, return to the simpler design.
+## When the process must adapt
 
-## Design decisions
+Consider a different support task: investigate why a scheduled export did not arrive. One customer may have no completed export; another may have a completed export with a failed notification. The next useful lookup depends on the evidence returned by the previous one.
 
-- Workflows favor predictability; agents trade some control for flexibility.
+Here, **Model-led agent** may fit. The model can choose whether to inspect job status, account settings, or delivery records. The application still defines available tools, enforces authorization, and limits execution. Model-directed control does not grant permission to access every account or retry forever.
 
-## Failure modes
+**Flexibility and cost** captures the tradeoff. A changing investigation can answer cases a rigid sequence misses, but it may require more model calls and more waiting. It can also pursue an irrelevant explanation. These are reasons to evaluate the design, rather than reasons to assume either approach always wins.
 
-- A sophisticated demonstration may fail repeated task evaluation.
+## Decide with the same cases
 
-## Key takeaways
+At **Measure outcomes**, run candidate approaches on the same representative support cases. Check whether they resolve the actual question, use evidence correctly, and stop when information is missing. Record response time and resource use alongside quality. An impressive demonstration of one unusual case does not establish that an agent improves everyday support.
 
-- Complexity is a cost to justify with outcomes.
+Include ordinary tickets as well as ambiguous investigations. Otherwise, the evaluation may reward flexibility while ignoring the slower answers it imposes on simple requests. Keep cases where a correct result is a clarification or an escalation; forcing every case into an automatic resolution rewards overconfident behavior.
 
-## Further reading
+The **Better outcomes?** decision sends a failed comparison back to **Start simple**. That does not require abandoning all model use. It may mean narrowing the task, improving retrieval, or keeping only the workflow stages that helped. The **Yes** branch reaches **Keep it simple**, meaning retain the least complicated design that earned its place. It does not mean an agent that passed evaluation must become a single call.
 
-- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+The drawing does not explicitly connect the one-call branch to the measurement loop. Evaluate that baseline too. Without a baseline, you cannot tell whether added orchestration helped.
 
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+Choose a workflow when you can name the steps and their failure behavior. Consider an agent when the evidence must determine the next step. In either case, the support customer's outcome is the reason to add complexity.
+
+## Source
+
+[Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) defines code-directed workflows and model-directed agents and explains their cost and flexibility tradeoff. The support examples here are hypothetical.

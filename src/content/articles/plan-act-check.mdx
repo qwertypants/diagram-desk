@@ -1,6 +1,6 @@
 ---
 title: "Autonomous Agent: Plan, Act, Check, and Stop"
-description: "An agent loop must return to observed results and have explicit ways to stop."
+description: "Use observed outcomes to decide an agent's next step, and distinguish completion, a human checkpoint, and a reached limit."
 pubDate: "2026-10-19"
 topic: "AI systems"
 tags: ["agents", "feedback", "stopping rules"]
@@ -14,48 +14,48 @@ related: ["workflow-or-agent", "effective-agent-principles"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-An agent becomes dependable when its next step depends on observed results and every loop has a clear end.
+An agent loop should decide what to do next from what happened, not from what its plan predicted. It also needs distinct ways to finish, pause for a person, and stop because its budget ran out. Those outcomes mean different things to the user.
 
-## The problem
+Consider an agent asked to fix a broken CSV export in a web application. The button responds, but the downloaded file contains the wrong columns. Editing a file is not enough to complete this task. The agent needs evidence that the exported CSV now matches the requested behavior.
 
-Open-ended work cannot be safely expressed as an endless sequence of model calls.
+## Make the goal observable
 
-## Read the architecture
+**Human request** leads to **Clarify task**. For the export, clarification means establishing which columns are expected and finding an example that demonstrates the mismatch. If the issue already supplies those details, the agent can inspect them directly. If the expected behavior is ambiguous, another code edit cannot resolve the product decision.
 
-Locate the feedback edge from tools to assessment, then follow each terminal path.
+Define completion before acting. In this hypothetical task, the corrected export should contain the agreed headers and values for a known input, and the user should still be able to download it through the application. That definition gives later observations something concrete to assess.
 
-<DiagramEmbed slug="plan-act-check" title={'Autonomous Agent: Plan, Act, Check, and Stop'} />
+Follow the action loop first, especially **Observe results** into **Assess progress**. Then compare the three exits from assessment. The return from **Human checkpoint** is a resume path, not proof that the earlier action succeeded.
 
-### Walk through it
+<DiagramEmbed slug="plan-act-check" title="Autonomous Agent: Plan, Act, Check, and Stop" heading="Follow the export repair loop" cue="Trace observations into assessment, then compare Continue with the three stopping outcomes." />
 
-#### 1. Clarify and plan
+## A plan is a next step, not a result
 
-A human request becomes a clarified task and an initial plan.
+At **Plan next step**, the agent might choose to reproduce the faulty export. **Act with tools** runs the application or a focused test and reads the CSV. **Observe results** captures the headers and rows that actually appeared.
 
-#### 2. Act and inspect
+Suppose the reproduction shows that the backend emits the right data but a frontend transformation drops a column. **Assess progress** should use that observation to change the next step. The **Continue** arrow returns to planning, now with a narrower hypothesis. Repeating the original backend plan would ignore the evidence the loop exists to collect.
 
-Tools affect the environment. Tool results and code execution provide observations for assessing progress.
+After an edit, the agent runs the relevant check again. A successful command exit only says that command completed under its own rules. A build can pass while the downloaded CSV still contains the wrong columns. The observation must match the completion claim. To claim the user-facing export works, inspect the export behavior.
 
-#### 3. Continue or stop
+This is why the loop includes both acting and observing. Tool execution creates an opportunity to learn; it does not establish progress on its own.
 
-Continue by replanning; pause at a checkpoint; stop on completion or a reached limit. Human feedback can restart planning.
+## What each exit means
 
-## Design decisions
+The **Task complete** path reaches **Complete** when the observed behavior satisfies the agreed task. A useful final report names the repaired behavior and the evidence that verified it. It should distinguish a locally checked fix from a deployed fix if deployment was outside the task.
 
-- Assess actual tool results rather than treating a plan as progress.
-- Make maximum iterations or cost an explicit stopping rule.
+The **Checkpoint or blocker** path reaches **Human checkpoint** when the next decision needs human input or authorization. Suppose the existing CSV format conflicts with another team's documented import format. The agent should present the concrete conflict and the available choice. Waiting is appropriate because another autonomous guess would choose a requirement the user has not settled.
 
-## Failure modes
+A checkpoint should preserve enough state to continue: what the agent learned, what it changed, the unanswered question, and the proposed next step. When the person resolves the question, **Continue** returns to planning using that answer. Starting the investigation over would waste the work already done.
 
-- A successful tool call may still fail the user objective.
-- A checkpoint without a resume condition leaves ambiguous state.
+The **Limit reached** path ends at **Limit reached**, such as after a configured number of tool rounds. It means the system stopped working, even if the objective remains unmet. A truthful report might say that reproduction succeeded, a likely cause was found, and the fix remains unverified. Calling that outcome "complete" would hide the difference between exhausted effort and achieved behavior.
 
-## Key takeaways
+## Bound the loop without hiding uncertainty
 
-- A credible completion claim requires external evidence.
+Set the budget in application code. Depending on the task, that may include elapsed time, tool rounds, or spend. The model can propose a next action, but the surrounding program must enforce the limit. Reserve enough capacity to produce a useful handoff instead of ending with a silent timeout.
 
-## Further reading
+Repeated failure is another reason to reassess. If the same check fails after two attempted fixes, examine whether the hypothesis is wrong or the test environment is missing something. A loop that merely retries the same plan has feedback arrows in its diagram but no effective feedback in its behavior.
 
-- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+This structure is useful when a task cannot be reduced to a known sequence. For a routine export transformation with fixed inputs and rules, ordinary application code may suffice. Use an agent when it must investigate, let observations shape its next action, and give every stopping state an honest meaning.
 
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+## Source
+
+[Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) describes tool feedback, human checkpoints, and stopping conditions. The CSV repair is an illustrative task, not a report of a real fix.

@@ -1,6 +1,6 @@
 ---
 title: "Workflow Patterns: Five Ways to Compose LLM Calls"
-description: "Five composition patterns distribute control and evaluation in different ways."
+description: "Match a multi-call workflow to the dependency in the task: sequence, specialization, independent work, decomposition, or revision."
 pubDate: "2026-10-19"
 topic: "AI systems"
 tags: ["workflows", "parallelism", "evaluation"]
@@ -14,48 +14,50 @@ related: ["workflow-or-agent", "coordinated-research"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-Composition helps when one call cannot do the whole job. Each pattern places control, aggregation, and feedback in a different place.
+When one model call is insufficient, the next decision is how the calls should depend on each other. A sequence solves a different problem from parallel review. A revision loop solves a different problem from choosing a specialist.
 
-## The problem
+Imagine a team preparing a product-release briefing. It needs an accurate summary of engineering notes, a customer-facing explanation, and a review of unresolved risks. We can use that same hypothetical task to compare the patterns in this chart. These are alternative arrangements to borrow where needed, not six stages that every briefing must traverse.
 
-A single model call is insufficient, but unrestricted autonomy is unnecessary.
+The title groups the patterns into five families. Parallelization has two lanes because splitting work and repeating work have different purposes. Read each lane from left to right, then compare where it branches, merges, or returns.
 
-## Read the architecture
+<DiagramEmbed slug="workflow-patterns" title="Workflow Patterns: Five Ways to Compose LLM Calls" heading="Compare the briefing workflows" cue="Read each lane independently. Look for a gate, branch, merge, or feedback arrow." />
 
-Compare the lanes as alternatives rather than as stages of one pipeline.
+## Order matters in a chain
 
-<DiagramEmbed slug="workflow-patterns" title={'Workflow Patterns: Five Ways to Compose LLM Calls'} />
+In **Prompt chaining**, the **First model call** extracts release facts from engineering notes. **Gate passes?** checks whether those facts contain required fields and point to source material. Only a passing extraction goes to **Next model call**, which writes the explanation.
 
-### Walk through it
+The gate exists because fluent writing cannot repair missing evidence. If a release date is absent, the first call should report that gap rather than supply an invented date for the next stage. The chart's **Fail** arrow returns to the first call, but a real workflow also needs a retry limit or human fallback. The same incomplete input will not become complete just because the call runs again.
 
-#### 1. Chaining and routing
+A chain fits a known dependency: writing needs the extracted facts. It adds delay because the second call must wait. If the stages share no dependency, forcing them into a sequence merely makes the user wait longer.
 
-Chaining passes work through ordered calls and optional gates. Routing classifies input before choosing specialized work.
+## Choose one specialist or divide the work
 
-#### 2. Parallelization
+In **Routing**, **Classify** selects **Specialist A** or **Specialist B**. A briefing request about a customer feature might use a product writer; an internal migration notice might use a technical writer. The point is to choose an appropriate branch, not ask both to do every task.
 
-Sectioning assigns different subtasks. Voting repeats the same task. Each requires an aggregation step.
+Routing needs a way to handle uncertainty. A mixed request may not belong to either category. If the classifier confidently chooses the wrong specialist, the rest of that branch may work exactly as designed and still produce the wrong result. Inspect classification failures separately from writing failures.
 
-#### 3. Orchestration and refinement
+In **Parallel sectioning**, **Split subtasks** sends independent work to **Subtask A** and **Subtask B**, then **Aggregate** combines it. For the release briefing, one call could summarize product changes while another reviews compatibility risks. Each needs enough source context to do its own job.
 
-Orchestrator-workers decomposes tasks dynamically and synthesizes worker results. Evaluator-optimizer feeds critique back to the generator until accepted.
+The merge must resolve overlaps and disagreements. Concatenating two outputs can repeat claims or conceal conflicting release dates. Sectioning saves elapsed time only where the work can proceed independently; it does not remove the need to check the combined result.
 
-## Design decisions
+## Repetition and decomposition change the question
 
-- Use separate visual lanes so independent patterns cannot be mistaken for one runtime pipeline.
-- Give a refinement loop a stopping budget.
+**Parallel voting** starts at **Repeat same task** and produces **Attempt A** and **Attempt B**. Here, both attempts might check whether the proposed briefing overstates the release. **Vote or aggregate** combines their judgments.
 
-## Failure modes
+Repeated agreement is evidence about consistency, not proof of truth. Two attempts can share the same missing source or mistaken assumption. If both read an outdated release note, their matching answers do not make the date current. Decide whether the aggregation should require agreement, flag disagreement, or send the case to a person.
 
-- Voting can repeat correlated errors.
-- A judge can prefer fluent but incorrect output.
+**Orchestrator-workers** uses **Decompose task** to decide which workers the particular input needs. One release may require security and migration analysis; another may only need product and documentation analysis. **Synthesize** combines the worker outputs into a **Result**.
 
-## Key takeaways
+The difference from fixed sectioning is who defines the subtasks. A dynamic decomposition can handle varied releases, but a missing assignment can leave a whole concern unexplored. Review whether the task was divided well as well as whether each worker wrote a good answer.
 
-- Parallel sectioning and repeated voting solve different problems.
+## Revision needs a useful stopping rule
 
-## Further reading
+In **Evaluator-optimizer**, **Generate** drafts the briefing and **Evaluate** checks it against explicit criteria. **Refine** returns actionable feedback, such as "the migration section omits the required configuration change." **Accept** ends the loop at **Accepted**.
 
-- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+A generic "make this better" judgment gives the generator little direction. Use criteria that separate factual accuracy, required coverage, and tone. Some checks can run as ordinary code; others need expert review. Limit revision rounds so disagreement cannot consume an unlimited budget.
 
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+You can combine these patterns, but each extra stage should address a known failure. Start with the dependency you actually have. If facts must precede prose, use a chain. If independent concerns need attention, split them. If the draft fails a clear criterion, revise it. A larger arrangement earns its place through a better briefing, not through the number of model calls it contains.
+
+## Source
+
+[Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) introduces these composition families. The release-briefing examples illustrate design choices rather than measured results.

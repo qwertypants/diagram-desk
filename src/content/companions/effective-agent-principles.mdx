@@ -1,0 +1,26 @@
+---
+title: "What makes agent autonomy useful?"
+description: "Apply the design principles to actions that can be checked, explained, and handed back to a person."
+diagram: "effective-agent-principles"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Autonomy is useful when the system can inspect the outcome of its actions and change course. Clear tools, visible state, and human checkpoints make that possible; adding more agents does not establish it.
+
+Consider a support assistant handling a duplicate shipment. It needs to distinguish an order lookup, a prepared return, and a submitted return. Each has a different meaning for the customer and may require different authorization.
+
+Read **Design deliberately** first, then follow the middle lane toward **Suitable task?**. The bottom branches are examples to assess, not mandatory application categories.
+
+<DiagramEmbed slug="effective-agent-principles" title="Effective Agents: Design Principles and Practice" heading="Look for evidence of progress" cue="Read the first two lanes, then treat the bottom branches as examples of task fit." companion={true} />
+
+**Keep it simple** limits unnecessary handoffs. **Expose agent steps** should show meaningful actions and observed results. **Design and test tools** makes capabilities, argument rules, and failure outcomes explicit.
+
+**Use real feedback** means a service's acceptance of a request must not become a claim that the customer's problem is solved. **Human checkpoints** need a concrete decision, the facts needed to make it, and a clear resume condition.
+
+The **Support actions** and **Coding with tests** branches illustrate work with inspectable evidence. They still need permission checks and judgment about requirements that automatic checks miss. For other tasks, ask what observation could contradict the agent's completion claim. If no such evidence exists, stronger models alone will not fix the missing feedback.
+
+## Sources
+
+- [Anthropic's agent design principles](https://www.anthropic.com/engineering/building-effective-agents).
+- [OWASP on limiting agency and permissions](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/).
