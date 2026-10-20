@@ -1,0 +1,26 @@
+---
+title: "Where does the model fit in an AI product?"
+description: "Place generation inside the application responsibilities for identity, state, evidence, permitted tools, and background work."
+diagram: "ai-product"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+The model is one dependency inside an application. The application still owns user access, durable state, job status, and the meaning of a completed operation.
+
+For a workspace assistant answering "What changed in Project Cedar this week?", document excerpts become model context. Workspace membership and saved summary status belong in durable application records. A generated claim that work was saved does not prove a record exists.
+
+Start at **Web / mobile** and follow the authorized request into **Application**. Then compare the direct AI path with the **Job Queue** path.
+
+<DiagramEmbed slug="ai-product" title="Full AI product architecture" heading="Locate the responsibility boundaries" cue="Trace Application into AI orchestrator, then inspect the separate queue and evidence paths." companion={true} />
+
+**AI orchestrator** coordinates **Retrieval**, **Prompt builder**, and **Tool layer**. **Vector store** helps locate indexed content; the application still needs access filtering and evidence about source versions. **Model gateway** selects a provider option. Its branches do not imply that every request calls every model.
+
+Background **AI Workers** also invoke the orchestrator. Enqueuing work establishes acceptance, not completion. The product needs a durable way to distinguish queued, finished, failed, and uncertain work, with duplicate handling appropriate to its queue.
+
+The dashed connections into **Observability** and **Evaluation** join operational evidence to quality review. They cannot make an unsupported summary accurate by themselves. This is a responsibility map, not a requirement to deploy every component for a small feature.
+
+## Sources
+
+- [Anthropic on retrieval and tool augmentation](https://www.anthropic.com/engineering/building-effective-agents).
+- [OWASP on downstream authorization](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/).

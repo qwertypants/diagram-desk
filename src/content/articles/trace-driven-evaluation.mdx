@@ -1,6 +1,6 @@
 ---
 title: "Find the regression behind the answer"
-description: "Correlated traces explain a request; evaluations decide whether a proposed change improves the task."
+description: "Follow a reported regression from one correlated request into a fixed evaluation case and a reviewable release comparison."
 pubDate: "2026-10-19"
 topic: "AI systems"
 tags: ["tracing", "evaluation", "regressions"]
@@ -14,49 +14,54 @@ related: ["ai-evaluation", "production-rag"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-A trace explains one request; an evaluation asks whether a change improves many representative tasks. Both are needed to investigate a regression.
+A trace helps explain one request. An evaluation tests a change across defined tasks. To investigate a regression, use the trace to find what went wrong, preserve the failure as a repeatable case, and compare candidates under the same conditions.
 
-## The problem
+Suppose a product-support assistant starts giving incomplete migration advice after a prompt update. Its average quality score barely moves. A customer reports that an answer omitted a required restart. The team needs to discover whether retrieval missed the instruction, the model ignored it, or the final response lost it later. Changing the prompt immediately would guess at the cause.
 
-Users report worse answers after a model update even though the average dashboard score is stable.
+Read this sequence from top to bottom. The first messages describe one live request; **Sample failing cases** crosses into evaluation. The final messages carry evidence to a release decision. This is a chronology of investigation, not another runtime tool loop.
 
-## Read the architecture
+<DiagramEmbed slug="trace-driven-evaluation" title="Find the regression behind the answer" heading="Follow a missing instruction into evaluation" cue="Read downward and notice the handoff from collected observations to a fixed dataset." />
 
-Move from the observed failure to a fixed case, then compare candidates by segment.
+## Reconstruct the request before changing it
 
-<DiagramEmbed slug="trace-driven-evaluation" title={'Find the regression behind the answer'} />
+**Application** calls **Model gateway** with **Invoke with trace context**. Trace context lets related operations share a request identity. A span is a record of an operation, such as a retrieval call or a model invocation, with timing and other relevant attributes. Connected spans help show which operations belonged to this answer.
 
-### Walk through it
+The gateway returns **Output + usage**. The application sends **Redacted spans + outcome** to **Trace collector**. The chart's note calls out retrieval, tools, model calls, errors, and token usage. Record enough to distinguish failure types while applying a policy for sensitive content.
 
-#### 1. Observe the request
+In our case, inspect whether the retrieved document version contained the restart requirement. If it did, compare the model's output with the final displayed answer. If the model included the instruction but a later formatting step removed it, a model-only fix targets the wrong component.
 
-Propagate trace context across retrieval, model, and tool operations. Record errors and token usage while applying content-redaction policy.
+If the evidence was not retained, say which part cannot be reconstructed. A missing span does not prove that the operation never occurred. Improve the observation path and reproduce the task with controlled inputs instead of treating an incomplete trace as a complete history.
 
-#### 2. Build the evaluation
+## Turn the incident into a stable case
 
-Select representative failures and add them to a fixed dataset. Replay the candidate model or prompt against the same tasks.
+**Sample failing cases** transfers selected evidence to **Evaluation**. Preserve a minimal task that still demonstrates the problem: the migration question, authorized source documents, relevant application settings, and expected behavior. Replace customer-specific details where possible without removing what causes the failure.
 
-#### 3. Review the change
+The case should require the restart instruction because the source requires it. It should permit equivalent phrasing. A test that demands the exact old response might reject a better answer; a test that checks only for the word "restart" might accept a warning that says restarting is unnecessary.
 
-Compare task success, latency, and cost by segment. Inspect failures and human-calibrated judge results before promoting or holding the release.
+Now **Replay fixed dataset** sends tasks through the **Model gateway**, and **Candidate outputs** returns the results. Keep the dataset and rubric fixed for a particular comparison. Record the candidate's prompt, model, retrieval configuration, and other relevant versions. Changing the documents at the same time as the prompt can make an improvement impossible to attribute.
 
-## Design decisions
+The gateway is the diagram's replay entry point. If the suspected bug lies in retrieval or response formatting, the evaluation must also exercise that component or supply a faithful controlled representation of its behavior. Replaying the model alone cannot verify a downstream formatting repair.
 
-- Traces diagnose behavior; they do not replace a task rubric.
-- Token usage is observed data; monetary cost also needs a dated provider price model.
+## Compare the failure's category
 
-## Failure modes
+**Task scores + failures** reaches **Release review**. Show migration cases separately from easy documentation lookups. A candidate could improve concise answers across many routine questions while harming the smaller group that needs multi-step instructions.
 
-- Sampling only easy requests misses rare severe failures.
-- An LLM judge can reward convincing but incorrect answers.
+Inspect individual failures alongside scores. For an automated judge, compare its decisions with human judgments on cases where the missing step matters. If the judge praises the answer's clarity while overlooking the omission, improve the grading criterion before trusting its comparison.
 
-## Key takeaways
+Track latency and resource usage as separate dimensions. Token usage is observed data; a monetary estimate also requires the applicable provider pricing, model version, and charging rules. Do not interpret a lower token count as a complete cost or quality measurement.
 
-- Keep the inputs and grading criteria stable when comparing candidates.
+Repeated runs can expose variation that one replay hides. A candidate that includes the required instruction once and omits it repeatedly is not a reliable fix simply because a single screenshot looks correct.
 
-## Further reading
+## A decision has a scope
 
-- [OpenTelemetry GenAI conventions](https://github.com/open-telemetry/semantic-conventions-genai)
-- [Demystifying evaluations for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+**Promote or hold release** returns to the **Application**. A useful review can say, "Hold this prompt because migration coverage regressed," or "Promote this candidate under the reviewed criteria." Neither decision implies that every possible future request has been tested.
 
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+Keep the incident case in the regression set and continue sampling live behavior. This preserves the lesson as a check instead of requiring the next customer to rediscover it. Start with a single well-understood failure; collecting more traces without deciding what success means will not resolve the quality question.
+
+## Sources
+
+- [OpenTelemetry's trace concepts](https://opentelemetry.io/docs/concepts/signals/traces/) explains spans and trace context.
+- [OpenTelemetry GenAI conventions](https://github.com/open-telemetry/semantic-conventions-genai) provides AI-specific telemetry conventions.
+- [Demystifying evaluations for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) explains repeatable tasks, grading, and outcome evidence.
+
+The migration regression is an illustrative investigation.

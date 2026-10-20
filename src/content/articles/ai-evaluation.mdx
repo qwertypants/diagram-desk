@@ -1,6 +1,6 @@
 ---
 title: "AI System with evaluation"
-description: "Production observations become evaluation cases before proposed changes return to production."
+description: "Turn a quality question into representative cases, explicit grading criteria, and evidence for a release decision."
 pubDate: "2026-10-19"
 topic: "AI systems"
 tags: ["evaluation", "observability", "release decisions"]
@@ -14,49 +14,51 @@ related: ["trace-driven-evaluation", "effective-agent-principles"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-A good evaluation loop begins with a real user task, follows the evidence of a failure, and tests a proposed change before release.
+An evaluation turns "is this AI system better?" into a set of tasks with inputs, expected behavior, and a way to judge the outcomes. Production traces help choose those tasks, but a log of what happened does not by itself tell you whether the behavior was good.
 
-## The problem
+Imagine a documentation assistant that answers questions about a software product. A proposed prompt update makes its answers shorter. Before releasing it, the team wants to know whether those shorter answers still explain required migration steps. The desired improvement is not simply fewer words. It is less reading without losing instructions users need.
 
-A prompt or model update can improve average scores while breaking important user tasks.
+The chart separates live answering from evaluation. Follow the top row through **Response** into **Traces**, then follow sampled and curated cases into the lower grading paths. End at the decision, rather than treating the dashboard as the purpose of the system.
 
-## Read the architecture
+<DiagramEmbed slug="ai-evaluation" title="AI System with evaluation" heading="Follow evidence into a release decision" cue="Read live traffic across the top, then compare the three grading paths below." />
 
-Follow the production response into sampled cases, then compare each grading path before the release decision.
+## Specify what a case asks
 
-<DiagramEmbed slug="ai-evaluation" title={'AI System with evaluation'} />
+Live **Traffic** reaches the **AI app**, which calls the **LLM** and produces a **Response**. Under an explicit data policy, **Traces** record enough context to inspect the behavior. For our assistant, that might include a request identifier, the prompt version, retrieved document identifiers, timing, and the answer.
 
-### Walk through it
+The team samples a migration question where the new prompt omitted a restart step. **Sample cases** turns that observation into evaluation material. Before storing customer content, remove secrets and decide what data may be retained. A trace collection should not become an unrestricted copy of every user conversation.
 
-#### 1. Observe
+**Golden cases** supplies a curated set of inputs with reviewed expectations. "Golden" means useful as a reference, not eternally correct. If the product's migration procedure changes, the expected behavior must change too. Version the cases and expectations so a comparison has a clear meaning.
 
-Production traffic passes through the AI application and model. Responses and request context are recorded under an explicit data policy.
+Our example case asks how to migrate a particular configuration. Its supplied documents contain three required actions. The success criterion requires all three, prohibits unsupported actions, and permits a concise answer in different wording. Requiring an exact paragraph would reject valid explanations for the wrong reason.
 
-#### 2. Grade
+## Different questions need different graders
 
-Sampled production cases and a golden dataset feed deterministic checks, an LLM judge, and human review. Their results reach a dashboard.
+**Evaluation** sends work through **Rules**, **Model judge**, and **Human review**. These paths provide complementary evidence. They need not each grade every aspect of every case.
 
-#### 3. Decide
+Use rules where the property has a clear mechanical answer. A rule can check that cited document identifiers exist, or that a structured response contains the required fields. It cannot establish that a free-form migration explanation is safe merely because the answer contains the word "restart."
 
-A detected regression sends prompt, model, or retrieval changes back through evaluation. A passing decision permits deployment.
+A model judge can compare the answer to a rubric and source material. For the migration question, ask whether it covers the required actions without inventing extra ones. Calibrate the judge against expert-reviewed examples, including polished answers that omit a critical step. Otherwise, a score may reflect writing style more than task success.
 
-## Design decisions
+Human review handles ambiguous cases and checks whether the criteria represent real user needs. If two reviewers disagree about whether a restart is necessary, resolve the documentation or rubric question. Averaging their disagreement into a number conceals the problem.
 
-- Use deterministic checks for properties that have a clear exact answer.
-- Calibrate model judges against human review and inspect individual failures.
+Keep each criterion visible in **Results**. A single composite score can make a shorter answer look better while hiding a drop in migration completeness.
 
-## Failure modes
+## Read results as a release decision
 
-- An aggregate score can conceal a severe regression in a small segment.
-- Production logs can contain sensitive data; sampling requires redaction and retention policies.
+At **Dashboard**, compare the baseline and candidate on the same cases. Separate routine lookup questions from migration questions and questions with insufficient documentation. A stable overall score can hide a failure in a smaller but consequential category.
 
-## Key takeaways
+The **Regression?** decision sends **Yes** to **Revise candidate**, then back to evaluation. A revision might restore the instruction to preserve mandatory steps. Run the unchanged cases again and inspect whether the fix also affects answer length or introduces unsupported detail.
 
-- A release decision needs task-specific acceptance criteria.
+The **No** branch reaches **Deploy**. Read that as permission under the chosen acceptance policy, not proof that no future failure can occur. The chart compresses the judgment into one question. A real policy should also require the candidate to meet absolute quality criteria; being no worse than a poor baseline is insufficient.
 
-## Further reading
+Because model behavior can vary, a single successful run is weak evidence for an unreliable case. Repeat important trials where variation matters and report failures as well as averages. Keep a held-out set of cases so repeatedly adjusting a prompt to the visible examples does not become the only measure of success.
 
-- [Demystifying evaluations for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
-- [OpenTelemetry GenAI conventions](https://github.com/open-telemetry/semantic-conventions-genai)
+This loop is useful when prompts, models, retrieval, or tools change. Start with a small reviewed set that represents the task, then expand it with meaningful failures. The goal is a release decision that can explain which user outcomes improved and which risks remain.
 
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+## Sources
+
+- [Demystifying evaluations for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) explains tasks, trials, outcomes, and complementary grader types.
+- [OpenTelemetry's trace concepts](https://opentelemetry.io/docs/concepts/signals/traces/) explains correlated runtime operations.
+
+The documentation-assistant scenario is hypothetical.

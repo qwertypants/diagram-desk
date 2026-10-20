@@ -1,0 +1,26 @@
+---
+title: "How do you judge an AI change?"
+description: "Combine sampled failures, curated cases, and task-specific grading before deciding whether to release a candidate."
+diagram: "ai-evaluation"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Judge an AI change against explicit tasks and expectations. Logs reveal what the system did; evaluation asks whether that behavior meets the user's needs.
+
+Suppose a documentation assistant adopts a shorter-answer prompt. A useful test asks whether a migration answer still includes every required action, rather than rewarding brevity alone. Keep the question, source documents, and rubric stable when comparing the old and new prompts.
+
+Follow **Traffic** through **Response** to **Traces**, then move into the evaluation paths below. **Golden cases** and **Sample cases** are two inputs to the same quality investigation.
+
+<DiagramEmbed slug="ai-evaluation" title="AI System with evaluation" heading="Separate observation from judgment" cue="Follow traces into cases, compare graders, and inspect both exits from Regression?." companion={true} />
+
+**Rules** handle properties with exact checks. A **Model judge** can apply a source-based rubric, but needs calibration against **Human review**. A fluent answer can still omit the restart step a user needs.
+
+Compare those findings in **Results** and the **Dashboard**, including task categories whose failures an average could hide. **Regression?** sends a failing candidate back through revision and evaluation. Its **No** branch reaches **Deploy**, but deployment also needs absolute acceptance criteria. Matching an inadequate baseline is not enough.
+
+The chart presents a feedback structure, not a guarantee of quality. Review reference expectations when the product changes, protect sensitive data in sampled traces, and repeat important cases where model variation affects the decision.
+
+## Sources
+
+- [Anthropic on evaluation tasks and graders](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents).
+- [OpenTelemetry on traces](https://opentelemetry.io/docs/concepts/signals/traces/).

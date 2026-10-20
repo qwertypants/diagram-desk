@@ -1,0 +1,26 @@
+---
+title: "How does one failure become a regression check?"
+description: "Use a trace to diagnose one request, preserve its failure as a task, and compare candidate behavior before release."
+diagram: "trace-driven-evaluation"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A trace can explain how one answer was produced. A regression evaluation checks whether a proposed change fixes that failure while preserving other behavior. Connect them by turning a diagnosed failure into a repeatable task with explicit expectations.
+
+Imagine a support answer that omits a required restart. First determine whether retrieval missed the instruction, the model ignored it, or later formatting removed it. Those causes require different fixes.
+
+Read the sequence downward. **Redacted spans + outcome** records the live request; **Sample failing cases** begins the transition into offline evaluation.
+
+<DiagramEmbed slug="trace-driven-evaluation" title="Find the regression behind the answer" heading="Find the investigation handoff" cue="Follow Sample failing cases into replay, then take scores and failures to release review." companion={true} />
+
+At **Replay fixed dataset**, compare candidates using the same questions, evidence, and grading rules. Record relevant versions. If the suspected defect lies outside the model, include that component in evaluation; replaying a model response alone cannot verify a formatting repair.
+
+**Task scores + failures** should show the affected category as well as aggregate results. Migration answers may regress even when routine lookups improve. Inspect failures and check model-judge decisions against human review.
+
+**Promote or hold release** is a decision under those tested conditions. It does not establish universal correctness. Preserve the case and continue observing production behavior. Apply redaction and retention policies to trace data, and distinguish recorded token usage from cost estimates that require provider pricing.
+
+## Sources
+
+- [OpenTelemetry's trace concepts](https://opentelemetry.io/docs/concepts/signals/traces/).
+- [Anthropic on evaluation design](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents).

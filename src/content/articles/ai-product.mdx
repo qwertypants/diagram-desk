@@ -1,6 +1,6 @@
 ---
 title: "Full AI product architecture"
-description: "An AI product combines ordinary application infrastructure with model, retrieval, and tool boundaries."
+description: "Follow one product question across authentication, persistent state, retrieval, model execution, background work, and quality feedback."
 pubDate: "2026-10-19"
 topic: "AI systems"
 tags: ["architecture", "retrieval", "background jobs"]
@@ -14,48 +14,58 @@ related: ["production-rag", "async-ai"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-An AI feature still depends on ordinary product boundaries: identity, state, jobs, and operational evidence. The model is one component among them.
+An AI product is an ordinary application with additional model, retrieval, and tool dependencies. Authentication, durable business state, and clear failure behavior remain application responsibilities. A model's conversation context does not replace them.
 
-## The problem
+Consider a workspace assistant that answers questions about a team's project documents and prepares a weekly summary. A user asks, "What changed in Project Cedar this week?" The same product may answer interactively for a few documents or run a longer summary job in the background. The architecture needs to explain both paths without confusing generated text with stored product state.
 
-An interactive product also needs authentication, durable jobs, model routing, and evidence about quality.
+The chart is a map of responsibilities. Begin with the top request path through **Authenticate** and **Application**. Then follow **AI orchestrator** into prompts, retrieval, tools, and models. Finally inspect the separate queue path and dashed evidence connections.
 
-## Read the architecture
+<DiagramEmbed slug="ai-product" title="Full AI product architecture" heading="Trace one workspace question" cue="Follow the protected request, inspect the AI dependencies, then compare direct and queued work." />
 
-Follow a protected request from the gateway through application state into AI execution, then inspect the separate background path.
+## Establish identity and own the state
 
-<DiagramEmbed slug="ai-product" title={'Full AI product architecture'} />
+**Web / mobile** reaches **Gateway**, then **Authenticate**. The connection labeled **authorized** leads into **Application**. Authentication establishes who is making the request; application and downstream checks must still determine which workspace and documents that person may access.
 
-### Walk through it
+For Project Cedar, the application loads the user's workspace membership and the requested time range. **Postgres** holds durable product records such as memberships and summary jobs. **Cache** can hold derived or reusable data. If a cached answer depends on document access, its key and retrieval policy must preserve that access boundary. A fast answer for the wrong workspace is still a failure.
 
-#### 1. Application boundary
+The user's question and selected document excerpts form model context. They are inputs to a particular inference, not the authoritative record of membership or completed work. If the model says "the summary is saved," the application must verify a stored summary exists before representing it as durable product state.
 
-The client reaches the gateway. Authentication must succeed before the application service handles protected work.
+## Build an answer from the right evidence
 
-#### 2. AI execution
+**Application** invokes **AI orchestrator**, which coordinates the work. **Retrieval** uses the **Vector store** to locate relevant document material. A vector store supports searching indexed representations of content; it does not establish that a document is current or that the user may read it. The implementation needs to preserve source identity, version, and access filtering.
 
-The orchestrator builds prompts, retrieves indexed context, and invokes permitted tools. A model gateway selects a provider.
+For our question, a document about an unrelated project may share similar vocabulary. The orchestrator should use retrieved material as evidence to assess, not assume that the highest search match belongs in the answer. If the available documents do not cover this week, the answer should identify that gap.
 
-#### 3. Background and feedback
+**Prompt builder** assembles instructions, the question, and selected evidence before the **Model gateway** chooses **Model A**, **Model B**, or **Self-hosted model**. Those branches are provider options, not a requirement to send every request to every model.
 
-The application queues background jobs; workers call the orchestrator. Application, model, and tool traces feed evaluation.
+A gateway centralizes provider handling, but it cannot make models interchangeable by naming them the same way. Context limits, tool formats, and response behavior may differ. Evaluate the actual candidate configuration before enabling fallback, especially if a fallback would handle information under different data policies.
 
-## Design decisions
+## Separate retrieving from doing
 
-- Keep the model gateway separate from application authorization.
-- Persist business state in the application database rather than relying on model memory.
+The **Tool layer** connects the orchestrator to **Internal Services** and **External APIs**. Suppose the user asks the assistant to prepare a follow-up task for a project owner. Looking up the owner and creating a task have different effects. The application should expose only the necessary operations and enforce permission before a tool performs them.
 
-## Failure modes
+A source document may contain instructions that look like commands to the assistant. Treat retrieved content as evidence for the user's task, not as authority to change permissions or call arbitrary tools. The tool implementation must preserve the same boundary even when the model proposes a convincing action.
 
-- Fallback providers may have different tool and context contracts.
-- A queue acknowledgement does not prove that a job completed.
+The chart shows dependency connections rather than every request and response. It does not show an automatic loop from all tools and retrieval results into the prompt. The orchestrator implementation must define how evidence returns, how many rounds are allowed, and what happens when a dependency fails.
 
-## Key takeaways
+## Long work needs its own lifecycle
 
-- Each dependency adds an ownership and failure boundary.
+For a large weekly summary, **Application** writes to **Job Queue**. **AI Workers** consume work and invoke the same **AI orchestrator**. This lets the interactive request acknowledge acceptance while work continues separately.
 
-## Further reading
+Acceptance is not completion. The product needs durable job status so a user can return later and see whether the summary finished or failed. A queue alone does not supply the entire user-visible lifecycle. For queues with at-least-once delivery, workers must tolerate a repeated job without creating duplicate summaries or actions. The chart does not promise any particular queue delivery semantics.
 
-- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+Keep failures specific. A retrieval timeout means evidence could not be loaded. A provider timeout means the application could not confirm generation completed. A stored summary followed by a lost acknowledgement creates an uncertain outcome that should be reconciled before repeating a side effect.
 
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+## Connect operation to quality
+
+The dashed connections feed **Observability**, then **Evaluation**. Runtime evidence can reveal slow providers, failed tools, or the documents used for an answer. Evaluation asks whether the Cedar summary actually covers the relevant changes and supports its claims.
+
+Start with the dependencies the product needs. A read-only document assistant may not need action tools, multiple providers, and a job queue on day one. This chart offers places to assign responsibilities when those needs arise; it does not prescribe a minimum component count for every AI feature.
+
+## Sources
+
+- [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) discusses models augmented by retrieval and tools.
+- [OWASP's excessive-agency guidance](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) explains scoped capabilities and downstream authorization.
+- [Amazon SQS at-least-once delivery](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues-at-least-once-delivery.html) illustrates why some queue consumers must handle duplicates.
+
+The workspace assistant is hypothetical; the chart does not specify a queue vendor.

@@ -1,6 +1,6 @@
 ---
 title: "Stream AI in chat"
-description: "Streaming transports partial output before the complete response can be validated."
+description: "Follow partial output through the provider, backend, and chat UI, then distinguish completion, validation, cancellation, and failure."
 pubDate: "2026-10-19"
 topic: "AI systems"
 tags: ["streaming", "chat", "validation"]
@@ -14,47 +14,54 @@ related: ["agent-tool-loop"]
 
 import DiagramEmbed from "../../components/DiagramEmbed.astro";
 
-A stream can make an answer feel immediate while its final correctness is still unknown. Treat partial and complete states differently.
+Streaming lets a chat interface display parts of an answer before the full answer arrives. It changes when the user sees output. It does not establish that the output is complete, correct, or validated.
 
-## The problem
+Imagine asking a documentation assistant to explain a database migration. The full explanation may take long enough that an empty chat bubble feels stuck. Showing the introduction while later steps are still being generated gives the user visible progress. But the missing final paragraph might contain the restart instruction or a warning that changes how the earlier text should be understood.
 
-A chat interface should stay responsive during a long model response.
+This chart is a sequence diagram. Read downward through time, following messages between participants. Trace the first **Token chunk** all the way to **Render partial reply**, then compare it with the later **Complete** and **Final metadata** messages.
 
-## Read the architecture
+<DiagramEmbed slug="streaming-chat" title="Stream AI in chat" heading="Follow partial output and completion" cue="Trace a chunk across every hop, then inspect the distinct final-message path." />
 
-Follow one chunk from provider to UI, then compare that path with completion and validation.
+## Every hop must let data through
 
-<DiagramEmbed slug="streaming-chat" title={'Stream AI in chat'} />
+The **User** sends **Submit message** to **Chat UI**. The UI makes **POST /messages** to **Backend**, which asks **Orchestrator** to **Process request**. The orchestrator requests **Stream completion** from **Provider**.
 
-### Walk through it
+The return journey starts with **Token chunk**. The orchestrator passes data to the backend, which delivers it to the UI using **SSE or WebSocket**. These are alternative transports with different APIs. Server-sent events carry server-to-client events over HTTP. WebSocket supports messages in both directions on an established connection.
 
-#### 1. Request
+Do not read "Token chunk" as a promise that each network event contains exactly one word or one model token. Provider events may include partial text, metadata, tool-call data, or other structured information. The application must interpret the event type before appending anything to the visible answer.
 
-The UI submits a message through the backend and orchestrator to the provider.
+Streaming also depends on the intermediate layers. If the backend buffers the whole response before forwarding it, the provider may stream correctly while the user still sees nothing until the end. Measure the time to the first visible content at the UI, not only the provider's first event.
 
-#### 2. Chunks
+## Partial text needs an explicit state
 
-Each chunk returns through the orchestrator and backend. SSE and WebSocket are alternative transports, not interchangeable protocol names.
+At **Render partial reply**, the answer is still arriving. The next group of messages, **Next chunk**, **Stream update**, and **Update partial reply**, shows the same process continuing. The diagram draws only enough rounds to explain the relationship; an actual answer may use many events.
 
-#### 3. Completion
+Keep the UI's state explicit. While receiving the migration instructions, show that the answer is in progress and offer a stop control if cancellation is supported. Avoid presenting a generated command as a verified final recommendation just because its code block has already appeared.
 
-The orchestrator validates the complete result before final metadata reaches the UI. A partial reply is not yet final.
+Rendering partial Markdown introduces ordinary interface concerns. A code fence or link can remain unfinished for several updates. The renderer should tolerate incomplete input and treat generated content as untrusted. Streaming does not justify allowing arbitrary model-generated HTML to execute.
 
-## Design decisions
+The key product choice is how much to display before review. A casual explanation may benefit from immediate partial text. If an answer requires whole-response checks before users see it, buffer that answer until those checks finish. Streaming and strict pre-display validation impose different constraints on the experience.
 
-- Keep cancellation and provider errors visible to the client.
+## Completion is more than a closed connection
 
-## Failure modes
+The provider's **Complete** message reaches the orchestrator, whose note says it validates the complete result. Only then does **Final metadata** reach the backend and **Complete** reach the UI. In this example, final metadata might carry a finish reason or source references. Its exact format is an application contract, not a standard supplied by the drawing.
 
-- A disconnected stream can leave a partial answer.
-- Validation after completion cannot retract tokens already displayed.
+For the migration answer, validation might check that required source references are present and that structured fields parse correctly. These checks do not prove every instruction is accurate. They also cannot retract words the user already read. If validation fails after display, visibly mark the answer as failed or unverified and provide a useful next step.
 
-## Key takeaways
+Do not infer successful completion from a stream ending. A network disconnect can leave half an answer. The UI needs to distinguish normal completion, provider failure, connection loss, and deliberate cancellation. The diagram shows the success path and leaves those transitions for the implementation.
 
-- Streaming improves perceived responsiveness, not model correctness.
+## Cancellation and retries cross boundaries
 
-## Further reading
+When a user presses stop, the browser can abort a supported request or close its stream. The backend and orchestrator must also propagate cancellation to ongoing work where the provider supports it. Hiding the chat bubble or closing one connection does not by itself establish that remote generation stopped.
 
-- [Server-sent events](https://html.spec.whatwg.org/multipage/server-sent-events.html)
+A reconnect is another design decision. The browser's EventSource API has reconnection behavior, but it cannot reconstruct a lost model response unless the application implements a way to resume or replay events. Retrying the user's POST may start a second generation rather than continue the first. Use request identities and defined resume behavior if continuity matters.
 
-> **Scope:** Illustrative architecture. Sources support the patterns; this is not a running implementation.
+For a short answer, an ordinary complete-response request may be simpler. Use streaming when earlier visible output helps the user, and make the partial, complete, and interrupted states understandable. The useful promise is progress the user can interpret, with an honest final state.
+
+## Sources
+
+- [HTML's server-sent events standard](https://html.spec.whatwg.org/multipage/server-sent-events.html) defines EventSource and reconnection behavior.
+- [The WebSockets standard](https://websockets.spec.whatwg.org/) defines the browser's bidirectional messaging API.
+- [The DOM standard's abort interfaces](https://dom.spec.whatwg.org/#interface-abortcontroller) defines cancellation signals for participating APIs.
+
+The documentation assistant and validation policy are illustrative.

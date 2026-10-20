@@ -1,0 +1,27 @@
+---
+title: "When is a streamed answer actually finished?"
+description: "Follow partial text to the screen and distinguish it from a complete, checked response or an interrupted stream."
+diagram: "streaming-chat"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A streamed answer is partial until the application receives and handles its completion outcome. Seeing text on screen means some output arrived, not that the answer is complete or correct.
+
+For a migration explanation, an early paragraph may appear before a later warning or required restart step. Treat the visible text as in progress while generation continues.
+
+Read downward through this sequence. Follow **Token chunk** from **Provider** through **Orchestrator** and **Backend** to **Render partial reply**. Then compare that path with the completion messages near the bottom.
+
+<DiagramEmbed slug="streaming-chat" title="Stream AI in chat" heading="Compare partial and final delivery" cue="Read downward; receiving a chunk and receiving Complete establish different states." companion={true} />
+
+**SSE or WebSocket** names alternative transports. Each application layer must forward incremental data for the UI to benefit. A provider chunk need not correspond to one word, and not every event necessarily contains displayable text.
+
+At **Complete**, the orchestrator validates the assembled result before sending **Final metadata**. That check cannot undo text already displayed. If the product requires checks before disclosure, it needs to buffer output until review finishes.
+
+The chart shows successful delivery. Implementations also need visible states for cancellation, provider error, and a disconnected stream. An ended connection alone cannot distinguish them. Reconnection requires an application resume policy; it does not automatically continue a lost generation. A stop action should propagate beyond the UI when supported, so closing the display is not mistaken for confirmed cancellation of remote work.
+
+## Sources
+
+- [Server-sent events](https://html.spec.whatwg.org/multipage/server-sent-events.html).
+- [WebSockets](https://websockets.spec.whatwg.org/).
+- [AbortController and AbortSignal](https://dom.spec.whatwg.org/#interface-abortcontroller).
