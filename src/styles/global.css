@@ -1,80 +1,90 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,500;1,6..72,600&display=swap");
 
 :root {
-  font-family: "DM Sans", sans-serif;
+  font-family: "IBM Plex Sans", sans-serif;
   color-scheme: light dark;
   color: var(--ink);
   background: var(--paper);
   font-synthesis: none;
-  --ink: #1e302e;
-  --muted: #596560;
-  --line: #d6d8cf;
-  --accent: #be5b38;
-  --paper: #f6f4ef;
-  --dark: #203d38;
-  --brand: #295d51;
-  --subtle: #66736a;
-  --kicker: #866456;
-  --art-surface: #e6ebe3;
-  --art-border: #d3ded3;
-  --art-grid: #d4dfd5;
-  --art-inset: #9eb3a6;
-  --art-node-border: #2a5c50;
-  --art-shadow: #c5d4ca;
-  --art-highlight: #f5e7dd;
-  --art-line: #7d9b8a;
-  --art-label: #4a6f5f;
-  --hover: #eeeee6;
-  --surface: #e8ebe4;
-  --surface-line: #b9c5ba;
-  --learning-surface: #e9eee6;
-  --learning-border: #77998a;
-  --frame-border: #aebdb2;
-  --frame-shadow: #e2e9df;
-  --frame-surface: #fff;
-  --prose: #35413b;
-  --prose-link: #a9482d;
-  --strong: #213c33;
-  --code-surface: #e7eae1;
+  --ink: #27251f;
+  --muted: #625e54;
+  --line: #c9c2b5;
+  --accent: #a44129;
+  --paper: #f5f1e8;
+  --dark: #27251f;
+  --brand: #27251f;
+  --subtle: #686257;
+  --kicker: #90452e;
+  --art-surface: #eae4d8;
+  --art-border: #b8ae9d;
+  --art-grid: #d7cfc0;
+  --art-inset: #a79a84;
+  --art-node-border: #4e4a3f;
+  --art-shadow: #d4cbbb;
+  --art-highlight: #efd2b9;
+  --art-line: #938570;
+  --art-label: #6b5d49;
+  --hover: #eae3d5;
+  --surface: #e8e1d4;
+  --surface-line: #b8ae9d;
+  --learning-surface: #ece4d5;
+  --learning-border: #a44129;
+  --frame-border: #8f8371;
+  --frame-shadow: #d9cbb6;
+  --frame-surface: #fdfaf3;
+  --prose: #423f37;
+  --prose-link: #a44129;
+  --strong: #27251f;
+  --code-surface: #e8e0d1;
+  --button-ink: #f9f4e8;
+  --button-hover: #4d392c;
+  --footer-ink: #f0e9dc;
+  --footer-muted: #c4b9a6;
+  --code-block: #2c2922;
+  --code-ink: #eee7d8;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --ink: #e5ebe4;
-    --muted: #b3c0b7;
-    --line: #3c4d44;
-    --accent: #efaa88;
-    --paper: #17231f;
-    --brand: #97c6ad;
-    --subtle: #a2b3a7;
-    --kicker: #d0ad98;
-    --art-surface: #21372e;
-    --art-border: #425c4c;
-    --art-grid: #2d4638;
-    --art-inset: #678772;
-    --art-node-border: #97c6ad;
-    --art-shadow: #14281e;
-    --art-highlight: #4a342b;
-    --art-line: #8cae98;
-    --art-label: #b3d0ba;
-    --hover: #25372d;
-    --surface: #203129;
-    --surface-line: #4b6253;
-    --learning-surface: #23382d;
-    --learning-border: #8ab89d;
-    --frame-border: #526d5b;
-    --frame-shadow: #101c16;
-    --frame-surface: #1c2c24;
-    --prose: #ccd8ce;
-    --prose-link: #efaa88;
-    --strong: #e5ebe4;
-    --code-surface: #2d4134;
+    --ink: #eee8dc;
+    --muted: #beb6a6;
+    --line: #4c463c;
+    --accent: #e7a479;
+    --paper: #201f1b;
+    --dark: #151512;
+    --brand: #eee8dc;
+    --subtle: #b3a996;
+    --kicker: #e7a479;
+    --art-surface: #2a2822;
+    --art-border: #665b4a;
+    --art-grid: #3c372e;
+    --art-inset: #6b604d;
+    --art-node-border: #c3b8a1;
+    --art-shadow: #161612;
+    --art-highlight: #65432d;
+    --art-line: #9e8b6b;
+    --art-label: #c6b99e;
+    --hover: #302c24;
+    --surface: #29261f;
+    --surface-line: #5b5141;
+    --learning-surface: #302a20;
+    --learning-border: #e7a479;
+    --frame-border: #817156;
+    --frame-shadow: #100f0c;
+    --frame-surface: #29271f;
+    --prose: #d4ccbc;
+    --prose-link: #e7a479;
+    --strong: #eee8dc;
+    --code-surface: #3b3427;
+    --button-ink: #f9f4e8;
+    --button-hover: #503d2a;
+    --footer-ink: #eee8dc;
+    --footer-muted: #b3a996;
+    --code-block: #151512;
+    --code-ink: #eee7d8;
   }
 }
 * {
   box-sizing: border-box;
-}
-html {
-  scroll-behavior: smooth;
 }
 body {
   margin: 0;
@@ -113,7 +123,7 @@ iframe {
   top: 1rem;
 }
 .site-header {
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--ink);
 }
 .header-inner {
   width: min(1380px, calc(100% - 80px));
@@ -139,13 +149,13 @@ iframe {
   display: grid;
   grid-template-columns: repeat(2, 8px);
   gap: 3px;
-  transform: rotate(-12deg);
+  transform: rotate(0deg);
 }
 .brand-mark i {
   width: 8px;
   height: 8px;
   border: 2px solid var(--brand);
-  border-radius: 2px;
+  border-radius: 0;
 }
 .brand-mark i:nth-child(2) {
   background: var(--brand);
@@ -162,7 +172,7 @@ iframe {
 .header-note {
   margin-left: auto;
   font:
-    10px "DM Mono",
+    10px "IBM Plex Mono",
     monospace;
   letter-spacing: 0.15em;
   color: var(--subtle);
@@ -172,7 +182,7 @@ iframe {
 .box-kicker,
 .aside-title {
   font:
-    11px "DM Mono",
+    11px "IBM Plex Mono",
     monospace;
   letter-spacing: 0.16em;
   font-weight: 500;
@@ -199,7 +209,7 @@ iframe {
 .page-intro h1,
 .article-hero h1 {
   font:
-    500 clamp(3.3rem, 6vw, 6.5rem)/1.07 "Playfair Display",
+    500 clamp(3.3rem, 6vw, 6.5rem)/1.07 "Newsreader",
     Georgia,
     serif;
   letter-spacing: -0.055em;
@@ -224,13 +234,13 @@ iframe {
   margin-top: 25px;
   padding: 17px 22px;
   background: var(--dark);
-  color: #fff;
+  color: var(--button-ink);
   font-size: 13px;
   font-weight: 600;
 }
 .primary-link:hover {
-  background: #31574e;
-  color: #fff;
+  background: var(--button-hover);
+  color: var(--button-ink);
 }
 .primary-link span {
   font-size: 20px;
@@ -259,7 +269,7 @@ iframe {
   width: 70px;
   height: 70px;
   border: 2px solid var(--art-node-border);
-  border-radius: 14px;
+  border-radius: 2px;
   background: var(--art-surface);
   box-shadow: 9px 9px 0 var(--art-shadow);
 }
@@ -315,7 +325,7 @@ iframe {
   position: absolute;
   z-index: 3;
   font:
-    10px "DM Mono",
+    10px "IBM Plex Mono",
     monospace;
   letter-spacing: 0.14em;
   color: var(--art-label);
@@ -335,7 +345,7 @@ iframe {
   padding: 20px 0;
   margin-top: 46px;
   font:
-    10px "DM Mono",
+    10px "IBM Plex Mono",
     monospace;
   letter-spacing: 0.14em;
   color: var(--subtle);
@@ -355,7 +365,7 @@ iframe {
 .topics-band h2,
 .related-section h2 {
   font:
-    500 clamp(2.3rem, 3.6vw, 4rem)/1.15 "Playfair Display",
+    500 clamp(2.3rem, 3.6vw, 4rem)/1.15 "Newsreader",
     Georgia,
     serif;
   letter-spacing: -0.04em;
@@ -387,11 +397,11 @@ iframe {
   height: 100%;
   flex-direction: column;
   padding: 26px 28px 23px;
-  transition: background 0.2s;
 }
 .card-link:hover {
   background: var(--hover);
   color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 .card-top,
 .card-bottom {
@@ -402,7 +412,7 @@ iframe {
 }
 .card-top {
   font:
-    10px "DM Mono",
+    10px "IBM Plex Mono",
     monospace;
   letter-spacing: 0.08em;
   color: var(--subtle);
@@ -413,7 +423,7 @@ iframe {
 }
 .card-link h3 {
   font:
-    500 25px/1.2 "Playfair Display",
+    500 25px/1.2 "Newsreader",
     Georgia,
     serif;
   letter-spacing: -0.025em;
@@ -424,12 +434,12 @@ iframe {
   line-height: 1.6;
   color: var(--muted);
   margin: 0 0 24px;
-  max-width: 35ch;
+  max-width: 23.94em;
 }
 .card-bottom {
   margin-top: auto;
   font:
-    10px "DM Mono",
+    10px "IBM Plex Mono",
     monospace;
   letter-spacing: 0.08em;
   color: var(--subtle);
@@ -437,7 +447,7 @@ iframe {
 }
 .card-arrow {
   font:
-    22px "DM Sans",
+    22px "IBM Plex Sans",
     sans-serif;
   color: var(--accent);
 }
@@ -468,7 +478,7 @@ iframe {
 }
 .site-footer {
   background: var(--dark);
-  color: #e4e8dc;
+  color: var(--footer-ink);
   padding: 66px 0;
 }
 .footer-inner {
@@ -485,7 +495,7 @@ iframe {
   letter-spacing: -0.06em;
 }
 .footer-inner p {
-  color: #b5c7bd;
+  color: var(--footer-muted);
   font-size: 13px;
 }
 .footer-links {
@@ -497,10 +507,10 @@ iframe {
 .footer-end {
   justify-self: end;
   font:
-    10px "DM Mono",
+    10px "IBM Plex Mono",
     monospace;
   letter-spacing: 0.12em;
-  color: #b5c7bd;
+  color: var(--footer-muted);
 }
 .page-intro {
   padding-top: 90px;
@@ -531,13 +541,13 @@ iframe {
 .topic-index,
 .topic-count {
   font:
-    11px "DM Mono",
+    11px "IBM Plex Mono",
     monospace;
   color: var(--subtle);
 }
 .topic-name {
   font:
-    500 clamp(1.8rem, 3vw, 2.8rem) "Playfair Display",
+    500 clamp(1.8rem, 3vw, 2.8rem) "Newsreader",
     Georgia,
     serif;
 }
@@ -563,7 +573,7 @@ iframe {
 }
 .article-deck {
   font:
-    19px/1.6 "DM Sans",
+    19px/1.6 "IBM Plex Sans",
     sans-serif;
   color: var(--muted);
   max-width: 760px;
@@ -574,7 +584,7 @@ iframe {
   gap: 12px;
   margin-top: 35px;
   font:
-    11px "DM Mono",
+    11px "IBM Plex Mono",
     monospace;
   color: var(--subtle);
 }
@@ -653,7 +663,7 @@ iframe {
 .diagram-section h2,
 .takeaways h2 {
   font:
-    500 clamp(2rem, 3vw, 3rem)/1.2 "Playfair Display",
+    500 clamp(2rem, 3vw, 3rem)/1.2 "Newsreader",
     Georgia,
     serif;
   margin: 15px 0;
@@ -669,13 +679,14 @@ iframe {
   font-size: 14px;
   line-height: 1.7;
   color: var(--muted);
-  max-width: 70ch;
+  max-width: 47.88em;
 }
 .diagram-frame {
   border: 1px solid var(--frame-border);
   background: var(--frame-surface);
   margin-top: 25px;
   padding: 8px;
+  background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--line) 3px 4px);
   box-shadow: 9px 9px 0 var(--frame-shadow);
 }
 .diagram-frame iframe {
@@ -691,8 +702,9 @@ iframe {
   line-height: 1.85;
   color: var(--prose);
 }
+/* Preserve the reading measure when font metrics change. */
 .prose > * {
-  max-width: 68ch;
+  max-width: 46.512em;
 }
 .prose > .diagram-section {
   max-width: none;
@@ -712,12 +724,12 @@ iframe {
 }
 .companion-header h1 {
   margin: 22px 0;
-  font: 500 clamp(2.5rem, 4.5vw, 4.5rem)/1.12 "Playfair Display", Georgia, serif;
+  font: 500 clamp(2.5rem, 4.5vw, 4.5rem)/1.12 "Newsreader", Georgia, serif;
   letter-spacing: -0.04em;
   overflow-wrap: anywhere;
 }
 .companion-deck {
-  max-width: 65ch;
+  max-width: 44.46em;
   color: var(--muted);
   font-size: 19px;
   line-height: 1.7;
@@ -725,7 +737,7 @@ iframe {
 }
 .companion-content > :not(.diagram-section),
 .companion-followup {
-  width: min(100%, 68ch);
+  width: min(100%, 46.512em);
   margin-inline: auto;
 }
 .companion-content > .diagram-section {
@@ -751,7 +763,7 @@ iframe {
 }
 .prose h2,
 .prose h3 {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Newsreader", Georgia, serif;
   color: var(--ink);
   line-height: 1.2;
   letter-spacing: -0.025em;
@@ -787,7 +799,7 @@ iframe {
   padding: 5px 0 5px 25px;
   margin: 35px 0;
   color: var(--muted);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Newsreader", Georgia, serif;
   font-size: 1.3rem;
 }
 .prose pre {
@@ -795,15 +807,15 @@ iframe {
   overflow: auto;
   padding: 23px;
   border-radius: 0;
-  background: #203430;
-  color: #e8efe8;
+  background: var(--code-block);
+  color: var(--code-ink);
   font:
-    12px/1.6 "DM Mono",
+    12px/1.6 "IBM Plex Mono",
     monospace;
 }
 .prose :not(pre) > code {
   font:
-    12px "DM Mono",
+    12px "IBM Plex Mono",
     monospace;
   background: var(--code-surface);
   padding: 2px 5px;
@@ -1010,4 +1022,44 @@ iframe {
   .related-section {
     padding: 65px 0;
   }
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--paper);
+}
+.header-inner nav a:hover,
+.header-inner nav a:focus-visible,
+.footer-links a:hover,
+.footer-links a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-thickness: 1px;
+}
+.card-link:focus-visible {
+  outline-offset: -5px;
+  background: var(--hover);
+}
+.card-link:hover h3,
+.card-link:focus-visible h3,
+.topic-row:hover .topic-name,
+.topic-row:focus-visible .topic-name {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+.hero-bottom,
+.article-grid,
+.takeaways,
+.related-section {
+  border-top-color: var(--ink);
+}
+.diagram-section .section-eyebrow,
+.diagram-heading-row a {
+  color: var(--accent);
+}
+.prose th {
+  color: var(--ink);
+  background: var(--surface);
+  font-weight: 600;
 }
