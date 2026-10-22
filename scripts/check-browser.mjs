@@ -77,7 +77,7 @@ try {
       assert.equal(await page.locator('h1').innerText(), item.title);
       const nextStep = page.locator('.article-next a');
       assert.equal(await nextStep.getAttribute('href'), new URL(`diagrams/${item.slug}/`, base).pathname);
-      assert.equal(await nextStep.innerText(), 'Next: read the short version →');
+      assert.equal(await nextStep.innerText(), 'Return to the diagram →');
       if (item.slug === 'agent-tool-loop' && width === 1440) {
         await nextStep.scrollIntoViewIfNeeded();
         await nextStep.click();
@@ -98,7 +98,9 @@ try {
       const canonical = await page.locator('link[rel=canonical]').getAttribute('href');
       assert.equal(new URL(canonical).pathname, new URL(`articles/${item.slug}/`, base).pathname);
       await page.screenshot({ path: join(evidence, `article-${item.slug}-${width}.png`), fullPage: true });
-      const full = await page.getByRole('link', { name: 'Open full view' }).getAttribute('href');
+      const view = page.getByRole('navigation', { name: 'Diagram viewing options' }).getByRole('link', { name: 'View', exact: true });
+      assert.equal(await view.getAttribute('href'), new URL(`diagrams/${item.slug}/reader.html`, base).pathname);
+      const full = await nextStep.getAttribute('href');
       assert.equal(full, new URL(`diagrams/${item.slug}/`, base).pathname);
       if (item.slug === 'agent-tool-loop') {
         await externalPopup();
@@ -111,8 +113,9 @@ try {
       await waitForSettledPage();
       assert.ok((await page.locator('h1').innerText()).trim(), 'Companion has a title');
       assert.equal(new URL(await page.locator('link[rel=canonical]').getAttribute('href')).pathname, new URL(`diagrams/${item.slug}/`, base).pathname);
-      const companionIframe = page.locator('iframe');
-      assert.equal(await companionIframe.count(), 1);
+      const companionIframes = page.locator('iframe');
+      assert.equal(await companionIframes.count(), 2);
+      const companionIframe = companionIframes.first();
       assert.equal(await companionIframe.getAttribute('src'), `${new URL(`diagrams/${item.slug}/reader.html`, base).pathname}?hideBreadcrumbs=1&hideHeader=1`);
       await companionIframe.scrollIntoViewIfNeeded();
       const companionFrame = await (await companionIframe.elementHandle()).contentFrame();
@@ -131,17 +134,18 @@ try {
 
     await visit('articles/ai-evaluation/');
     await page.emulateMedia({ colorScheme: 'dark' });
-    await page.locator('iframe').scrollIntoViewIfNeeded();
-    await page.frameLocator('iframe').getByRole('button', { name: 'Zoom in', exact: true }).waitFor();
+    await page.locator('iframe[src]').scrollIntoViewIfNeeded();
+    await page.frameLocator('iframe[src]').getByRole('button', { name: 'Zoom in', exact: true }).waitFor();
     await page.screenshot({ path: join(evidence, `article-dark-${width}.png`), fullPage: true });
     await page.locator('.diagram-section').screenshot({ path: join(evidence, `diagram-${width}.png`) });
     await checkWidth();
-    const full = await page.getByRole('link', { name: 'Open full view' }).getAttribute('href');
+    const full = await page.locator('.article-next a').getAttribute('href');
     await page.goto(new URL(full, base).href);
     await waitForSettledPage();
     await checkWidth();
     await page.screenshot({ path: join(evidence, `companion-dark-${width}.png`), fullPage: true });
-    const canvas = await page.getByRole('link', { name: /Open canvas only/ }).getAttribute('href');
+    const canvas = await page.getByRole('navigation', { name: 'Diagram viewing options' })
+      .getByRole('link', { name: 'View', exact: true }).getAttribute('href');
     await page.goto(new URL(canvas, base).href);
     await zoom(page);
     assert.equal(await page.locator('.header').isVisible(), true, 'Standalone readers retain their title and subtitle');
@@ -161,8 +165,8 @@ try {
   const touch = await context.newCDPSession(page);
   for (const route of ['articles/agent-tool-loop/', 'diagrams/agent-tool-loop/']) {
     await page.goto(new URL(route, base).href);
-    await page.locator('iframe').scrollIntoViewIfNeeded();
-    const frame = await (await page.locator('iframe').elementHandle()).contentFrame();
+    await page.locator('iframe[src]').scrollIntoViewIfNeeded();
+    const frame = await (await page.locator('iframe[src]').elementHandle()).contentFrame();
     await frame.getByRole('button', { name: 'Zoom in', exact: true }).waitFor();
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `320px overflow: ${route}`);
     await page.screenshot({ path: join(evidence, `pilot-${route.startsWith('articles') ? 'article' : 'companion'}-320.png`), fullPage: true });

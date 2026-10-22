@@ -25,8 +25,8 @@ for (const article of catalog) {
   if (!page.includes(`${base}/diagrams/${article.slug}/reader.html?hideBreadcrumbs=1&amp;hideHeader=1`)) {
     throw new Error(`Article reader does not suppress its header and breadcrumbs when embedded: ${article.slug}`);
   }
-  if (!page.includes(`href="${base}/diagrams/${article.slug}/">Next: read the short version →</a>`)) {
-    throw new Error(`Article lacks its concise companion next step: ${article.slug}`);
+  if (!page.includes(`href="${base}/diagrams/${article.slug}/">Return to the diagram →</a>`)) {
+    throw new Error(`Article lacks its diagram next step: ${article.slug}`);
   }
   if (!reader.includes('diagram-source-sha256')) {
     throw new Error(`Reader lacks source identity: ${article.slug}`);
