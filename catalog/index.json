@@ -901,5 +901,50 @@
       ],
       "scope": "Illustrative architecture. Sources support the patterns; this is not a running implementation."
     }
+  },
+  {
+    "slug": "reader-data-or-better-teacher",
+    "type": "workflow",
+    "title": "More reader data or a better AI teacher?",
+    "file": "diagrams/reader-data-or-better-teacher.json",
+    "original": [],
+    "lesson": {
+      "summary": "A stronger teacher can have little effect when it only breaks tied training labels.",
+      "problem": "Which intervention changes the learning signal: more reader examples or a stronger teacher?",
+      "objectives": [
+        "Locate the teacher in a training pipeline.",
+        "Separate development results from fresh-page evidence."
+      ],
+      "walkthrough": [
+        {
+          "title": "Count",
+          "detail": "Order sentences by reader highlight counts."
+        },
+        {
+          "title": "Resolve ties",
+          "detail": "Use teacher rankings or reading position only where counts are equal."
+        },
+        {
+          "title": "Evaluate",
+          "detail": "Train, select and freeze candidates before inspecting fresh pages."
+        }
+      ],
+      "decisions": [
+        "Compare interventions at the point where they enter training."
+      ],
+      "failureModes": [
+        "A development-set advantage may not carry to unfamiliar domains."
+      ],
+      "takeaways": [
+        "A stronger component helps only through the information it contributes."
+      ],
+      "references": [
+        {
+          "title": "More Reader Data or a Better Teacher?",
+          "url": "https://arxiv.org/html/2610.17768v1"
+        }
+      ],
+      "scope": "Conceptual study pipeline; not a reproduction or universal model ranking."
+    }
   }
 ]

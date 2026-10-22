@@ -1,0 +1,17 @@
+---
+title: "Where a teacher can change the training signal"
+description: "Trace reader counts into training and see the narrow place where a teacher resolves equal-count sentences."
+diagram: "reader-data-or-better-teacher"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A component's influence depends on where it enters the system. Here, reader counts establish an ordering and a teacher resolves ties. Upgrading that teacher leaves every unequal-count comparison intact.
+
+<DiagramEmbed slug="reader-data-or-better-teacher" title="More reader data or a better AI teacher?" heading="Find the teacher's entry point" cue="Start at Reader counts; the upward teacher arrow affects only Break ties. Follow the frozen candidate into the fresh-page test." companion={true} />
+
+Think of a queue sorted first by priority and then by arrival time. Changing the second sorting rule cannot change which priority group comes first. That analogy explains the narrow role shown here; it is not a description of the model's implementation.
+
+The lower path separates candidate selection from fresh-page evaluation. It reminds us to check a proposed improvement beyond the examples used to choose it. The drawing summarizes a particular study recipe, rather than every way a teacher can train another model.
+
+Source: [Nakayashiki and Watanabe, October 13, 2026](https://arxiv.org/html/2610.17768v1), CC BY 4.0. The linked full lesson explains the results and their limits.

@@ -1,0 +1,49 @@
+---
+title: "More reader data or a better AI teacher?"
+description: "Follow a teacher's limited role in ranking reader highlights, and learn why changing one component may barely change a trained model."
+pubDate: "2026-10-22"
+topic: "AI systems"
+tags: ["research", "training data", "evaluation"]
+difficulty: "intermediate"
+objectives: ["Locate the teacher in a training pipeline.", "Separate development results from fresh-page evidence."]
+takeaways: ["A stronger component helps only through the information it contributes."]
+diagram: "reader-data-or-better-teacher"
+legacyIds: []
+related: ["ai-evaluation", "trace-driven-evaluation"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A better AI component does not automatically make a better system. First ask what that component is allowed to change.
+
+An October 13, 2026 [preprint by Kazuki Nakayashiki and Keisuke Watanabe](https://arxiv.org/abs/2610.17768) offers a concrete case. It predicts which sentences readers highlight. In one training recipe, a teacher model orders sentences only when reader counts tie. Adding training pages helped more than replacing that tie-breaker with a stronger teacher.
+
+## Follow the teacher's narrow doorway
+
+Imagine an article with three sentences. Eight readers highlight A, two highlight B, and two highlight C. These counts are an illustrative example, not study data. The target already puts A first. The teacher can decide whether B precedes C; it cannot move either above A merely because it prefers their wording.
+
+Read the top lane from **Reader counts** through **Train ranker**. The upward arrow from **Teacher ranking** enters at **Break ties**. The bottom lane then follows the selected candidate into evaluation.
+
+<DiagramEmbed slug="reader-data-or-better-teacher" title="More reader data or a better AI teacher?" heading="Where can a better teacher change the target?" cue="Follow reader counts first, then find the teacher's single entry at Break ties." />
+
+This distinction helps explain experiments in other systems too. Suppose a search application uses an expensive model only to reorder results with identical first-stage scores. Upgrading it cannot repair documents that the first stage never retrieved. Before replacing a component, trace which inputs, choices, or outputs it can actually influence.
+
+## Compare the interventions, not their names
+
+On 215 development pages, doubling the training-page fraction improved average precision by 0.0242; the stronger tie-breaker changed it by 0.0013, with an interval spanning zero. Average precision rewards relevant sentences appearing early in a ranking; it is not percent accuracy. The paper's [methods and results](https://arxiv.org/html/2610.17768v1) define relevance using reader highlights.
+
+More examples and a stronger tie-breaker act at different places. More examples can expose the learner to additional patterns. A tie-breaker supplies ordering information within an existing target. Neither intervention guarantees an improvement: additional examples can be repetitive, and a teacher can contribute information that the target does not need.
+
+For your own experiment, write down the intervention precisely. “Better teacher” is too vague. Specify whether it supplies all labels, resolves ties, chooses examples, or critiques completed answers. Hold other conditions stable where possible and compare against a simple baseline. This is an experimental design lesson, not a recommendation to collect people's reading behavior without an appropriate data policy.
+
+## Keep the conclusion inside the evidence
+
+The fresh-page test had 131 pages and was explicitly descriptive, not confirmatory. Data came from one platform; record-level data is unavailable, and the authors work for its operator. The stronger teacher replaced only the tie-breaker, not the initial distillation teacher. This does not establish that stronger teachers generally fail.
+
+The diagram's **Freeze candidate** step separates choosing a model from examining new evidence. A development result can guide the next experiment without settling what will happen for a new audience. If your intended users differ from those represented in training, test that difference directly.
+
+The practical question is: **what new information reaches the learner when this component improves?** Draw that path before treating a model upgrade as a system upgrade.
+
+## Source and scope
+
+Based on [arXiv:2610.17768v1](https://arxiv.org/html/2610.17768v1), submitted October 13, 2026, by Nakayashiki and Watanabe, licensed CC BY 4.0. This lesson adds an illustrative pipeline and example; it does not independently reproduce the study. The source page lists one version at the time of review.

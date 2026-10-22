@@ -1,0 +1,131 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "More reader data or a better AI teacher?",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "output": ".archify/reader-data-or-better-teacher/reader.html"
+  },
+  "lanes": [
+    {
+      "id": "labels",
+      "label": "Build training targets"
+    },
+    {
+      "id": "learn",
+      "label": "Train and evaluate"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "counts",
+      "lane": "labels",
+      "col": 0,
+      "type": "database",
+      "label": "Reader counts",
+      "sublabel": "highlights per sentence"
+    },
+    {
+      "id": "order",
+      "lane": "labels",
+      "col": 1,
+      "type": "backend",
+      "label": "Order by count",
+      "sublabel": "readers set priority"
+    },
+    {
+      "id": "ties",
+      "lane": "labels",
+      "col": 2,
+      "type": "backend",
+      "label": "Break ties",
+      "sublabel": "teacher or position"
+    },
+    {
+      "id": "teacher",
+      "lane": "learn",
+      "col": 2,
+      "type": "backend",
+      "label": "Teacher ranking",
+      "sublabel": "equal counts only"
+    },
+    {
+      "id": "train",
+      "lane": "labels",
+      "col": 3,
+      "type": "backend",
+      "label": "Train ranker",
+      "sublabel": "learn sentence scores"
+    },
+    {
+      "id": "freeze",
+      "lane": "learn",
+      "col": 3,
+      "type": "backend",
+      "label": "Freeze candidate",
+      "sublabel": "after development"
+    },
+    {
+      "id": "test",
+      "lane": "learn",
+      "col": 4,
+      "type": "backend",
+      "label": "Fresh-page test",
+      "sublabel": "descriptive evidence"
+    }
+  ],
+  "edges": [
+    {
+      "from": "counts",
+      "to": "order"
+    },
+    {
+      "from": "order",
+      "to": "ties"
+    },
+    {
+      "from": "teacher",
+      "to": "ties",
+      "label": "tie order"
+    },
+    {
+      "from": "ties",
+      "to": "train"
+    },
+    {
+      "from": "train",
+      "to": "freeze"
+    },
+    {
+      "from": "freeze",
+      "to": "test"
+    }
+  ],
+  "mainPath": [
+    "counts",
+    "order",
+    "ties",
+    "train",
+    "freeze",
+    "test"
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Two different interventions",
+      "items": [
+        "More pages expand the examples used for training.",
+        "A stronger tie-breaker changes only equal-count ordering."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Evidence boundary",
+      "items": [
+        "Conceptual view of arXiv:2610.17768v1, October 13, 2026.",
+        "One platform; fresh-page results do not confirm broad generalization."
+      ]
+    }
+  ]
+}
