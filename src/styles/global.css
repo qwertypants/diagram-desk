@@ -525,6 +525,37 @@ html[data-motion-boot="pending"] main[data-motion-phase="initial"] :is(
   padding-bottom: 60px;
   border-bottom: 1px solid var(--line);
 }
+.breadcrumbs {
+  margin-bottom: 24px;
+  color: var(--muted);
+  font: 11px "IBM Plex Mono", monospace;
+}
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.breadcrumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.breadcrumbs a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.breadcrumb-separator {
+  color: var(--subtle);
+}
+.article-hero .breadcrumbs {
+  margin-bottom: 70px;
+}
+.companion-header .breadcrumbs {
+  margin-bottom: 50px;
+}
 .page-intro h1 {
   max-width: 930px;
 }

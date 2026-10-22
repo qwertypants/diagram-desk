@@ -3,6 +3,7 @@ import { withBase } from '../../lib/urls';
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleCard from '../../components/ArticleCard.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 export async function getStaticPaths() {
   const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -12,4 +13,4 @@ export async function getStaticPaths() {
 }
 const { topic, articles } = Astro.props;
 ---
-<BaseLayout title={topic} description={`Visual engineering guides about ${topic}.`} canonical={`/topics/${slugify(topic)}/`}><section class="page-intro wrap"><div class="eyebrow"><a href={withBase('/topics/')}>ALL TOPICS</a> / {String(articles.length).padStart(2,'0')} GUIDES</div><h1>{topic}<em>.</em></h1><p>Explore the questions, decisions, and systems behind {topic.toLowerCase()}.</p></section><section class="listing wrap article-list-page"><div class="article-grid">{articles.map((article,index) => <ArticleCard article={article} index={index} />)}</div></section></BaseLayout>
+<BaseLayout title={topic} description={`Visual engineering guides about ${topic}.`} canonical={`/topics/${slugify(topic)}/`}><section class="page-intro wrap"><Breadcrumbs items={[{ label: 'Home', href: withBase('/') }, { label: 'Topics', href: withBase('/topics/') }, { label: topic }]} /><div class="eyebrow"><a href={withBase('/topics/')}>ALL TOPICS</a> / {String(articles.length).padStart(2,'0')} GUIDES</div><h1>{topic}<em>.</em></h1><p>Explore the questions, decisions, and systems behind {topic.toLowerCase()}.</p></section><section class="listing wrap article-list-page"><div class="article-grid">{articles.map((article,index) => <ArticleCard article={article} index={index} />)}</div></section></BaseLayout>

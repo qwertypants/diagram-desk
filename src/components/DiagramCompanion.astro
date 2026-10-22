@@ -2,6 +2,7 @@
 import { render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { withBase } from '../lib/urls';
+import Breadcrumbs from './Breadcrumbs.astro';
 
 interface Props {
   companion: CollectionEntry<'companions'>;
@@ -14,7 +15,7 @@ const articleUrl = withBase(`/articles/${article.id}/`);
 <BaseLayout title={companion.data.title} description={companion.data.description} canonical={`/diagrams/${companion.id}/`}>
   <article class="companion-page wrap">
     <header class="companion-header">
-      <div class="article-breadcrumb"><a href={withBase('/articles/')}>The library</a><span aria-hidden="true">/</span><a href={articleUrl}>Full article</a></div>
+      <Breadcrumbs items={[{ label: 'Home', href: withBase('/') }, { label: 'Articles', href: withBase('/articles/') }, { label: article.data.topic, href: withBase(`/topics/${article.data.topic.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}/`) }, { label: article.data.title, href: articleUrl }, { label: 'Diagram' }]} />
       <div class="eyebrow">A DIAGRAM FIELD NOTE</div>
       <h1>{companion.data.title}</h1>
       <p class="companion-deck">{companion.data.description}</p>
