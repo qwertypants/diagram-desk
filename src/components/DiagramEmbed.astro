@@ -1,6 +1,5 @@
 ---
 import { withBase } from '../lib/urls';
-import { getCollection } from 'astro:content';
 interface Props {
   slug: string;
   title: string;
@@ -11,12 +10,47 @@ interface Props {
 const { slug, title, heading = 'Explore the diagram', cue, companion = false } = Astro.props;
 const readerUrl = withBase(`/diagrams/${slug}/reader.html`);
 const embedUrl = `${readerUrl}?hideBreadcrumbs=1&hideHeader=1`;
-const hasCompanion = !companion && (await getCollection('companions')).some(entry => entry.id === slug);
-const fullViewUrl = hasCompanion ? withBase(`/diagrams/${slug}/`) : readerUrl;
+const modalId = `diagram-modal-${slug}`;
 ---
 <section class="diagram-section" aria-labelledby="diagram-heading">
   <div class="section-eyebrow">INTERACTIVE DIAGRAM</div>
-  <div class="diagram-heading-row"><h2 id="diagram-heading">{heading}</h2><a href={companion ? readerUrl : fullViewUrl}>{companion ? 'Open canvas only' : 'Open full view'} <span aria-hidden="true">→</span></a></div>
+  <div class="diagram-heading-row">
+    <h2 id="diagram-heading">{heading}</h2>
+    {!companion && <nav class="diagram-actions" aria-label="Diagram viewing options">
+      <a href={readerUrl}>Full page <span aria-hidden="true">→</span></a>
+      <a href={readerUrl} data-diagram-modal-trigger={modalId}>Modal</a>
+    </nav>}
+  </div>
   {cue && <p class="diagram-cue">{cue}</p>}
   <div class="diagram-frame"><iframe src={embedUrl} title={`Interactive diagram for ${title}`} loading="lazy" sandbox="allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe></div>
+  {!companion && <dialog class="diagram-modal" id={modalId} aria-labelledby={`${modalId}-title`}>
+    <div class="diagram-modal-header">
+      <h2 id={`${modalId}-title`}>{title}</h2>
+      <button type="button" data-diagram-modal-close aria-label="Close diagram">×</button>
+    </div>
+    <iframe data-src={embedUrl} title={`Interactive diagram for ${title}`} sandbox="allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe>
+  </dialog>}
 </section>
+
+<script>
+  document.addEventListener('click', event => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const trigger = target.closest<HTMLAnchorElement>('[data-diagram-modal-trigger]');
+    if (trigger) {
+      const dialog = document.getElementById(trigger.dataset.diagramModalTrigger ?? '') as HTMLDialogElement | null;
+      if (!dialog || typeof dialog.showModal !== 'function') return;
+      event.preventDefault();
+      const frame = dialog.querySelector<HTMLIFrameElement>('iframe[data-src]');
+      if (frame && !frame.hasAttribute('src')) frame.src = frame.dataset.src ?? '';
+      dialog.showModal();
+      dialog.querySelector<HTMLButtonElement>('[data-diagram-modal-close]')?.focus();
+      return;
+    }
+
+    const closeButton = target.closest<HTMLButtonElement>('[data-diagram-modal-close]');
+    if (closeButton) closeButton.closest<HTMLDialogElement>('dialog')?.close();
+    else if (target instanceof HTMLDialogElement && target.classList.contains('diagram-modal')) target.close();
+  });
+</script>

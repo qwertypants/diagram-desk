@@ -5,7 +5,7 @@ const { article, index } = Astro.props as { article: CollectionEntry<'articles'>
 const date = article.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 ---
 <article class="article-card">
-  <a class="card-link" href={withBase(`/articles/${article.id}/`)} aria-label={`Read ${article.data.title}`}>
+  <a class="card-link" href={withBase(`/diagrams/${article.id}/`)} aria-label={`Explore the diagram for ${article.data.title}`}>
     <span class="card-top"><span class="card-number">{String((index ?? 0) + 1).padStart(2, '0')}</span><span class="card-topic">{article.data.topic}</span></span>
     <time class="card-date" datetime={article.data.pubDate.toISOString()}>{date}</time>
     <h3>{article.data.title}</h3>
