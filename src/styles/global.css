@@ -730,8 +730,9 @@ html[data-motion-boot="pending"] main[data-motion-phase="initial"] :is(
     serif;
   margin: 15px 0;
 }
-.diagram-heading-row a {
-  font-size: 12px;
+.diagram-heading-row a,
+.diagram-actions a {
+  font-size: 11px;
   font-weight: 700;
   border-bottom: 1px solid var(--ink);
   padding-bottom: 5px;
@@ -742,6 +743,8 @@ html[data-motion-boot="pending"] main[data-motion-phase="initial"] :is(
   align-items: center;
   gap: 18px;
   flex: none;
+  justify-content: flex-end;
+  margin-top: 8px;
 }
 .diagram-modal {
   width: min(96vw, 1500px);
@@ -1113,12 +1116,11 @@ html[data-motion-boot="pending"] main[data-motion-phase="initial"] :is(
   }
   .diagram-heading-row a {
     display: inline-block;
-    margin-bottom: 10px;
   }
   .diagram-actions {
     flex-wrap: wrap;
     gap: 14px;
-    margin-bottom: 4px;
+    margin-top: 4px;
   }
   .diagram-modal {
     width: 100vw;

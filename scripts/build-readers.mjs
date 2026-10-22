@@ -63,7 +63,7 @@ for (const item of catalog) {
       @media (max-width: 600px) { .diagram-desk-breadcrumbs { width: calc(100% - 1.5rem); margin-bottom: .8rem; } }
     `;
     const breadcrumbBootstrap = `(()=>{try{const params=new URLSearchParams(window.location.search);if(params.get('hideHeader')==='1')document.documentElement.setAttribute('data-reader-header','hidden');if(params.get('hideBreadcrumbs')==='1')return;const container=document.querySelector('.container');if(!container)return;const style=document.createElement('style');style.textContent=${JSON.stringify(breadcrumbStyles)};document.head.append(style);const nav=document.createElement('nav');nav.className='diagram-desk-breadcrumbs';nav.setAttribute('aria-label','Breadcrumb');nav.innerHTML=${JSON.stringify(breadcrumbItems)};container.prepend(nav)}catch(_){}})()`;
-    html = html.replace('</head>', `<meta name="diagram-source-sha256" content="${digest}">\n<style>html[data-reader-header="hidden"] .header { display: none !important; } @media (pointer: coarse) { .diagram-container.is-pannable { touch-action: none; } }</style>\n</head>`);
+    html = html.replace('</head>', `<meta name="diagram-source-sha256" content="${digest}">\n<style>html[data-reader-header="hidden"] .header { display: none !important; } html[data-reader-header="hidden"][data-preset="editorial"] .diagram-container::after { display: none !important; } @media (pointer: coarse) { .diagram-container.is-pannable { touch-action: none; } }</style>\n</head>`);
     html = html.replace('<div class="container">', `<div class="container">\n    <script>${breadcrumbBootstrap}</script>`);
     html = html.replace('</body>', `<script>(${installReaderTouch.toString()})();</script>\n</body>`);
     const target = join(outputRoot, item.slug);
