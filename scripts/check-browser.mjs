@@ -26,9 +26,11 @@ try {
         errors.push(`${response.status()} ${response.url()}`);
       }
     });
+    const waitForSettledPage = () => page.locator('main[data-motion-phase="settled"]').waitFor();
     const visit = async path => {
       const response = await page.goto(new URL(path, base).href);
       assert.equal(response?.status(), 200, path);
+      if (path === '' || path.startsWith('articles/')) await waitForSettledPage();
     };
     const checkWidth = async () => {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Page overflows at ${width}px: ${page.url()}`);
@@ -60,10 +62,14 @@ try {
     await checkWidth();
     await page.screenshot({ path: join(evidence, `home-${width}.png`), fullPage: true });
     await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Articles', exact: true }).click();
+    await page.waitForURL(new URL('articles/', base).href, { waitUntil: 'domcontentloaded' });
     assert.equal(page.url(), new URL('articles/', base).href);
     assert.equal(await page.locator('.article-card').count(), catalog.length);
     await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Topics', exact: true }).click();
+    await page.waitForURL(new URL('topics/', base).href, { waitUntil: 'domcontentloaded' });
+    const topicHref = await page.locator('.topic-row').first().getAttribute('href');
     await page.locator('.topic-row').first().click();
+    await page.waitForURL(new URL(topicHref, base).href, { waitUntil: 'domcontentloaded' });
     assert.ok(page.url().startsWith(new URL('topics/', base).href));
 
     for (const item of catalog) {
@@ -89,6 +95,7 @@ try {
         await reader.locator('#diagram-guide-close').click();
       }
       await page.goto(new URL(full, base).href);
+      await waitForSettledPage();
       assert.ok((await page.locator('h1').innerText()).trim(), 'Companion has a title');
       assert.equal(new URL(await page.locator('link[rel=canonical]').getAttribute('href')).pathname, new URL(`diagrams/${item.slug}/`, base).pathname);
       const companionIframe = page.locator('iframe');
@@ -101,6 +108,7 @@ try {
       if (item.slug === 'agent-tool-loop') await externalPopup();
       const articleLink = page.locator(`a[href="${new URL(`articles/${item.slug}/`, base).pathname}"]`).first();
       await articleLink.click();
+      await page.waitForURL(new URL(`articles/${item.slug}/`, base).href, { waitUntil: 'domcontentloaded' });
       assert.equal(page.url(), new URL(`articles/${item.slug}/`, base).href);
     }
 
@@ -113,6 +121,7 @@ try {
     await checkWidth();
     const full = await page.getByRole('link', { name: 'Open full view' }).getAttribute('href');
     await page.goto(new URL(full, base).href);
+    await waitForSettledPage();
     await checkWidth();
     await page.screenshot({ path: join(evidence, `companion-dark-${width}.png`), fullPage: true });
     const canvas = await page.getByRole('link', { name: /Open canvas only/ }).getAttribute('href');
