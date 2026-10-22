@@ -49,8 +49,8 @@ function settlePress(element: HTMLElement) {
 function press(element: HTMLElement, immediate = false) {
   if (preference.matches || navigationPending || pressed.has(element)) return;
   pressed.add(element);
-  if (immediate) gsap.set(element, { scale: 0.985 });
-  else gsap.to(element, { scale: 0.985, duration: 0.12, ease: 'power2.out', overwrite: 'auto' });
+  if (immediate) gsap.set(element, { scale: 0.975 });
+  else gsap.to(element, { scale: 0.975, duration: 0.16, ease: 'power2.out', overwrite: 'auto' });
 }
 
 function release(element: HTMLElement) {
@@ -61,8 +61,8 @@ function release(element: HTMLElement) {
   }
   gsap.to(element, {
     scale: 1,
-    duration: 0.16,
-    ease: 'power2.out',
+    duration: 0.22,
+    ease: 'power3.out',
     overwrite: 'auto',
     onComplete: () => gsap.set(element, { clearProps: 'transform' }),
   });
@@ -94,13 +94,19 @@ function startIntro() {
       onComplete: restoreIntro,
     });
     introTargets.forEach((element, index) => {
-      gsap.set(element, { autoAlpha: 0, y: index === 1 ? 8 : 6, willChange: 'transform, opacity' });
+      const isDiagramArt = element.matches('.hero-art');
+      gsap.set(element, isDiagramArt
+        ? { autoAlpha: 0, x: 18, y: 14, scale: 0.92, rotation: 2.5, willChange: 'transform, opacity' }
+        : { autoAlpha: 0, y: 22, willChange: 'transform, opacity' });
       intro!.to(element, {
         autoAlpha: 1,
+        x: 0,
         y: 0,
-        duration: index === 1 ? 0.32 : 0.25,
-        ease: 'power2.out',
-      }, index * 0.035);
+        scale: 1,
+        rotation: 0,
+        duration: isDiagramArt ? 0.72 : 0.56,
+        ease: 'power3.out',
+      }, index * 0.12);
     });
     main.dataset.motionPhase = 'entering';
     releaseBoot();
@@ -139,7 +145,7 @@ document.addEventListener('click', event => {
   navigationTimer = window.setTimeout(follow, 350);
   try {
     main.dataset.motionPhase = 'leaving';
-    outro = gsap.to(main, { opacity: 0.6, y: -4, duration: 0.14, ease: 'power2.in', onComplete: follow });
+    outro = gsap.to(main, { opacity: 0.38, y: -12, duration: 0.24, ease: 'power2.in', onComplete: follow });
   } catch {
     follow();
   }
