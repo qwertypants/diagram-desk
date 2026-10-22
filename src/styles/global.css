@@ -126,6 +126,7 @@ iframe {
   border-bottom: 1px solid var(--ink);
 }
 html[data-motion-boot="pending"] main[data-motion-phase="initial"] :is(
+  .breadcrumbs li,
   .hero h1,
   .hero-art,
   .page-intro h1,
@@ -429,13 +430,18 @@ html[data-motion-boot="pending"] main[data-motion-phase="initial"] :is(
 .card-number {
   color: var(--accent);
 }
+.card-date {
+  margin-top: 24px;
+  font: 10px "IBM Plex Mono", monospace;
+  color: var(--subtle);
+}
 .card-link h3 {
   font:
     500 25px/1.2 "Newsreader",
     Georgia,
     serif;
   letter-spacing: -0.025em;
-  margin: 42px 0 12px;
+  margin: 14px 0 12px;
 }
 .card-link p {
   font-size: 13px;
@@ -556,6 +562,9 @@ html[data-motion-boot="pending"] main[data-motion-phase="initial"] :is(
 .companion-header .breadcrumbs {
   margin-bottom: 50px;
 }
+.companion-header {
+  margin-bottom: 0;
+}
 .page-intro h1 {
   max-width: 930px;
 }
@@ -666,6 +675,20 @@ html[data-motion-boot="pending"] main[data-motion-phase="initial"] :is(
 .article-main {
   max-width: 900px;
   min-width: 0;
+}
+.article-next {
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.article-next .eyebrow {
+  margin-bottom: 10px;
+}
+.article-next a {
+  color: var(--accent);
+  font: 600 17px/1.5 "IBM Plex Sans", sans-serif;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 .learning-box {
   padding: 20px 28px;

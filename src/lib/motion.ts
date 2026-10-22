@@ -1,4 +1,7 @@
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 type MotionBoot = { recovered: boolean; timer: number };
 declare global {
@@ -11,14 +14,21 @@ const main = document.querySelector<HTMLElement>('#main');
 const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const boot = window.__diagramMotionBoot;
 const introTargets = main ? Array.from(main.querySelectorAll<HTMLElement>(
-  '.hero h1, .hero-art, .page-intro h1, .article-hero h1',
+  '.breadcrumbs li, .hero h1, .hero-art, .page-intro h1, .article-hero h1',
 )) : [];
 const originalStyles = new Map(introTargets.map(element => [element, element.getAttribute('style')]));
+const articleHeadings = main
+  ? Array.from(main.querySelectorAll<HTMLElement>('.article-main .prose h2'))
+  : [];
+const headingStyles = new Map<HTMLElement, string | null>();
+const headingTweens: gsap.core.Tween[] = [];
+const headingTriggers: ScrollTrigger[] = [];
 const pressTargets = Array.from(document.querySelectorAll<HTMLElement>(
   '.primary-link, .card-link, .topic-row, .text-link, .header-inner nav a, .footer-links a',
 ));
 const pressed = new Set<HTMLElement>();
 let intro: gsap.core.Timeline | undefined;
+let headingContext: gsap.Context | undefined;
 let outro: gsap.core.Tween | undefined;
 let navigationPending = false;
 let navigationTimer = 0;
@@ -38,6 +48,55 @@ function restoreIntro() {
 function releaseBoot() {
   if (boot) window.clearTimeout(boot.timer);
   document.documentElement.removeAttribute('data-motion-boot');
+}
+
+function restoreHeadingStyle(element: HTMLElement) {
+  const original = headingStyles.get(element);
+  if (original === null || original === undefined) element.removeAttribute('style');
+  else element.setAttribute('style', original);
+}
+
+function restoreHeadingReveals() {
+  headingContext?.revert();
+  headingContext = undefined;
+  for (const trigger of headingTriggers.splice(0)) trigger.kill();
+  for (const tween of headingTweens.splice(0)) tween.kill();
+  for (const element of headingStyles.keys()) restoreHeadingStyle(element);
+  headingStyles.clear();
+}
+
+function startHeadingReveals() {
+  if (preference.matches || !main || !articleHeadings.length || headingContext) return;
+  try {
+    for (const heading of articleHeadings) headingStyles.set(heading, heading.getAttribute('style'));
+    const context = gsap.context(() => {
+      for (const heading of articleHeadings) {
+        gsap.set(heading, { autoAlpha: 0, y: 24, scale: 0.98, willChange: 'transform, opacity' });
+        const tween = gsap.to(heading, {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.62,
+          ease: 'power3.out',
+          paused: true,
+          onComplete: () => restoreHeadingStyle(heading),
+        });
+        headingTweens.push(tween);
+        headingTriggers.push(ScrollTrigger.create({
+          trigger: heading,
+          start: 'top 86%',
+          once: true,
+          onEnter: () => tween.play(0),
+        }));
+      }
+    }, main);
+    headingContext = context;
+    void document.fonts.ready.then(() => {
+      if (headingContext === context) ScrollTrigger.refresh();
+    });
+  } catch {
+    restoreHeadingReveals();
+  }
 }
 
 function settlePress(element: HTMLElement) {
@@ -84,6 +143,7 @@ for (const element of pressTargets) {
 
 function startIntro() {
   if (!main) return;
+  startHeadingReveals();
   if (preference.matches || boot?.recovered || document.documentElement.dataset.motionBoot !== 'pending') {
     restoreIntro();
     return;
@@ -95,7 +155,10 @@ function startIntro() {
     });
     introTargets.forEach((element, index) => {
       const isDiagramArt = element.matches('.hero-art');
-      gsap.set(element, isDiagramArt
+      const isBreadcrumb = element.matches('.breadcrumbs li');
+      gsap.set(element, isBreadcrumb
+        ? { autoAlpha: 0, x: -16, y: 5, willChange: 'transform, opacity' }
+        : isDiagramArt
         ? { autoAlpha: 0, x: 18, y: 14, scale: 0.92, rotation: 2.5, willChange: 'transform, opacity' }
         : { autoAlpha: 0, y: 22, willChange: 'transform, opacity' });
       intro!.to(element, {
@@ -104,9 +167,9 @@ function startIntro() {
         y: 0,
         scale: 1,
         rotation: 0,
-        duration: isDiagramArt ? 0.72 : 0.56,
+        duration: isBreadcrumb ? 0.38 : isDiagramArt ? 0.72 : 0.56,
         ease: 'power3.out',
-      }, index * 0.12);
+      }, index * 0.075);
     });
     main.dataset.motionPhase = 'entering';
     releaseBoot();
@@ -131,6 +194,7 @@ document.addEventListener('click', event => {
   if (navigationPending) return;
   navigationPending = true;
   restoreIntro();
+  restoreHeadingReveals();
   if (!main) {
     location.assign(destination.href);
     return;
@@ -161,6 +225,7 @@ function resetPage() {
     main.dataset.motionPhase = 'settled';
   }
   restoreIntro();
+  restoreHeadingReveals();
   navigationPending = false;
 }
 
@@ -171,6 +236,7 @@ window.addEventListener('pageshow', event => {
 preference.addEventListener('change', () => {
   if (!preference.matches) return;
   restoreIntro();
+  restoreHeadingReveals();
   for (const element of pressTargets) settlePress(element);
   if (navigationPending) {
     outro?.progress(1);

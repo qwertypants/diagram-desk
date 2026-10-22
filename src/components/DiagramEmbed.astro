@@ -9,13 +9,14 @@ interface Props {
   companion?: boolean;
 }
 const { slug, title, heading = 'Explore the diagram', cue, companion = false } = Astro.props;
-const url = withBase(`/diagrams/${slug}/reader.html`);
+const readerUrl = withBase(`/diagrams/${slug}/reader.html`);
+const embedUrl = `${readerUrl}?hideBreadcrumbs=1&hideHeader=1`;
 const hasCompanion = !companion && (await getCollection('companions')).some(entry => entry.id === slug);
-const fullViewUrl = hasCompanion ? withBase(`/diagrams/${slug}/`) : url;
+const fullViewUrl = hasCompanion ? withBase(`/diagrams/${slug}/`) : readerUrl;
 ---
 <section class="diagram-section" aria-labelledby="diagram-heading">
   <div class="section-eyebrow">INTERACTIVE DIAGRAM</div>
-  <div class="diagram-heading-row"><h2 id="diagram-heading">{heading}</h2><a href={companion ? url : fullViewUrl}>{companion ? 'Open canvas only' : 'Open full view'} <span aria-hidden="true">→</span></a></div>
+  <div class="diagram-heading-row"><h2 id="diagram-heading">{heading}</h2><a href={companion ? readerUrl : fullViewUrl}>{companion ? 'Open canvas only' : 'Open full view'} <span aria-hidden="true">→</span></a></div>
   {cue && <p class="diagram-cue">{cue}</p>}
-  <div class="diagram-frame"><iframe src={url} title={`Interactive diagram for ${title}`} loading="lazy" sandbox="allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe></div>
+  <div class="diagram-frame"><iframe src={embedUrl} title={`Interactive diagram for ${title}`} loading="lazy" sandbox="allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe></div>
 </section>

@@ -75,12 +75,25 @@ try {
     for (const item of catalog) {
       await visit(`articles/${item.slug}/`);
       assert.equal(await page.locator('h1').innerText(), item.title);
+      const nextStep = page.locator('.article-next a');
+      assert.equal(await nextStep.getAttribute('href'), new URL(`diagrams/${item.slug}/`, base).pathname);
+      assert.equal(await nextStep.innerText(), 'Next: read the short version →');
+      if (item.slug === 'agent-tool-loop' && width === 1440) {
+        await nextStep.scrollIntoViewIfNeeded();
+        await nextStep.click();
+        await page.waitForURL(new URL(`diagrams/${item.slug}/`, base).href, { waitUntil: 'domcontentloaded' });
+        await page.goto(new URL(`articles/${item.slug}/`, base).href);
+        await waitForSettledPage();
+      }
       const iframe = page.locator('iframe').first();
       await iframe.scrollIntoViewIfNeeded();
-      assert.equal(await iframe.getAttribute('src'), new URL(`diagrams/${item.slug}/reader.html`, base).pathname);
+      assert.equal(await iframe.getAttribute('src'), `${new URL(`diagrams/${item.slug}/reader.html`, base).pathname}?hideBreadcrumbs=1&hideHeader=1`);
       assert.equal(await iframe.getAttribute('sandbox'), 'allow-scripts allow-downloads allow-popups allow-popups-to-escape-sandbox');
       const frame = await (await iframe.elementHandle()).contentFrame();
       await zoom(frame);
+      assert.equal(await frame.locator('.header').isVisible(), false, 'Article embeds hide the reader title and subtitle');
+      assert.equal(await frame.locator('nav[aria-label="Breadcrumb"]').count(), 0, 'Article embeds do not create breadcrumbs');
+      assert.equal(await frame.locator('head style').evaluateAll(styles => styles.filter(style => style.textContent.includes('.diagram-desk-breadcrumbs')).length), 0, 'Article embeds do not load breadcrumb styles');
       await checkWidth();
       const canonical = await page.locator('link[rel=canonical]').getAttribute('href');
       assert.equal(new URL(canonical).pathname, new URL(`articles/${item.slug}/`, base).pathname);
@@ -100,9 +113,13 @@ try {
       assert.equal(new URL(await page.locator('link[rel=canonical]').getAttribute('href')).pathname, new URL(`diagrams/${item.slug}/`, base).pathname);
       const companionIframe = page.locator('iframe');
       assert.equal(await companionIframe.count(), 1);
-      assert.equal(await companionIframe.getAttribute('src'), new URL(`diagrams/${item.slug}/reader.html`, base).pathname);
+      assert.equal(await companionIframe.getAttribute('src'), `${new URL(`diagrams/${item.slug}/reader.html`, base).pathname}?hideBreadcrumbs=1&hideHeader=1`);
       await companionIframe.scrollIntoViewIfNeeded();
-      await zoom(await (await companionIframe.elementHandle()).contentFrame());
+      const companionFrame = await (await companionIframe.elementHandle()).contentFrame();
+      await zoom(companionFrame);
+      assert.equal(await companionFrame.locator('.header').isVisible(), false, 'Companion embeds hide the reader title and subtitle');
+      assert.equal(await companionFrame.locator('nav[aria-label="Breadcrumb"]').count(), 0, 'Companion embeds do not create breadcrumbs');
+      assert.equal(await companionFrame.locator('head style').evaluateAll(styles => styles.filter(style => style.textContent.includes('.diagram-desk-breadcrumbs')).length), 0, 'Companion embeds do not load breadcrumb styles');
       await checkWidth();
       await page.screenshot({ path: join(evidence, `companion-${item.slug}-${width}.png`), fullPage: true });
       if (item.slug === 'agent-tool-loop') await externalPopup();
@@ -127,6 +144,8 @@ try {
     const canvas = await page.getByRole('link', { name: /Open canvas only/ }).getAttribute('href');
     await page.goto(new URL(canvas, base).href);
     await zoom(page);
+    assert.equal(await page.locator('.header').isVisible(), true, 'Standalone readers retain their title and subtitle');
+    assert.equal(await page.locator('.header h1').isVisible(), true);
     for (const [id, slug] of Object.entries(legacy)) {
       for (const suffix of ['', 'edit/']) {
         await visit(`diagrams/${id}/${suffix}`);

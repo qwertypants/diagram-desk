@@ -22,14 +22,32 @@ checkFile(join(dist, 'topics/index.html'));
 for (const article of catalog) {
   const page = checkFile(join(dist, 'articles', article.slug, 'index.html'));
   const reader = checkFile(join(dist, 'diagrams', article.slug, 'reader.html'));
-  if (!page.includes(`${base}/diagrams/${article.slug}/reader.html`)) {
-    throw new Error(`Article does not embed its reader: ${article.slug}`);
+  if (!page.includes(`${base}/diagrams/${article.slug}/reader.html?hideBreadcrumbs=1&amp;hideHeader=1`)) {
+    throw new Error(`Article reader does not suppress its header and breadcrumbs when embedded: ${article.slug}`);
+  }
+  if (!page.includes(`href="${base}/diagrams/${article.slug}/">Next: read the short version →</a>`)) {
+    throw new Error(`Article lacks its concise companion next step: ${article.slug}`);
   }
   if (!reader.includes('diagram-source-sha256')) {
     throw new Error(`Reader lacks source identity: ${article.slug}`);
   }
+  for (const target of [`${base || ''}/articles/`, `${base || ''}/articles/${article.slug}/`]) {
+    const escapedHref = JSON.stringify(`href="${target}"`).slice(1, -1);
+    if (!reader.includes(escapedHref)) throw new Error(`Reader breadcrumb lacks ${target}: ${article.slug}`);
+  }
+  if (!reader.includes("get('hideHeader')==='1'") ||
+      !reader.includes('data-reader-header') ||
+      !reader.includes('display: none !important') ||
+      !reader.includes("get('hideBreadcrumbs')==='1'") ||
+      !reader.includes("setAttribute('aria-label','Breadcrumb')") ||
+      !reader.includes(JSON.stringify('aria-current="page">Diagram reader').slice(1, -1))) {
+    throw new Error(`Reader lacks accessible breadcrumbs: ${article.slug}`);
+  }
   if (companionNames.includes(article.slug)) {
     const companion = checkFile(join(dist, 'diagrams', article.slug, 'index.html'));
+    if (!companion.includes(`src="${base}/diagrams/${article.slug}/reader.html?hideBreadcrumbs=1&amp;hideHeader=1"`)) {
+      throw new Error(`Companion reader does not suppress its header and breadcrumbs when embedded: ${article.slug}`);
+    }
     for (const target of [`${base}/articles/${article.slug}/`, `${base}/diagrams/${article.slug}/reader.html`]) {
       if (!companion.includes(target)) throw new Error(`Companion ${article.slug} lacks ${target}`);
     }
