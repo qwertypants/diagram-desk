@@ -17,11 +17,29 @@ const canonicalUrl = new URL(canonicalPath, Astro.site ?? Astro.url).href;
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
     <title>{pageTitle}</title>
+    <script is:inline>
+      (() => {
+        const boot = { recovered: false, timer: 0 };
+        window.__diagramMotionBoot = boot;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const navigation = performance.getEntriesByType('navigation')[0];
+        if (navigation?.type === 'back_forward') return;
+        boot.timer = window.setTimeout(() => {
+          boot.recovered = true;
+          document.documentElement.removeAttribute('data-motion-boot');
+          document.querySelector('#main')?.setAttribute('data-motion-phase', 'settled');
+        }, 700);
+        document.documentElement.dataset.motionBoot = 'pending';
+      })();
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header"><div class="header-inner"><a href={withBase('/')} class="brand" aria-label="Diagram Desk home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>diagram<span class="brand-light">desk</span></span></a><nav aria-label="Main navigation"><a href={withBase('/articles/')}>Articles</a><a href={withBase('/topics/')}>Topics</a></nav><span class="header-note">A FIELD GUIDE TO SYSTEMS</span></div></header>
-    <main id="main"><slot /></main>
+    <main id="main" data-motion-phase="initial"><slot /></main>
     <footer class="site-footer"><div class="footer-inner"><div><span class="footer-brand">diagramdesk</span><p>Clear thinking for complex systems.</p></div><div class="footer-links"><a href={withBase('/articles/')}>All articles</a><a href={withBase('/topics/')}>Browse topics</a></div><span class="footer-end">Built to be read.</span></div></footer>
+    <script>
+      import '../lib/motion';
+    </script>
   </body>
 </html>

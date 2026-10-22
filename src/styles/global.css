@@ -125,6 +125,14 @@ iframe {
 .site-header {
   border-bottom: 1px solid var(--ink);
 }
+html[data-motion-boot="pending"] main[data-motion-phase="initial"] :is(
+  .hero h1,
+  .hero-art,
+  .page-intro h1,
+  .article-hero h1
+) {
+  visibility: hidden;
+}
 .header-inner {
   width: min(1380px, calc(100% - 80px));
   margin: auto;
