@@ -87,11 +87,11 @@ try {
   {
     const { context, page, errors } = await open({}, () => {
       navigator.serviceWorker.register = (url, options) => {
-        window.serviceWorkerTest = { url, scope: options.scope };
+        /** @type {any} */ (window).serviceWorkerTest = { url, scope: options.scope };
         return Promise.reject(new Error('Registration unavailable fixture'));
       };
     });
-    assert.deepEqual(await page.evaluate(() => window.serviceWorkerTest), { url: `${base.pathname}sw.js`, scope: base.pathname }, 'Registration keeps the worker and scope under the configured deployment path');
+    assert.deepEqual(await page.evaluate(() => /** @type {any} */ (window).serviceWorkerTest), { url: `${base.pathname}sw.js`, scope: base.pathname }, 'Registration keeps the worker and scope under the configured deployment path');
     assert.deepEqual(errors, [], 'A failed optional registration leaves reading intact');
     await context.close();
   }

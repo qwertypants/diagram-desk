@@ -41,7 +41,9 @@ jobs:
         run: npm run build
 
       - name: Verify static routes and Archify readers
-        run: node scripts/check-static.mjs
+        run: |
+          node scripts/check-static.mjs
+          node scripts/check-pwa.mjs
 
       - name: Configure repository hosting path
         env:
@@ -59,6 +61,7 @@ jobs:
         run: |
           npm run build
           node scripts/check-static.mjs
+          node scripts/check-pwa.mjs
 
       - name: Install browser for reader verification
         run: npx playwright install --with-deps chromium
@@ -79,6 +82,8 @@ jobs:
             exit 1
           fi
           npm run test:browser -- "http://127.0.0.1:4321${BASE_PATH}"
+          npm run test:install -- "http://127.0.0.1:4321${BASE_PATH}"
+          npm run test:offline -- "http://127.0.0.1:4321${BASE_PATH}"
 
       - name: Upload verified Pages artifact
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

@@ -90,7 +90,7 @@ function workerRuntime(source, scope, assets, { corrupt } = {}) {
       let response;
       const request = { url: new URL(path, scope).href, method, mode, destination: mode === 'navigate' ? 'document' : '' };
       handlers.get('fetch')?.({ request, respondWith(promise) { response = promise; }, waitUntil() {} });
-      return response ? await response : undefined;
+      return response || undefined;
     },
     async status() {
       assert.ok(handlers.has('message'), 'Worker supports offline readiness status');

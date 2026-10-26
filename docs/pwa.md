@@ -17,7 +17,6 @@ Check both hosting paths before publishing:
 
 ```sh
 npm test
-node scripts/check-pwa.mjs
 SITE_URL=https://qwertypants.github.io BASE_PATH=/diagram-desk/ npm run build
 SITE_URL=https://qwertypants.github.io BASE_PATH=/diagram-desk/ node scripts/check-static.mjs
 BASE_PATH=/diagram-desk/ node scripts/check-pwa.mjs
@@ -28,6 +27,8 @@ Use the same `SITE_URL` and `BASE_PATH` for the prefixed preview:
 ```sh
 SITE_URL=https://qwertypants.github.io BASE_PATH=/diagram-desk/ npm run preview
 npm run test:browser -- http://localhost:4321/diagram-desk/
+npm run test:install -- http://localhost:4321/diagram-desk/
+npm run test:offline -- http://localhost:4321/diagram-desk/
 ```
 
 `check-pwa.mjs` checks the actual built manifest and PNG dimensions. It executes
@@ -97,9 +98,9 @@ finished.
    screen reader. A dismissed prompt must leave the page usable. Verify that
    unsupported browsers do not display a nonfunctional native-install button.
 3. Test the supported native install flow on a browser that emits
-   `beforeinstallprompt`. Check iPhone or iPad instructions in Safari and confirm
-   the instructions describe that platform's browser menu. Emulated user agents
-   verify gating logic; a physical device verifies actual installation.
+   `beforeinstallprompt`. Check the iPhone instructions in Safari and confirm
+   they describe that platform's browser menu. Emulated user agents verify
+   gating logic; a physical device verifies actual installation.
 4. Launch the installed app. Confirm its standalone layout hides redundant
    installation prompts. Keep article and diagram controls reachable at phone
    width and with larger text.
@@ -115,3 +116,8 @@ finished.
 Report local automated results, browser behavior, device installation, and live
 publication separately. A successful static build is not evidence that an app
 was installed or that browser storage will never be evicted.
+
+Keep repository-path URLs canonical with their trailing slash. A worker scoped
+to `/diagram-desk/` cannot intercept an initial offline request for the distinct
+`/diagram-desk` URL before a server has redirected it; the manifest, navigation,
+and generated links all use the controlled trailing-slash form.

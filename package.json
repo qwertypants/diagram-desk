@@ -23,8 +23,10 @@
     "check": "node scripts/check-migration.mjs && astro check",
     "check:migration": "node scripts/check-migration.mjs",
     "check:catalog": "node scripts/check-catalog.mjs",
-    "test": "node --test scripts/*.test.mjs && npm run check && npm run build && node scripts/check-static.mjs",
-    "test:browser": "node scripts/check-browser.mjs"
+    "test": "node --test scripts/*.test.mjs && npm run check && npm run build && node scripts/check-static.mjs && node scripts/check-pwa.mjs",
+    "test:browser": "node scripts/check-browser.mjs",
+    "test:install": "node scripts/check-install-browser.mjs",
+    "test:offline": "node scripts/check-offline-browser.mjs"
   },
   "files": [
     "src",
