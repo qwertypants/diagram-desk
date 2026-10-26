@@ -25,10 +25,9 @@ async function fixture(t, base = '/') {
   return { root, build };
 }
 
-async function worker(root, build, { corrupt = false } = {}) {
+async function worker(root, build, { corrupt = false, storage = new Map() } = {}) {
   const origin = 'https://example.test';
   const listeners = new Map();
-  const storage = new Map();
   let claims = 0;
   class LocalRequest extends Request {
     constructor(input, options) { super(new URL(input instanceof Request ? input.url : input, origin), options); }
@@ -133,4 +132,39 @@ test('activation cleans only this deployment and eviction status reports incompl
   assert.equal(status.ready, false);
   await writeFile(join(root, 'dist/articles/guide/index.html'), 'new release');
   assert.equal((await runtime.request('/articles/guide/')).status, 503, 'an evicted old page must not mix with new deployment bytes');
+});
+
+
+test('failed A rollback while B waits never changes or deletes active A', async t => {
+  const { root, build: releaseA } = await fixture(t, '/diagram-desk/');
+  const active = await worker(root, releaseA);
+  await active.dispatch('install');
+  await active.dispatch('activate');
+  const cacheNameA = `diagram-desk:/diagram-desk/:${releaseA.version}`;
+  const originalCacheA = active.storage.get(cacheNameA);
+  const originalEntries = [...originalCacheA];
+
+  await writeFile(join(root, 'dist/articles/guide/index.html'), '<h1>Release B</h1>');
+  const releaseB = await buildPwa({ root, base: releaseA.base });
+  const waiting = await worker(root, releaseB, { storage: active.storage });
+  await waiting.dispatch('install');
+  assert.equal(waiting.claims(), 0);
+
+  await writeFile(join(root, 'dist/articles/guide/index.html'), '<h1>Article</h1>');
+  const rollbackA = await buildPwa({ root, base: releaseA.base });
+  assert.equal(rollbackA.version, releaseA.version, 'deployment rolls back to byte-identical A');
+  const rollback = await worker(root, rollbackA, { corrupt: true, storage: active.storage });
+  await assert.rejects(rollback.dispatch('install'), /Build changed while caching/);
+
+  assert.equal(active.storage.get(cacheNameA), originalCacheA, 'active cache must survive');
+  for (const [url, response] of originalEntries) {
+    assert.equal(originalCacheA.get(url), response, `rollback must not overwrite ${url}`);
+  }
+  assert.equal(active.storage.size, 2, 'active A and waiting B both survive');
+  assert.equal(await (await active.request('/diagram-desk/articles/guide/')).text(), '<h1>Article</h1>');
+  assert.equal(await (await active.request('/diagram-desk/diagrams/guide/reader.html')).text(), '<h1>Reader</h1>');
+
+  const retry = await worker(root, rollbackA, { storage: active.storage });
+  await retry.dispatch('install');
+  for (const [url, response] of originalEntries) assert.equal(originalCacheA.get(url), response, 'successful rollback reuses existing snapshot without writes');
 });

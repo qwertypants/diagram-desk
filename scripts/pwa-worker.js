@@ -16,7 +16,11 @@ async function verifiedResponse(entry) {
     cache: 'reload', credentials: 'same-origin', redirect: 'error',
     signal: AbortSignal.timeout(30000),
   }));
-  if (!response.ok || response.type === 'opaque') throw new Error(`Cannot cache ${entry.url}`);
+  return verifyResponse(entry, response);
+}
+
+async function verifyResponse(entry, response) {
+  if (!response || !response.ok || response.type === 'opaque') throw new Error(`Cannot cache ${entry.url}`);
   const hash = await crypto.subtle.digest('SHA-256', await response.clone().arrayBuffer());
   const actual = Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
   if (actual !== entry.sha256) throw new Error(`Build changed while caching ${entry.url}`);
@@ -25,13 +29,23 @@ async function verifiedResponse(entry) {
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
+    let createdCache = false;
     try {
+      const existingCache = (await caches.keys()).includes(CACHE_NAME);
       const cache = await caches.open(CACHE_NAME);
+      createdCache = !existingCache;
       const pending = [...BUILD.entries];
       const workers = Array.from({ length: 4 }, async () => {
         while (pending.length) {
           const entry = pending.shift();
-          await cache.put(entry.url, await verifiedResponse(entry));
+          const response = await verifiedResponse(entry);
+          if (existingCache) {
+            // A rollback can install while this same release still controls tabs.
+            // Treat its cache as read-only, including when installation fails.
+            await verifyResponse(entry, await cache.match(entry.url));
+          } else {
+            await cache.put(entry.url, response);
+          }
         }
       });
       const results = await Promise.allSettled(workers);
@@ -39,7 +53,7 @@ self.addEventListener('install', event => {
       if (failed) throw failed.reason;
       // Keep the normal waiting phase. Existing tabs retain their complete release.
     } catch (error) {
-      await caches.delete(CACHE_NAME);
+      if (createdCache) await caches.delete(CACHE_NAME);
       throw error;
     }
   })());
