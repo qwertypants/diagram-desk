@@ -18,7 +18,7 @@
   },
   "scripts": {
     "dev": "node scripts/build-readers.mjs && astro dev",
-    "build": "node scripts/build-readers.mjs && astro build && node scripts/decorate-external-links.mjs",
+    "build": "node scripts/build-readers.mjs && astro build && node scripts/decorate-external-links.mjs && node scripts/build-pwa.mjs",
     "preview": "astro preview",
     "check": "node scripts/check-migration.mjs && astro check",
     "check:migration": "node scripts/check-migration.mjs",
