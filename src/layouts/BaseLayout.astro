@@ -1,4 +1,5 @@
 ---
+import InstallPrompt from '../components/InstallPrompt.astro';
 import { withBase } from '../lib/urls';
 import '../styles/global.css';
 const { title = 'Diagram Desk', description = 'Visual field notes for building reliable systems.', canonical } = Astro.props;
@@ -15,6 +16,11 @@ const canonicalUrl = new URL(canonicalPath, Astro.site ?? Astro.url).href;
     <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#201f1b" media="(prefers-color-scheme: dark)" />
     <meta name="description" content={description} />
+    <meta name="apple-mobile-web-app-title" content="Diagram Desk" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href={withBase('/manifest.webmanifest')} />
+    <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+    <link rel="apple-touch-icon" sizes="180x180" href={withBase('/icons/apple-touch-icon.png')} />
     <link rel="canonical" href={canonicalUrl} />
     <title>{pageTitle}</title>
     <script is:inline>
@@ -36,10 +42,12 @@ const canonicalUrl = new URL(canonicalPath, Astro.site ?? Astro.url).href;
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header"><div class="header-inner"><a href={withBase('/')} class="brand" aria-label="Diagram Desk home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>diagram<span class="brand-light">desk</span></span></a><nav aria-label="Main navigation"><a href={withBase('/articles/')}>Articles</a><a href={withBase('/topics/')}>Topics</a></nav><span class="header-note">A FIELD GUIDE TO SYSTEMS</span></div></header>
+    <InstallPrompt />
     <main id="main" data-motion-phase="initial"><slot /></main>
     <footer class="site-footer"><div class="footer-inner"><div><span class="footer-brand">diagramdesk</span><p>Clear thinking for complex systems.</p></div><div class="footer-links"><a href={withBase('/articles/')}>All articles</a><a href={withBase('/topics/')}>Browse topics</a></div><span class="footer-end">Built to be read.</span></div></footer>
     <script>
       import '../lib/motion';
+      import '../lib/register-service-worker';
     </script>
   </body>
 </html>

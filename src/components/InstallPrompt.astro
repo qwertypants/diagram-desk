@@ -1,0 +1,45 @@
+<aside class="install-prompt" data-install-prompt aria-label="Install Diagram Desk" hidden>
+  <div class="install-inner">
+    <p>Keep Diagram Desk on your home screen.</p>
+    <button type="button" class="install-action" data-install-native hidden>Install app <span aria-hidden="true">↗</span></button>
+    <details data-install-ios hidden>
+      <summary>Add to Home Screen</summary>
+      <p>In Safari, open the Share menu <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 5l4-4 4 4M12 1v14M5 9H2v13h20V9h-3" /></svg>, then choose <strong>Add to Home Screen</strong>. If shown, keep <strong>Open as Web App</strong> on, then tap <strong>Add</strong>.</p>
+    </details>
+    <button type="button" class="install-dismiss" data-install-dismiss aria-label="Dismiss install suggestion">Dismiss <span aria-hidden="true">×</span></button>
+  </div>
+</aside>
+
+<script>
+  import { initializeInstallPrompt } from '../lib/install-prompt';
+  const prompt = document.querySelector<HTMLElement>('[data-install-prompt]');
+  if (prompt) initializeInstallPrompt(prompt);
+</script>
+
+<style>
+  .install-prompt { border-bottom: 1px solid var(--line); background: var(--surface); }
+  .install-prompt[hidden], [data-install-native][hidden], [data-install-ios][hidden] { display: none; }
+  .install-inner { width: min(1380px, calc(100% - 80px)); margin-inline: auto; display: flex; align-items: baseline; gap: 12px 24px; padding-block: 8px; font-size: 13px; line-height: 1.5; }
+  p { margin: 0; }
+  button, summary { color: var(--ink); font: inherit; cursor: pointer; }
+  button { min-height: 44px; border: 0; padding: 8px 0; background: none; }
+  .install-action, summary { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+  .install-action:hover, summary:hover, .install-dismiss:hover { color: var(--accent); }
+  .install-action { white-space: nowrap; }
+  .install-action span { margin-left: 4px; }
+  details { flex: 1; }
+  summary { min-height: 44px; padding-block: 12px; width: fit-content; }
+  summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  details[open] summary { margin-bottom: 8px; }
+  details p { max-width: 52ch; padding-bottom: 12px; color: var(--muted); }
+  svg { display: inline-block; vertical-align: text-bottom; }
+  .install-dismiss { color: var(--muted); margin-left: auto; white-space: nowrap; }
+  .install-dismiss span { margin-left: 8px; font-size: 18px; }
+  @media (max-width: 700px) {
+    .install-inner { width: calc(100% - 40px); gap: 0 16px; flex-wrap: wrap; }
+    .install-inner > p { flex-basis: 100%; padding-block: 8px; }
+    details { min-width: 0; }
+    details[open] { flex-basis: 100%; }
+    details[open] + .install-dismiss { margin-top: -8px; }
+  }
+</style>
