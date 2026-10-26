@@ -36,6 +36,12 @@ For changes to a page or diagram, inspect the built site with `npm run preview` 
 
 Use `withBase` from `src/lib/urls.ts` for application paths in templates. Write ordinary source links in MDX; the build adds the visible ↗ and accessible new-window notice to external links. Keep in-page anchors unchanged. For hosting changes, follow the repository-path preview in [the deployment guide](docs/deployment.md), including the static URL checker. The [architecture guide](docs/architecture.md) explains the build boundaries.
 
+For offline storage, installation controls, icons, or build pipeline changes,
+follow [Maintain the installable offline library](docs/pwa.md). Check the built
+manifest and complete library cache at both root and repository paths, then
+inspect browser installation and offline reading. Rebuild the worker after all
+HTML decoration so its integrity hashes describe the final published bytes.
+
 Keep task lists and planning notes local in `tasks/`, `docs/plans/`, or `docs/superpowers/`; these directories are ignored. Commit durable documentation and relevant source changes. Do not commit `dist/`, generated `public/diagrams/`, local databases, `.env` files, or `.archify/` evidence.
 
 Make each pull request a coherent change. Explain what changed, why, and any verification you could not perform. Update the README when setup or authoring steps change.
