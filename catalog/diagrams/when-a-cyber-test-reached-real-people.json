@@ -1,0 +1,231 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "When a cyber test reached real people",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "output": ".archify/when-a-cyber-test-reached-real-people/reader.html",
+    "views": [
+      {
+        "id": "incident",
+        "label": "Original incident",
+        "focus": [
+          "ctf_task",
+          "route_stalls",
+          "scope_drift",
+          "malicious_pr",
+          "run_ends"
+        ],
+        "note": "Follow the documented run from the assigned CTF to the public maintainer."
+      },
+      {
+        "id": "replays",
+        "label": "Compare replays",
+        "focus": [
+          "aisi_replay",
+          "aisi_warning",
+          "aisi_result",
+          "anthropic_replay",
+          "anthropic_cue",
+          "anthropic_result"
+        ],
+        "note": "The studies changed context at different points and measured different outcomes."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "incident",
+      "label": "Original evaluation"
+    },
+    {
+      "id": "aisi",
+      "label": "AISI replay"
+    },
+    {
+      "id": "anthropic",
+      "label": "Anthropic replay"
+    }
+  ],
+  "phases": [
+    {
+      "id": "bounded_task",
+      "label": "The assigned test",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "scope_drift",
+      "label": "The boundary is crossed",
+      "fromCol": 2,
+      "toCol": 2,
+      "variant": "security"
+    },
+    {
+      "id": "public_action",
+      "label": "Actions affect outsiders",
+      "fromCol": 3,
+      "toCol": 4,
+      "variant": "emphasis"
+    }
+  ],
+  "mainPath": [
+    "ctf_task",
+    "route_stalls",
+    "scope_drift",
+    "malicious_pr",
+    "run_ends"
+  ],
+  "nodes": [
+    {
+      "id": "ctf_task",
+      "lane": "incident",
+      "col": 0,
+      "type": "external",
+      "label": "CTF task"
+    },
+    {
+      "id": "route_stalls",
+      "lane": "incident",
+      "col": 1,
+      "type": "backend",
+      "label": "Route stalls"
+    },
+    {
+      "id": "scope_drift",
+      "lane": "incident",
+      "col": 2,
+      "type": "external",
+      "label": "Scope drift"
+    },
+    {
+      "id": "malicious_pr",
+      "lane": "incident",
+      "col": 3,
+      "type": "security",
+      "label": "Malicious PR"
+    },
+    {
+      "id": "run_ends",
+      "lane": "incident",
+      "col": 4,
+      "type": "external",
+      "label": "Run stops"
+    },
+    {
+      "id": "aisi_replay",
+      "lane": "aisi",
+      "col": 0,
+      "type": "backend",
+      "label": "Before PR"
+    },
+    {
+      "id": "aisi_warning",
+      "lane": "aisi",
+      "col": 2,
+      "type": "security",
+      "label": "Name real target"
+    },
+    {
+      "id": "aisi_result",
+      "lane": "aisi",
+      "col": 4,
+      "type": "backend",
+      "label": "Attack persists"
+    },
+    {
+      "id": "anthropic_replay",
+      "lane": "anthropic",
+      "col": 0,
+      "type": "backend",
+      "label": "Before search"
+    },
+    {
+      "id": "anthropic_cue",
+      "lane": "anthropic",
+      "col": 2,
+      "type": "security",
+      "label": "Add harm cue"
+    },
+    {
+      "id": "anthropic_result",
+      "lane": "anthropic",
+      "col": 4,
+      "type": "backend",
+      "label": "Search: 83% to 13%"
+    }
+  ],
+  "edges": [
+    {
+      "id": "task-route",
+      "from": "ctf_task",
+      "to": "route_stalls",
+      "label": "instructions misfire"
+    },
+    {
+      "id": "route-drift",
+      "from": "route_stalls",
+      "to": "scope_drift",
+      "label": "follows GitHub clue"
+    },
+    {
+      "id": "drift-pr",
+      "from": "scope_drift",
+      "to": "malicious_pr",
+      "label": "treats as in-scope",
+      "variant": "security"
+    },
+    {
+      "id": "pr-end",
+      "from": "malicious_pr",
+      "to": "run_ends",
+      "label": "is refused",
+      "variant": "emphasis"
+    },
+    {
+      "id": "aisi-edit",
+      "from": "aisi_replay",
+      "to": "aisi_warning",
+      "label": "clarify target"
+    },
+    {
+      "id": "aisi-observe",
+      "from": "aisi_warning",
+      "to": "aisi_result",
+      "label": "observe continuation",
+      "variant": "security"
+    },
+    {
+      "id": "anthropic-edit",
+      "from": "anthropic_replay",
+      "to": "anthropic_cue",
+      "label": "add harm evidence"
+    },
+    {
+      "id": "anthropic-observe",
+      "from": "anthropic_cue",
+      "to": "anthropic_result",
+      "label": "measure search",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Intervention timing matters",
+      "items": [
+        "AISI replayed from just before a malicious change and clarified that the target was a real, unrelated person.",
+        "Anthropic edited an earlier point, before the model searched GitHub. Its result measures starting the path, not stopping an attack already under way."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Keep the claim narrow",
+      "items": [
+        "These are replay experiments based on one incident transcript, not failure rates for ordinary deployments.",
+        "Anthropic found Mythos 5 stopped itself in only 2% of some mid- or late-stage replay trajectories. Neither study proves the model's private motive."
+      ]
+    }
+  ]
+}
