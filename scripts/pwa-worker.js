@@ -63,7 +63,8 @@ function unavailable(navigation, status = 503) {
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
-  if (request.method !== 'GET' || url.origin !== self.location.origin || !url.pathname.startsWith(BUILD.base)) return;
+  const withinBase = url.pathname === BUILD.base.slice(0, -1) || url.pathname.startsWith(BUILD.base);
+  if (request.method !== 'GET' || url.origin !== self.location.origin || !withinBase) return;
   const path = cachePath(url.pathname);
   if (path) {
     event.respondWith((async () => {

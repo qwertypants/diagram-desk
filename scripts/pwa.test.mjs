@@ -90,6 +90,9 @@ test('installed snapshot serves unseen routes, reader queries, native data, and 
   const runtime = await worker(root, build);
   await runtime.dispatch('install');
   assert.equal(runtime.claims(), 0, 'installation must not replace the current release');
+  assert.equal(await (await runtime.request('/diagram-desk')).text(), '<h1>Library</h1>');
+  assert.equal(await runtime.request('/diagram-desk-other/'), undefined);
+  assert.equal(await runtime.request('/diagram-desktop/'), undefined);
   for (const path of ['/diagram-desk/articles/guide', '/diagram-desk/articles/guide/', '/diagram-desk/articles/guide/index.html']) {
     assert.equal(await (await runtime.request(path)).text(), '<h1>Article</h1>');
   }
