@@ -55,3 +55,8 @@ The user reads **Status endpoint**, which reads **Job database**. Polling this e
 **Logs + metrics** receives worker observations. Useful distinctions include time spent waiting in the queue, provider execution time, retry counts, and terminal failure. A fast model call does not make a job fast when it waited ten minutes for a worker.
 
 This architecture is worthwhile when slow or bursty work must survive the original connection. A short, predictable operation may be simpler to serve synchronously. Before adding a queue, decide what acceptance promises, how users find the result, and what they see when work cannot finish. The interview service here is hypothetical; the diagram does not implement those guarantees.
+
+## Sources
+
+- [AWS: Transactional outbox pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html)
+- [AWS: Amazon SQS standard queues](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues-at-least-once-delivery.html)

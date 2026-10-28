@@ -1,6 +1,6 @@
 # Diagram Desk
 
-A static technical learning library about software and AI systems. Seventeen authored articles pair explanations and engineering trade-offs with interactive Archify diagrams. The original 18 diagram IDs resolve to their canonical articles; two IDs referred to the same evaluation lesson.
+A static technical learning library about software and AI systems. Twenty authored articles pair explanations and engineering trade-offs with interactive Archify diagrams. The original 18 diagram IDs resolve to their canonical articles; two IDs referred to the same evaluation lesson.
 
 [Read the library](https://qwertypants.github.io/diagram-desk/) · [Source and issues](https://github.com/qwertypants/diagram-desk) · [Contribute](CONTRIBUTING.md) · [Deploy your own copy](docs/deployment.md)
 
@@ -57,10 +57,10 @@ into a diagram and lesson. Start by asking me about the issue.
 To add an article:
 
 1. Add an Archify JSON definition at `catalog/diagrams/<slug>.json` and a matching entry in `catalog/index.json`. Use an existing definition as a starting point and keep its native diagram type consistent with `diagram_type`.
-2. Add `src/content/articles/<slug>.mdx` with the fields validated by `src/content.config.ts`: `title`, `description`, `pubDate`, `topic`, `tags`, `difficulty`, `objectives`, `takeaways`, `diagram`, and `legacyIds`. `related` is optional. Set `diagram` to the catalog slug.
-3. Import `DiagramEmbed` from `../../components/DiagramEmbed.astro` in the MDX body. After the problem and a short reading cue, embed the primary diagram with `<DiagramEmbed slug="<slug>" title="<article title>" />`. You can embed another existing catalog diagram later in the article when a second view helps explain the concept. Preserve source references where relevant.
-4. Add `src/content/companions/<slug>.mdx` with `title`, `description`, and `diagram` frontmatter. Write a short standalone explanation and import `DiagramEmbed` with `companion={true}`, a topic-specific `heading`, and a reading `cue`. See [Writing lessons and diagram companions](docs/writing-lessons.md).
-5. Run `npm test`, then inspect the article, companion, and reader at desktop and mobile widths.
+2. Add `src/content/articles/<slug>.mdx` with the fields validated by `src/content.config.ts`: `title`, `description`, `pubDate`, `topic`, `tags`, `difficulty`, `objectives`, `takeaways`, `diagram`, and `legacyIds`. `related`, `reviewed`, and `reviewBy` are optional. Set `diagram` to the catalog slug.
+3. Import `DiagramEmbed` from `../../components/DiagramEmbed.astro` in the MDX body. After the problem and a short reading cue, embed the primary diagram with `<DiagramEmbed slug="<slug>" title="<article title>" />`. You can embed another existing catalog diagram later in the article when a second view helps explain the concept. End the article with a `## Sources` section that lists the substantive sources and dates.
+4. Add `src/content/companions/<slug>.mdx` with `title`, `description`, and `diagram` frontmatter. Write a short standalone explanation and import `DiagramEmbed` with `companion={true}`, a topic-specific `heading`, and a reading `cue`. See [Editorial standards](docs/editorial-standards.md) and [Writing lessons and diagram companions](docs/writing-lessons.md).
+5. Run `npm test`, then inspect the article, companion, and reader at desktop and mobile widths. `npm run check:catalog` adds native diagram acceptance when the chart changes.
 
 The old in-browser **New diagram**, edit, save, and delete workflow has been removed. Edit MDX and JSON in the repository and commit them together. Existing `/diagrams/<UUID>/` and `/diagrams/<UUID>/edit/` links lead to the corresponding article; there is no editing API behind the latter URL.
 
@@ -69,8 +69,9 @@ The old in-browser **New diagram**, edit, save, and delete workflow has been rem
 | Command | Purpose |
 | --- | --- |
 | `npm run dev` | Build Archify readers and start Astro development server |
-| `npm run check` | Check migration coverage and run `astro check` |
+| `npm run check` | Check migration coverage, editorial standards, and run `astro check` |
 | `npm run check:migration` | Check article/companion relationships and all 18 legacy ID mappings |
+| `npm run check:editorial` | Check `## Sources` sections, review metadata, and related links |
 | `npm run build` | Build readers and static Astro site into `dist/` |
 | `npm run preview` | Serve an existing static build locally |
 | `npm test` | Check content and types, build the site, and verify static article, companion, reader, and legacy routes |

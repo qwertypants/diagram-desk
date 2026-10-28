@@ -16,6 +16,8 @@ const articles = defineCollection({
     diagram: z.string(),
     legacyIds: z.array(z.string()),
     related: z.array(z.string()).optional(),
+    reviewed: z.coerce.date().optional(),
+    reviewBy: z.coerce.date().optional(),
   }),
 });
 

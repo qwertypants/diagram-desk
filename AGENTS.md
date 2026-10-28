@@ -5,6 +5,10 @@ Diagram Desk is a public, static Astro learning library. Articles are authored i
 `scripts/build-readers.mjs` renders the vendored Archify readers before Astro
 builds the site into `dist/`. The former SQLite API and browser editor are retired.
 
+Follow `docs/editorial-standards.md` when creating or substantially revising an
+article, and `docs/writing-lessons.md` for the article/companion reading
+experiences.
+
 ## Scope and repository hygiene
 
 - Keep documentation consistent with the current static app and its npm scripts.

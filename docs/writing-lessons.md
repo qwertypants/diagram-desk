@@ -5,6 +5,11 @@ teaches the topic in depth; the companion is a short standalone explanation for
 someone who opens the diagram directly. Both should make sense without requiring
 the reader to operate the canvas.
 
+Read [Editorial standards](editorial-standards.md) before drafting. It defines
+the publication's agentic-engineering scope, content contract, source policy,
+review roles, and freshness rules. This document covers the two reading
+experiences and their layout.
+
 ## Where to write
 
 - Main lesson: `src/content/articles/<slug>.mdx`
@@ -34,7 +39,9 @@ one concrete example through the important steps and decisions. Introduce the
 diagram with its actual entry point and a reading order. Explain why the
 important transitions and boundaries matter, describe a realistic failure or
 limitation, and say when a simpler approach may be enough. Use reliable sources
-for claims that need support.
+for claims that need support, and end every article with a `## Sources` section.
+Date fast-moving claims and distinguish benchmark results from production
+capability.
 
 Write the companion separately rather than copying an introduction from the
 article. It should answer the diagram's central question, define enough context
@@ -48,12 +55,15 @@ duplicating whole sections.
 For each article and companion, ask:
 
 - Can a reader say what problem this addresses after the opening?
+- Can the reader state what they would do differently after reading?
 - Does the example explain something beyond the diagram's labels?
 - Can the reader follow the chart in an intentional order?
 - Does the article explain why the important decisions exist?
 - Can a reader name a limitation and when this approach is useful?
 - Does the companion make sense when opened directly?
 - Are its claims, labels, and sources accurate and consistent with the full article?
+- Are substantive claims linked, dated where they change quickly, and listed under `## Sources`?
+- Does the article describe relationships that a reader cannot see in the canvas?
 - Does every external link show a visible `↗`, announce “opens in a new window” to assistive technology, and open separately when activated?
 - Would removing any paragraph improve the reading experience?
 

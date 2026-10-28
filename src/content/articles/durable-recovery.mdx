@@ -55,3 +55,9 @@ A timeout and an explicit rejection can look similar in a log labeled “request
 Temporal's [retry policy documentation](https://docs.temporal.io/encyclopedia/retry-policies) distinguishes retryable and non-retryable errors and allows retry bounds. The general design choice here is to spend retry effort on failures that can improve with another attempt. A malformed document or withdrawn approval needs correction or a new decision, not repeated submission.
 
 This lifecycle is useful when work spans human waiting and consequential external calls. A local calculation with no side effects may only need a durable job record and a safe rerun. For the translation example, define exactly what is preserved, what can safely repeat, and which external record establishes success. The diagram is an illustrative lifecycle, not an implemented ordering service.
+
+## Sources
+
+- [Temporal: Workflow execution](https://docs.temporal.io/workflow-execution)
+- [Temporal: Human-in-the-loop AI applications](https://learn.temporal.io/tutorials/ai/building-durable-ai-applications/human-in-the-loop/)
+- [Temporal: Retry policies](https://docs.temporal.io/encyclopedia/retry-policies)
