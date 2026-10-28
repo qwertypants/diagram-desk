@@ -3,7 +3,8 @@ import { withBase } from '../lib/urls';
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleCard from '../components/ArticleCard.astro';
-const articles = (await getCollection('articles')).sort((a,b) => b.data.pubDate.getTime() - a.data.pubDate.getTime() || a.data.title.localeCompare(b.data.title));
+import { sortArticlesByDate } from '../lib/articles';
+const articles = sortArticlesByDate(await getCollection('articles'));
 const topics: string[] = [...new Set<string>(articles.map(item => String(item.data.topic)))].sort();
 ---
 <BaseLayout title="Diagram Desk" description="Visual field notes for building reliable software and AI systems.">

@@ -4,6 +4,7 @@ import { withBase } from '../../lib/urls';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleCard from '../../components/ArticleCard.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
-const articles = (await getCollection('articles')).sort((a,b) => a.data.title.localeCompare(b.data.title));
+import { sortArticlesByDate } from '../../lib/articles';
+const articles = sortArticlesByDate(await getCollection('articles'));
 ---
 <BaseLayout title="Articles" description="Visual guides to software architecture, AI systems, and engineering decisions." canonical="/articles/"><section class="page-intro wrap"><Breadcrumbs items={[{ label: 'Home', href: withBase('/') }, { label: 'Articles' }]} /><div class="eyebrow">THE LIBRARY / {String(articles.length).padStart(2,'0')} ARTICLES</div><h1>Field notes for<br /><em>working engineers.</em></h1><p>Each guide pairs a practical explanation with an interactive architecture diagram. Start anywhere that catches your eye.</p></section><section class="listing wrap article-list-page"><div class="article-grid">{articles.map((article,index) => <ArticleCard article={article} index={index} />)}</div></section></BaseLayout>

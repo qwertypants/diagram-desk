@@ -19,6 +19,20 @@ checkFile(join(dist, 'index.html'));
 checkFile(join(dist, 'articles/index.html'));
 checkFile(join(dist, 'topics/index.html'));
 
+function assertNewestFirst(path) {
+  const html = checkFile(path);
+  const dates = [...html.matchAll(/<time class="card-date" datetime="([^"]+)"/g)].map(match => Date.parse(match[1]));
+  if (!dates.length) throw new Error(`Listing has no dated article cards: ${path}`);
+  for (let index = 1; index < dates.length; index++) {
+    if (dates[index] > dates[index - 1]) throw new Error(`Listing is not newest first: ${path}`);
+  }
+  return dates;
+}
+
+const homeDates = assertNewestFirst(join(dist, 'index.html'));
+const libraryDates = assertNewestFirst(join(dist, 'articles/index.html'));
+if (homeDates[0] !== libraryDates[0]) throw new Error('Home and article library disagree on the latest article.');
+
 for (const article of catalog) {
   const page = checkFile(join(dist, 'articles', article.slug, 'index.html'));
   const reader = checkFile(join(dist, 'diagrams', article.slug, 'reader.html'));
