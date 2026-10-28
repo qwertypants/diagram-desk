@@ -998,5 +998,62 @@
       ],
       "scope": "A visual comparison of two replay analyses of one cybersecurity incident; not an estimate of deployed model behavior."
     }
+  },
+  {
+    "slug": "protein-data-filtering",
+    "type": "workflow",
+    "title": "Can filtering keep a model from relearning?",
+    "file": "diagrams/protein-data-filtering.json",
+    "original": [],
+    "lesson": {
+      "summary": "Filtering viral sequences reduced several measured ESM-2 capabilities while preserving most measured non-viral performance, but fine-tuning on the removed sequences restored benchmark performance.",
+      "problem": "Does removing data during pretraining make a model capability durable against later fine-tuning?",
+      "objectives": [
+        "Trace filtering into model training and held-out evaluation.",
+        "Compare viral tasks with non-viral controls.",
+        "Explain the limits of the recovery-cost estimate."
+      ],
+      "walkthrough": [
+        {
+          "title": "Filter and train",
+          "detail": "Train matched ESM-2 sizes on nested protein corpora with selected viral sequences removed."
+        },
+        {
+          "title": "Evaluate",
+          "detail": "Measure masked sequence, mutation-effect, and long-range contact tasks on held-out proteins."
+        },
+        {
+          "title": "Try recovery",
+          "detail": "Fine-tune filtered models on excluded sequences and measure whether benchmark performance returns."
+        }
+      ],
+      "decisions": [
+        "Use an unfiltered model of the same size as a control.",
+        "Separate measured benchmark recovery from claims about real-world biological outcomes."
+      ],
+      "failureModes": [
+        "One architecture and one seed per size limit generalization.",
+        "A compute-to-dollar estimate depends on hardware utilization and price assumptions.",
+        "The study does not measure wet-lab or real-world outcomes."
+      ],
+      "takeaways": [
+        "Data filtering can constrain measured capability without making it impossible to relearn when weights and relevant data remain accessible."
+      ],
+      "references": [
+        {
+          "title": "AISI research report",
+          "url": "https://www.aisi.gov.uk/research/the-effectiveness-and-durability-of-pretraining-data-filtering-in-protein-language-models"
+        },
+        {
+          "title": "arXiv preprint 2610.26651",
+          "url": "https://arxiv.org/abs/2610.26651"
+        },
+        {
+          "title": "arXiv full text",
+          "url": "https://arxiv.org/html/2610.26651"
+        }
+      ],
+      "scope": "A visual summary of one ESM-2 study and its protein-task benchmarks, not a general biological risk assessment."
+    }
   }
 ]

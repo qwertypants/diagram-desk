@@ -1,0 +1,53 @@
+---
+title: "Can filtering keep a model from relearning?"
+description: "A protein-language-model study shows what pretraining data filters change, what they preserve, and how fine-tuning can restore measured performance."
+pubDate: "2026-10-28"
+topic: "AI safety"
+tags: ["research", "AI safety", "biology"]
+difficulty: "intermediate"
+objectives: ["Trace how viral-protein filtering changes training and evaluation.", "Separate capability loss from retained performance.", "Explain what the fine-tuning recovery result does and does not establish."]
+takeaways: ["A training-data filter can constrain measured capability, but it is not a durable barrier when the model and relevant data remain accessible."]
+diagram: "protein-data-filtering"
+legacyIds: []
+related: ["when-a-cyber-test-reached-real-people", "reader-data-or-better-teacher"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Can a model be made less capable in a sensitive area by leaving that material out of its training data? A new study from the UK AI Security Institute and academic collaborators tests that idea with protein-language models. The short answer: filtering changed what these models could do on several viral-protein benchmarks, while largely preserving their measured performance on non-viral proteins. But fine-tuning on the removed sequences restored the lost benchmark performance.
+
+That makes filtering a constraint on training, not a lock on the finished model.
+
+## What the researchers changed
+
+The team trained ESM-2 models from 8 million to 3 billion parameters on a large protein-sequence collection. They made several training sets by excluding different nested groups of viral proteins. The strictest filter also removed close sequence relatives. Each filtered model was compared with an unfiltered model of the same size.
+
+They then evaluated three kinds of task: predicting masked amino acids, estimating how mutations affect proteins, and predicting long-range contacts between protein regions. For the first two, the study also checked a held-out sample of non-viral proteins to see whether filtering damaged unrelated performance.
+
+<DiagramEmbed slug="protein-data-filtering" title="What pretraining filters do and do not remove" heading="Follow the experiment from training to recovery" cue="Read left to right across the training lane, then follow the evaluation results. The lower lane shows what happened when the excluded sequences were supplied again for fine-tuning." />
+
+## The filter changed a capability, but did not erase it
+
+Removing viral sequences made masked-sequence prediction worse on held-out viral proteins. The effect grew with model size. Filtering also reduced mutation-effect prediction at the two largest scales and reduced long-range contact prediction above 35 million parameters. Meanwhile, non-viral language-model performance stayed close to the unfiltered baseline in the reported checks.
+
+The result is selective in an important sense: the models did not simply become worse at everything. The changes were strongest for some viral families, particularly retroviruses, so an average over all viral proteins can hide variation between groups.
+
+The recovery experiment tested a different question. Researchers took models trained without viral proteins and fine-tuned them on the removed sequences. Their measurements reached the unfiltered model's benchmark performance again. For the largest model, the paper estimates that recovery required up to 24 exaFLOPs, translated to under $80 of H100 compute under the authors' assumed utilization and hourly price.
+
+That dollar amount is a calculation from the study's compute estimate and price assumptions, not a universal cost quote. It also assumes access to relevant training sequences and the ability to fine-tune the model.
+
+## What the evidence supports
+
+This is a controlled comparison within one protein-language-model family. The authors used held-out data, removed close homologues to reduce overlap between training and evaluation, and measured multiple tasks rather than relying on one capability score. Those choices support the claim that filtering the training corpus caused the observed benchmark changes in these ESM-2 runs.
+
+The paper does not show that a filtered model is harmless, that a person can readily build a harmful biological system, or that filtering will work the same way for every model. It measures prediction benchmarks, not wet-lab experiments or real-world outcomes. The study also uses one architecture and one random seed per model because training large models from scratch is expensive. Its authors warn that these choices limit how confidently the results generalize. Recovery costs are measured at checkpoints, so the reported recovery point is an interval rather than an exact threshold.
+
+A practical lesson follows: data filtering may reduce some measured capabilities without much loss on selected non-viral benchmarks, but open access to model weights and relevant data can weaken that safeguard. Deciding whether a model is safe to release needs more than one benchmark or one training intervention.
+
+## Sources and dates
+
+- [AISI research report: The Effectiveness and Durability of Pretraining Data Filtering in Protein Language Models](https://www.aisi.gov.uk/research/the-effectiveness-and-durability-of-pretraining-data-filtering-in-protein-language-models), listed by AISI on October 26, 2026.
+- [The paper on arXiv](https://arxiv.org/abs/2610.26651) and its [full text](https://arxiv.org/html/2610.26651). The preprint's version 1 was submitted October 19, 2026; no later revision is listed on its version history as of this lesson.
+- [AISI research index](https://www.aisi.gov.uk/research), which lists the report alongside the related ReproBAIT evaluation of coding agents reconstructing biological AI tools.
+
+This lesson summarizes a preprint and an institutional research report. The diagram represents the experiment and its reported results; it is not a biological risk assessment.

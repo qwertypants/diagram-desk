@@ -1,0 +1,252 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Can filtering keep a model from relearning?",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "output": ".archify/protein-data-filtering/reader.html",
+    "views": [
+      {
+        "id": "filter-and-test",
+        "label": "Filter and test",
+        "focus": [
+          "protein_corpus",
+          "viral_filter",
+          "esm_training",
+          "viral_benchmarks",
+          "nonviral_control"
+        ],
+        "note": "Compare held-out viral results with the retained non-viral control."
+      },
+      {
+        "id": "recovery",
+        "label": "Test recovery",
+        "focus": [
+          "filtered_model",
+          "removed_sequences",
+          "fine_tune",
+          "recovered_performance"
+        ],
+        "note": "The paper tests recovery by fine-tuning on sequences excluded from pretraining."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "training",
+      "label": "Training data and models"
+    },
+    {
+      "id": "evaluation",
+      "label": "Held-out evaluation"
+    },
+    {
+      "id": "nonviral",
+      "label": "Non-viral control"
+    },
+    {
+      "id": "recovery",
+      "label": "Fine-tuning recovery"
+    }
+  ],
+  "phases": [
+    {
+      "id": "pretraining",
+      "label": "Pretraining",
+      "fromCol": 0,
+      "toCol": 2,
+      "variant": "emphasis"
+    },
+    {
+      "id": "measure",
+      "label": "Measure performance",
+      "fromCol": 3,
+      "toCol": 4
+    },
+    {
+      "id": "retrain",
+      "label": "Recovery test",
+      "fromCol": 5,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "protein_corpus",
+    "viral_filter",
+    "esm_training",
+    "filtered_model",
+    "viral_benchmarks",
+    "reported_result"
+  ],
+  "nodes": [
+    {
+      "id": "protein_corpus",
+      "lane": "training",
+      "col": 0,
+      "type": "database",
+      "label": "Protein sequences",
+      "sublabel": "UniRef50 corpus"
+    },
+    {
+      "id": "viral_filter",
+      "lane": "training",
+      "col": 1,
+      "type": "security",
+      "label": "Viral-data filter",
+      "sublabel": "nested exclusion sets"
+    },
+    {
+      "id": "esm_training",
+      "lane": "training",
+      "col": 2,
+      "type": "backend",
+      "label": "Train ESM-2",
+      "sublabel": "8M to 3B parameters"
+    },
+    {
+      "id": "filtered_model",
+      "lane": "training",
+      "col": 3,
+      "type": "backend",
+      "label": "Filtered model",
+      "sublabel": "matched unfiltered control"
+    },
+    {
+      "id": "viral_benchmarks",
+      "lane": "evaluation",
+      "col": 3,
+      "type": "external",
+      "label": "Viral benchmarks",
+      "sublabel": "3 prediction tasks"
+    },
+    {
+      "id": "nonviral_control",
+      "lane": "nonviral",
+      "col": 3,
+      "type": "external",
+      "label": "Non-viral control",
+      "sublabel": "held-out proteins"
+    },
+    {
+      "id": "reported_result",
+      "lane": "evaluation",
+      "col": 4,
+      "type": "backend",
+      "label": "Compare results",
+      "sublabel": "viral down; non-viral mostly kept"
+    },
+    {
+      "id": "removed_sequences",
+      "lane": "recovery",
+      "col": 2,
+      "type": "database",
+      "label": "Excluded sequences",
+      "sublabel": "available for fine-tuning"
+    },
+    {
+      "id": "fine_tune",
+      "lane": "recovery",
+      "col": 4,
+      "type": "backend",
+      "label": "Fine-tune model",
+      "sublabel": "on removed viral data"
+    },
+    {
+      "id": "recovered_performance",
+      "lane": "recovery",
+      "col": 5,
+      "type": "external",
+      "label": "Retest",
+      "sublabel": "reported performance recovered"
+    }
+  ],
+  "edges": [
+    {
+      "id": "corpus-filter",
+      "from": "protein_corpus",
+      "to": "viral_filter",
+      "label": "remove selected viral sequences",
+      "variant": "security"
+    },
+    {
+      "id": "filter-training",
+      "from": "viral_filter",
+      "to": "esm_training",
+      "label": "filtered corpus",
+      "variant": "emphasis"
+    },
+    {
+      "id": "training-model",
+      "from": "esm_training",
+      "to": "filtered_model"
+    },
+    {
+      "id": "model-viral-test",
+      "from": "filtered_model",
+      "to": "viral_benchmarks",
+      "label": "evaluate",
+      "variant": "emphasis"
+    },
+    {
+      "id": "model-nonviral-test",
+      "from": "filtered_model",
+      "to": "nonviral_control",
+      "label": "compare control"
+    },
+    {
+      "id": "viral-result",
+      "from": "viral_benchmarks",
+      "to": "reported_result",
+      "label": "viral tasks decline"
+    },
+    {
+      "id": "control-result",
+      "from": "nonviral_control",
+      "to": "reported_result",
+      "label": "mostly preserved"
+    },
+    {
+      "id": "filtered-to-tune",
+      "from": "filtered_model",
+      "to": "fine_tune",
+      "label": "same model",
+      "variant": "dashed"
+    },
+    {
+      "id": "removed-data-to-tune",
+      "from": "removed_sequences",
+      "to": "fine_tune",
+      "label": "supply excluded data",
+      "variant": "dashed"
+    },
+    {
+      "id": "tuned-retest",
+      "from": "fine_tune",
+      "to": "recovered_performance",
+      "label": "evaluate again",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "What was measured",
+      "items": [
+        "Masked amino-acid prediction",
+        "Mutation-effect prediction",
+        "Long-range contact prediction"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "How to read the result",
+      "items": [
+        "One protein model family; one training seed per size",
+        "Under $80 is an assumed H100-time estimate, not a universal price",
+        "Benchmark recovery is not proof of a real-world outcome"
+      ]
+    }
+  ]
+}

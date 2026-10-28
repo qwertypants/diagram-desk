@@ -1,0 +1,15 @@
+---
+title: "How a protein-model filter was tested"
+description: "A standalone guide to the filtered training sets, benchmark comparisons, and fine-tuning recovery experiment."
+diagram: "protein-data-filtering"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Researchers trained ESM-2 protein-language models with viral sequences removed, compared their benchmark performance with unfiltered models, then tested whether fine-tuning on the removed sequences restored it.
+
+<DiagramEmbed slug="protein-data-filtering" title="What pretraining filters do and do not remove" heading="The filter changes the training corpus" cue="Start with the nested viral-data filters, follow the model training into held-out tests, then trace the lower recovery lane back to evaluation." companion={true} />
+
+The filtered models lost some measured performance on viral-protein tasks while keeping most non-viral performance in the reported controls. Fine-tuning on removed sequences restored benchmark performance, so data filtering alone did not make that capability impossible to recover.
+
+The study covers one model family, one seed per size, and computational benchmarks. It does not measure real-world biological outcomes. [Read the full lesson](../../articles/protein-data-filtering/) for its methods, caveats, and sources.
