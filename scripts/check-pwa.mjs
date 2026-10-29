@@ -103,6 +103,11 @@ function workerRuntime(source, scope, assets, { corrupt } = {}) {
       await Promise.all(pending);
       return status;
     },
+    async activateUpdate() {
+      const pending = [];
+      handlers.get('message')({ data: { type: 'ACTIVATE_UPDATE' }, ports: [], waitUntil(promise) { pending.push(promise); } });
+      await Promise.all(pending);
+    },
   };
 }
 
@@ -169,6 +174,8 @@ export async function checkPwa({ dist, base = '/', worker = 'sw.js' }) {
   assert.equal(owned.length, 1, 'Install creates one versioned library cache');
   assert.match(owned[0].slice(cachePrefix.length), /^[a-f\d]{20,64}$/i, 'Cache version derives from a content digest');
   assert.equal(runtime.skipped, false, 'Install must not replace an active worker mid-read');
+  await runtime.activateUpdate();
+  assert.equal(runtime.skipped, true, 'A complete waiting release activates when the app requests its update');
   await runtime.lifecycle('activate');
   assert.equal(runtime.claimed, true, 'New worker claims its clients after activation');
   assert.equal(runtime.stores.has(`${cachePrefix}obsolete`), false, 'Activation removes obsolete same-base caches');

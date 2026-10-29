@@ -100,6 +100,10 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('message', event => {
+  if (event.data?.type === 'ACTIVATE_UPDATE') {
+    event.waitUntil(self.skipWaiting());
+    return;
+  }
   if (event.data?.type !== 'PWA_STATUS' || !event.ports[0]) return;
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
