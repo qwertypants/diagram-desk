@@ -4,9 +4,10 @@ async function register() {
   if (!window.isSecureContext || !('serviceWorker' in navigator)) return;
   try {
     const registration = await navigator.serviceWorker.register(`${base}sw.js`, { scope: base, updateViaCache: 'none' });
+    const hadController = Boolean(navigator.serviceWorker.controller);
     let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
+      if (!hadController || refreshing) return;
       refreshing = true;
       window.location.reload();
     });
