@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Before the agent retries a write",
+    "output": "catalog/diagrams/retrying-agent-side-effects.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "p0",
+      "label": "Agent",
+      "type": "external"
+    },
+    {
+      "id": "p1",
+      "label": "Application",
+      "type": "backend"
+    },
+    {
+      "id": "p2",
+      "label": "Write API",
+      "type": "backend"
+    },
+    {
+      "id": "p3",
+      "label": "Receipt store",
+      "type": "backend"
+    },
+    {
+      "id": "p4",
+      "label": "Reviewer",
+      "type": "external"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m0",
+      "from": "p0",
+      "to": "p1",
+      "label": "Propose order update",
+      "y": 170
+    },
+    {
+      "id": "m1",
+      "from": "p1",
+      "to": "p2",
+      "label": "Write with operation key",
+      "y": 240
+    },
+    {
+      "id": "m2",
+      "from": "p2",
+      "to": "p3",
+      "label": "Record outcome",
+      "y": 310
+    },
+    {
+      "id": "m3",
+      "from": "p1",
+      "to": "p3",
+      "label": "Reconcile timeout",
+      "y": 380
+    },
+    {
+      "id": "m4",
+      "from": "p3",
+      "to": "p4",
+      "label": "Known result or intervention",
+      "y": 450
+    }
+  ]
+}

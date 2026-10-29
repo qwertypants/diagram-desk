@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "When a retrieved page gives orders",
+    "output": "catalog/diagrams/retrieved-text-is-not-authority.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "p0",
+      "label": "User",
+      "type": "external"
+    },
+    {
+      "id": "p1",
+      "label": "Retriever",
+      "type": "backend"
+    },
+    {
+      "id": "p2",
+      "label": "Untrusted page",
+      "type": "backend"
+    },
+    {
+      "id": "p3",
+      "label": "Model",
+      "type": "backend"
+    },
+    {
+      "id": "p4",
+      "label": "Tool gate",
+      "type": "external"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m0",
+      "from": "p0",
+      "to": "p1",
+      "label": "Ask for a summary",
+      "y": 170
+    },
+    {
+      "id": "m1",
+      "from": "p1",
+      "to": "p2",
+      "label": "Fetch result",
+      "y": 240
+    },
+    {
+      "id": "m2",
+      "from": "p2",
+      "to": "p3",
+      "label": "Content plus injected instruction",
+      "y": 310
+    },
+    {
+      "id": "m3",
+      "from": "p3",
+      "to": "p4",
+      "label": "Proposed action",
+      "y": 380
+    },
+    {
+      "id": "m4",
+      "from": "p4",
+      "to": "p3",
+      "label": "Allow or block action",
+      "y": 450,
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "p3",
+      "to": "p0",
+      "label": "Grounded summary",
+      "y": 520,
+      "variant": "return"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+---
+title: "Give a tool loop a stopping rule"
+description: "Set an iteration and elapsed-time budget for an agent before it starts calling tools."
+diagram: "bounded-tool-run"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A model may propose another lookup after a tool fails. The application decides whether another call is allowed. In the example, a build investigation has a four-call and 30-second budget. Those numbers are illustrative; production limits depend on task value, latency, and cost.
+
+Read from **User** to **Orchestrator**, **Model**, and **Tool**. Every tool result returns to the orchestrator. It counts calls and elapsed time, then chooses whether to continue, stop, or escalate to **Outcome**.
+
+<DiagramEmbed slug="bounded-tool-run" title="Give a tool loop a stopping rule" heading="Read the decision path" cue="Follow the arrows from the request to the final outcome." companion={true} />
+
+An incomplete investigation needs an honest status. Test with a tool that always times out and verify the call limit, deadline, and final wording. A fixed diagnostic sequence is simpler when the steps are known in advance. The full [lesson](../../articles/bounded-tool-run/) explains the checks.
+
+The orchestrator can also stop when the same call repeats without new evidence. It should preserve the useful results already collected and identify which check failed. The example limits are an engineering choice; measure normal task duration before deciding whether they are too strict.

@@ -1,0 +1,42 @@
+---
+title: "Who can call this MCP tool?"
+description: "Trace identity from an MCP client to a protected resource and check permission per call."
+pubDate: "2026-10-29"
+topic: "Security"
+tags: ["MCP", "authorization"]
+difficulty: "intermediate"
+objectives: ["Separate protocol authorization from resource-level permission."]
+takeaways: ["Verify identity, audience, scope, and resource ownership at the server."]
+diagram: "mcp-authorization-boundary"
+legacyIds: []
+reviewed: "2026-10-29"
+reviewBy: "2027-04-29"
+related: ["permissioned-support-agent"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+An MCP client can discover a tool and call it, but discovery is not permission. The server must authenticate the caller and authorize the specific resource requested by each call.
+
+Consider an illustrative support assistant that can look up account notes. An agent asks for account 42. The user's token may be valid for the server yet still lack permission to read account 42. The model's choice of ID cannot decide ownership.
+
+Read the diagram left to right. **User** asks **MCP client** for the lookup. The client calls **MCP server** with a token. The server asks **Policy** whether this identity may perform this action on this account. **Resource** returns only the permitted record.
+
+<DiagramEmbed slug="mcp-authorization-boundary" title="Who can call this MCP tool?" heading="Follow identity into the resource check" cue="Start at the user, then inspect the policy decision before resource access." />
+
+## Check the token at the server
+
+The [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization) defines an authorization path for HTTP transports. As of October 2026, implementations should pin the applicable specification revision and validate tokens for the intended server. Transport authorization establishes a caller identity and granted scope; it does not by itself prove access to every account named in tool arguments.
+
+The **MCP server** must reject an absent, expired, or wrong-audience token. Then **Policy** checks the authenticated user's relationship to account 42 and the requested operation. A tool description saying "read account notes" is documentation, not an access rule. The [OWASP MCP security guidance](https://cheatsheetseries.owasp.org/cheatsheets/MCP_Security_Cheat_Sheet.html) recommends least privilege and server-side authorization at the tool boundary.
+
+## Make denial observable
+
+Test a valid token for an unrelated account, a token for another server, and a request with no token. Each must stop before **Resource**. Record the principal, tool, resource ID, and allow or deny outcome under a suitable retention policy. Do not log the token itself.
+
+For a single local read-only data source, a direct application function may be simpler than introducing a remote MCP server and authorization flow. If MCP is needed, the client can help request consent, while the server remains responsible for final enforcement.
+
+## Sources
+
+- [Model Context Protocol, Authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization) — June 18, 2025 revision
+- [OWASP, MCP Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/MCP_Security_Cheat_Sheet.html) — living guidance, accessed October 2026

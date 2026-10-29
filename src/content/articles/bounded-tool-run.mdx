@@ -1,0 +1,42 @@
+---
+title: "Give a tool loop a stopping rule"
+description: "Set an iteration and elapsed-time budget for an agent before it starts calling tools."
+pubDate: "2026-10-29"
+topic: "Agent design"
+tags: ["tool use", "budgets"]
+difficulty: "intermediate"
+objectives: ["Design a stopping rule for repeated model and tool calls."]
+takeaways: ["Count calls and time in application code, and report an incomplete result honestly."]
+diagram: "bounded-tool-run"
+legacyIds: []
+reviewed: "2026-10-29"
+reviewBy: "2027-04-29"
+related: ["agent-tool-loop"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+An agent can keep asking a tool the same question after it has stopped making progress. Set a stopping rule in the application before starting the loop, and make an incomplete outcome visible to the user.
+
+Imagine an illustrative incident assistant checking why a build failed. It searches logs, receives a timeout, and repeats the same query. A second timeout should not trigger unlimited calls. The application can allow at most four lookups and 30 seconds for this request. These are example limits, not universal defaults. A team should choose them from its latency and cost targets.
+
+Read from **User** to **Orchestrator**. The orchestrator calls **Model**, which proposes a lookup at **Tool**. Each result or error returns to the orchestrator. It decides whether to continue, stop, or escalate to **Outcome**.
+
+<DiagramEmbed slug="bounded-tool-run" title="Give a tool loop a stopping rule" heading="Find who owns the stop condition" cue="Follow a tool result back to the orchestrator before the next model call." />
+
+## Count progress as well as calls
+
+The model can choose the next question, but **Orchestrator** counts elapsed time, tool calls, and repeated equivalent requests. A successful lookup may justify another step; identical timeouts do not. OpenAI's [function calling guide](https://developers.openai.com/api/docs/guides/function-calling) treats tool calls as proposals that application code executes and returns to the model. Application code can therefore enforce the loop budget.
+
+A hard deadline should stop new calls and permit a clear partial answer: "The build log query timed out twice; I could not identify the failing step." Do not state a diagnosis unsupported by the trace. The [OWASP AI agent guidance](https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html) calls for resource limits and monitoring around agents.
+
+## Verify the stopping rule
+
+Use a fake tool that always times out. Assert that no fifth lookup occurs, the run ends within the allotted deadline plus a small cleanup margin, and the final status marks the investigation incomplete. Use another fake tool that returns useful evidence on the third call and confirm the agent can finish before the budget. Measure the 95th-percentile run duration and calls per completed task in the real system before adjusting limits.
+
+For a known two-step diagnostic, ordinary application code may be simpler than an open-ended agent loop. A fixed sequence also makes the upper bound obvious.
+
+## Sources
+
+- [OpenAI, Function calling](https://developers.openai.com/api/docs/guides/function-calling) — living API documentation, accessed October 2026
+- [OWASP, AI Agent Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html) — living guidance, accessed October 2026

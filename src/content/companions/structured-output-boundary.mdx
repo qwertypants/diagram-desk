@@ -1,0 +1,17 @@
+---
+title: "A schema is a shape, not a decision"
+description: "Use structured model output to parse a support decision, then validate its meaning before acting."
+diagram: "structured-output-boundary"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A schema helps software parse model output. It does not prove that the model's conclusion is correct or authorized. For a refund request, the model may return a perfectly shaped object that names somebody else's order.
+
+Read the diagram from **User request** to **Model** and **Schema parser**. The parser checks the object. **Policy check** then loads trusted order data under the current customer's identity. Only **Application** can approve, reject, or escalate the refund.
+
+<DiagramEmbed slug="structured-output-boundary" title="A schema is a shape, not a decision" heading="Read the decision path" cue="Follow the arrows from the request to the final outcome." companion={true} />
+
+A refusal or malformed response needs its own outcome. It must not be converted into eligibility. Test both parsing failures and valid objects containing false claims. For a read-only explanation, a direct answer is often enough. The full [lesson](../../articles/structured-output-boundary/) walks through the checks.
+
+The key split is between a machine-readable proposal and a trusted decision. A parser can reject missing fields, while the policy check can reject a well-formed claim about the wrong order. Keep these outcomes separate in logs and user-facing status. The model should not call the refund operation directly.

@@ -1,0 +1,42 @@
+---
+title: "Before the agent retries a write"
+description: "Reconcile an uncertain write result before retrying an agent action."
+pubDate: "2026-10-29"
+topic: "Reliability"
+tags: ["idempotency", "retries"]
+difficulty: "intermediate"
+objectives: ["Distinguish a known failure from an unknown outcome after a timeout."]
+takeaways: ["Use a stable operation identity and verify the remote result before a retry."]
+diagram: "retrying-agent-side-effects"
+legacyIds: []
+reviewed: "2026-10-29"
+reviewBy: "2027-04-29"
+related: ["durable-recovery"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A timeout after a write does not tell the caller whether the write happened. Before an agent retries, use a stable operation identity and ask the remote system or receipt store what happened.
+
+Imagine an illustrative assistant updating an order address. The application sends the approved update, but the network connection fails before a response arrives. If it sends the same update as a fresh operation, the order service may create duplicate work or apply a second side effect. The model cannot infer the remote result from the timeout.
+
+Read from **Agent** to **Application** and **Write API**. The API records an outcome in **Receipt store**. After a timeout, the application queries that store. A known result can finish; an unresolved result goes to **Reviewer** rather than a blind retry.
+
+<DiagramEmbed slug="retrying-agent-side-effects" title="Before the agent retries a write" heading="Trace the uncertain outcome" cue="Start at the proposed update and follow the timeout into reconciliation." />
+
+## Name the operation once
+
+Generate a unique, non-sensitive operation key for the approved request and retain the mapping and key across retries. The application checks that the same key is never reused with different parameters. Stripe's [idempotent request documentation](https://docs.stripe.com/api/idempotent_requests) illustrates a server that stores the result of a keyed request; exact retention and error behavior are API-specific. As of October 2026, verify the chosen service's contract before relying on it.
+
+A conditional write can also protect state. Amazon S3's [conditional request documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-requests.html) explains preconditions such as writing only when an object does not already exist or when its ETag matches. Those checks prevent a class of accidental overwrites, but they solve a different problem from discovering whether a timed-out operation already completed.
+
+## Reconcile before retrying
+
+After a timeout, **Application** queries by operation key or reads the target record with a version. If it finds the intended update, return the receipt. If it finds a known rejection, report it. If it cannot determine the outcome, pause and escalate. Only retry when the API contract and retained key make repetition safe.
+
+Test the difficult interval: apply the write, drop the response, then invoke recovery. Assert that one logical update exists and the second attempt uses the same key. Also test a key reused with changed parameters; the application must reject it. If the write is naturally read-only, ordinary retry with a bounded backoff is simpler.
+
+## Sources
+
+- [Stripe, Idempotent requests](https://docs.stripe.com/api/idempotent_requests) — living API documentation, accessed October 2026
+- [Amazon S3, Conditional requests](https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-requests.html) — living API documentation, accessed October 2026

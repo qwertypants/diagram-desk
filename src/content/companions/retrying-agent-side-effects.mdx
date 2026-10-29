@@ -1,0 +1,17 @@
+---
+title: "Before the agent retries a write"
+description: "Reconcile an uncertain write result before retrying an agent action."
+diagram: "retrying-agent-side-effects"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A timed-out write has an unknown result. In the example, an approved order update may have reached the service even though its response was lost. Repeating it as a new operation risks a second side effect.
+
+Read from **Agent** to **Application** and **Write API**. The API records an outcome in **Receipt store**. The application consults that record after a timeout. A known success or rejection can be reported; an unresolved result goes to **Reviewer**.
+
+<DiagramEmbed slug="retrying-agent-side-effects" title="Before the agent retries a write" heading="Read the decision path" cue="Follow the arrows from the request to the final outcome." companion={true} />
+
+A stable operation key lets an API recognize a repeat, if that API promises idempotent behavior. Keep the same key and parameters across attempts. Test by applying a write and dropping its response. For a read-only call, a bounded retry is simpler. The full [lesson](../../articles/retrying-agent-side-effects/) shows the recovery path.
+
+A receipt is stronger evidence than a model guess about whether the write succeeded. The application should compare the stored result with the intended update before reporting completion. If the remote service has no lookup or idempotency contract, unresolved timeouts require a person or a separate reconciliation process.

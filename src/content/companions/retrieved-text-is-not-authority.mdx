@@ -1,0 +1,17 @@
+---
+title: "When a retrieved page gives orders"
+description: "Keep instructions in retrieved content from becoming tool authority."
+diagram: "retrieved-text-is-not-authority"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A search result can provide facts for an answer. It cannot authorize an action. In the example, a customer asks for a migration summary and a retrieved page asks the agent to export account data. The page's instruction is untrusted content.
+
+Read from **User** to **Retriever** and **Untrusted page**. The page reaches **Model**, which may propose a tool call. **Tool gate** checks the current user request and the proposed parameters. It blocks the export and returns a summary based on relevant facts.
+
+<DiagramEmbed slug="retrieved-text-is-not-authority" title="When a retrieved page gives orders" heading="Read the decision path" cue="Follow the arrows from the request to the final outcome." companion={true} />
+
+A prompt delimiter or keyword screen can help detect attacks, but neither replaces the gate. Test with an injected page and assert that no export call occurs. Disable write tools entirely when the task needs only a summary. The full [lesson](../../articles/retrieved-text-is-not-authority/) explains the boundary.
+
+The return path matters: the gate reports its decision to the model or application, which prepares the user-facing summary. A blocked export should not erase the useful migration fact. A safe final answer is insufficient evidence if an export tool was already called, so inspect the action trace.

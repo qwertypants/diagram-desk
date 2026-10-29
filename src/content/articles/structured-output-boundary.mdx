@@ -1,0 +1,42 @@
+---
+title: "A schema is a shape, not a decision"
+description: "Use structured model output to parse a support decision, then validate its meaning before acting."
+pubDate: "2026-10-29"
+topic: "AI systems"
+tags: ["structured output", "validation"]
+difficulty: "intermediate"
+objectives: ["Separate schema conformance from business validation."]
+takeaways: ["Treat a valid model object as a proposal until application checks pass."]
+diagram: "structured-output-boundary"
+legacyIds: []
+reviewed: "2026-10-29"
+reviewBy: "2027-04-29"
+related: ["agent-tool-loop"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A model can return an object that fits a schema and still make the wrong decision. Use structured output to make the response parseable. Then let application code check the facts and authority before a side effect.
+
+Consider an illustrative refund assistant. A customer asks for a refund on order 42. The model proposes `{ "order_id": "42", "eligible": true, "reason": "late delivery" }`. The JSON parses and every field has the expected type. Yet the order may belong to another customer, or the refund window may have closed. The schema answers whether the object has the expected **shape**; it does not establish eligibility.
+
+Read the diagram left to right. **User request** asks **Model** for a classification. **Schema parser** checks the returned form. **Policy check** reads trusted order state and customer identity. Only then does **Application** decide whether to approve, reject, or escalate.
+
+<DiagramEmbed slug="structured-output-boundary" title="A schema is a shape, not a decision" heading="Follow the proposed decision to the policy check" cue="Start with the request, then inspect what the schema can and cannot prove." />
+
+## Make the contract narrow
+
+Ask the model for the smallest useful proposal: order reference, proposed category, and a short explanation. Use an explicit enum for the category and reject unknown values. OpenAI's [Structured Outputs guide](https://developers.openai.com/api/docs/guides/structured-outputs) distinguishes a structured final response from function calling, which connects a model to application tools. As of October 2026, the supported schema subset and refusal behavior remain provider-specific; pin and test the exact API contract in use.
+
+A parser failure, refusal, or incomplete response should be an explicit outcome. It must not silently become `eligible: false` or `eligible: true`. The first hides a service failure; the second risks an unauthorized refund. A retry can be bounded to one attempt for transient formatting errors, followed by human review or a clear error.
+
+## Check authority against trusted state
+
+The **Policy check** loads order 42 using the authenticated customer's scope. It computes eligibility from stored delivery and payment facts. The model's explanation may help route a case, but it does not override those facts. OpenAI's [function calling guide](https://developers.openai.com/api/docs/guides/function-calling) describes tool arguments as model-produced data that application code executes. Validate those arguments at the operation that uses them.
+
+For verification, test a valid object with an order owned by another customer, a closed refund window, a refusal, and malformed output. The first two must stop before the refund API. Log the decision category and policy result without storing unnecessary customer text. If the task is a read-only summary, a plain answer may be simpler than a schema and policy pipeline.
+
+## Sources
+
+- [OpenAI, Structured model outputs](https://developers.openai.com/api/docs/guides/structured-outputs) — living API documentation, accessed October 2026
+- [OpenAI, Function calling](https://developers.openai.com/api/docs/guides/function-calling) — living API documentation, accessed October 2026

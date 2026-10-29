@@ -1,0 +1,17 @@
+---
+title: "Who can call this MCP tool?"
+description: "Trace identity from an MCP client to a protected resource and check permission per call."
+diagram: "mcp-authorization-boundary"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A visible MCP tool is not automatically available for every account. In the example, a support assistant requests account 42. A valid token may identify the caller, but the server still has to check that this user may read that account.
+
+Read from **User** through **MCP client** and **MCP server**. The server verifies the token and asks **Policy** to authorize the account lookup. Only an allowed decision reaches **Resource**. A denied call should return no account notes.
+
+<DiagramEmbed slug="mcp-authorization-boundary" title="Who can call this MCP tool?" heading="Read the decision path" cue="Follow the arrows from the request to the final outcome." companion={true} />
+
+Test missing and wrong-audience tokens as well as a valid token for an unrelated account. Avoid logging token values. For one local read-only source, a direct function may be enough. The full [lesson](../../articles/mcp-authorization-boundary/) covers the two checks.
+
+The result returns through the MCP server and client to the user. That route lets the server filter fields and record the authorization decision before any data leaves its boundary. A valid token for the server is still insufficient when the requested account belongs to someone else.

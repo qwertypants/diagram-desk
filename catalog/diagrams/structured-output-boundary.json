@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "A schema is a shape, not a decision",
+    "output": "catalog/diagrams/structured-output-boundary.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "p0",
+      "label": "User request",
+      "type": "external"
+    },
+    {
+      "id": "p1",
+      "label": "Model",
+      "type": "backend"
+    },
+    {
+      "id": "p2",
+      "label": "Schema parser",
+      "type": "backend"
+    },
+    {
+      "id": "p3",
+      "label": "Policy check",
+      "type": "backend"
+    },
+    {
+      "id": "p4",
+      "label": "Application",
+      "type": "external"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m0",
+      "from": "p0",
+      "to": "p1",
+      "label": "Classify refund request",
+      "y": 170
+    },
+    {
+      "id": "m1",
+      "from": "p1",
+      "to": "p2",
+      "label": "Decision object",
+      "y": 240
+    },
+    {
+      "id": "m2",
+      "from": "p2",
+      "to": "p3",
+      "label": "Parsed fields",
+      "y": 310
+    },
+    {
+      "id": "m3",
+      "from": "p3",
+      "to": "p4",
+      "label": "Approve, reject, or escalate",
+      "y": 380
+    }
+  ]
+}

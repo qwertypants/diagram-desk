@@ -1055,5 +1055,250 @@
       ],
       "scope": "A visual summary of one ESM-2 study and its protein-task benchmarks, not a general biological risk assessment."
     }
+  },
+  {
+    "slug": "structured-output-boundary",
+    "type": "sequence",
+    "title": "A schema is a shape, not a decision",
+    "file": "diagrams/structured-output-boundary.json",
+    "original": [],
+    "lesson": {
+      "summary": "Use structured model output to parse a support decision, then validate its meaning before acting.",
+      "problem": "Separate schema conformance from business validation.",
+      "objectives": [
+        "Separate schema conformance from business validation."
+      ],
+      "walkthrough": [
+        {
+          "title": "Classify refund request",
+          "detail": "The model proposes a refund classification for a user request."
+        },
+        {
+          "title": "Decision object",
+          "detail": "The schema parser rejects malformed or incomplete output."
+        },
+        {
+          "title": "Parsed fields",
+          "detail": "The policy check compares the proposal with trusted identity and order facts."
+        }
+      ],
+      "decisions": [
+        "Treat a valid model object as a proposal until application checks pass."
+      ],
+      "failureModes": [
+        "A schema-valid object can name an order the customer does not own.",
+        "A refusal or truncated response cannot be treated as an approval."
+      ],
+      "takeaways": [
+        "Treat a valid model object as a proposal until application checks pass."
+      ],
+      "references": [
+        {
+          "title": "OpenAI, Structured model outputs",
+          "url": "https://developers.openai.com/api/docs/guides/structured-outputs"
+        },
+        {
+          "title": "OpenAI, Function calling",
+          "url": "https://developers.openai.com/api/docs/guides/function-calling"
+        }
+      ],
+      "scope": "Illustrative workflow."
+    }
+  },
+  {
+    "slug": "retrieved-text-is-not-authority",
+    "type": "sequence",
+    "title": "When a retrieved page gives orders",
+    "file": "diagrams/retrieved-text-is-not-authority.json",
+    "original": [],
+    "lesson": {
+      "summary": "Keep instructions in retrieved content from becoming tool authority.",
+      "problem": "Identify the trust boundary between retrieved data and tool execution.",
+      "objectives": [
+        "Identify the trust boundary between retrieved data and tool execution."
+      ],
+      "walkthrough": [
+        {
+          "title": "Ask for a summary",
+          "detail": "The retriever fetches a page for a user summary request."
+        },
+        {
+          "title": "Fetch result",
+          "detail": "The page may contain both relevant facts and an injected export instruction."
+        },
+        {
+          "title": "Content plus injected instruction",
+          "detail": "The tool gate checks every proposed action against user authority and policy."
+        }
+      ],
+      "decisions": [
+        "Authorize every tool action from the user and application policy, never a retrieved page."
+      ],
+      "failureModes": [
+        "An injected page may cause an unauthorized export call before the final answer.",
+        "Keyword screening can miss paraphrased instructions."
+      ],
+      "takeaways": [
+        "Authorize every tool action from the user and application policy, never a retrieved page."
+      ],
+      "references": [
+        {
+          "title": "OWASP, LLM Prompt Injection Prevention Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html"
+        },
+        {
+          "title": "OWASP, AI Agent Security Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html"
+        }
+      ],
+      "scope": "Illustrative workflow."
+    }
+  },
+  {
+    "slug": "mcp-authorization-boundary",
+    "type": "sequence",
+    "title": "Who can call this MCP tool?",
+    "file": "diagrams/mcp-authorization-boundary.json",
+    "original": [],
+    "lesson": {
+      "summary": "Trace identity from an MCP client to a protected resource and check permission per call.",
+      "problem": "Separate protocol authorization from resource-level permission.",
+      "objectives": [
+        "Separate protocol authorization from resource-level permission."
+      ],
+      "walkthrough": [
+        {
+          "title": "Request account lookup",
+          "detail": "The client calls a protected server with a user token."
+        },
+        {
+          "title": "Call tool with token",
+          "detail": "The server verifies the token and asks policy about the specific account."
+        },
+        {
+          "title": "Validate identity and action",
+          "detail": "The authorized record returns through the server and client."
+        }
+      ],
+      "decisions": [
+        "Verify identity, audience, scope, and resource ownership at the server."
+      ],
+      "failureModes": [
+        "A valid token can still request an account outside its owner scope.",
+        "A wrong-audience or expired token must not reach the resource."
+      ],
+      "takeaways": [
+        "Verify identity, audience, scope, and resource ownership at the server."
+      ],
+      "references": [
+        {
+          "title": "Model Context Protocol, Authorization specification",
+          "url": "https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization"
+        },
+        {
+          "title": "OWASP, MCP Security Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/MCP_Security_Cheat_Sheet.html"
+        }
+      ],
+      "scope": "Illustrative workflow."
+    }
+  },
+  {
+    "slug": "bounded-tool-run",
+    "type": "sequence",
+    "title": "Give a tool loop a stopping rule",
+    "file": "diagrams/bounded-tool-run.json",
+    "original": [],
+    "lesson": {
+      "summary": "Set an iteration and elapsed-time budget for an agent before it starts calling tools.",
+      "problem": "Design a stopping rule for repeated model and tool calls.",
+      "objectives": [
+        "Design a stopping rule for repeated model and tool calls."
+      ],
+      "walkthrough": [
+        {
+          "title": "Ask for investigation",
+          "detail": "The orchestrator starts a model run with a call and time budget."
+        },
+        {
+          "title": "Invoke with budget",
+          "detail": "A model-proposed lookup returns a result or error to the orchestrator."
+        },
+        {
+          "title": "Request lookup",
+          "detail": "The orchestrator continues only when the budget and progress rule allow it."
+        }
+      ],
+      "decisions": [
+        "Count calls and time in application code, and report an incomplete result honestly."
+      ],
+      "failureModes": [
+        "Repeated timeouts can consume the entire budget without new evidence.",
+        "An incomplete run can produce an unsupported diagnosis if status is hidden."
+      ],
+      "takeaways": [
+        "Count calls and time in application code, and report an incomplete result honestly."
+      ],
+      "references": [
+        {
+          "title": "OpenAI, Function calling",
+          "url": "https://developers.openai.com/api/docs/guides/function-calling"
+        },
+        {
+          "title": "OWASP, AI Agent Security Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html"
+        }
+      ],
+      "scope": "Illustrative workflow."
+    }
+  },
+  {
+    "slug": "retrying-agent-side-effects",
+    "type": "sequence",
+    "title": "Before the agent retries a write",
+    "file": "diagrams/retrying-agent-side-effects.json",
+    "original": [],
+    "lesson": {
+      "summary": "Reconcile an uncertain write result before retrying an agent action.",
+      "problem": "Distinguish a known failure from an unknown outcome after a timeout.",
+      "objectives": [
+        "Distinguish a known failure from an unknown outcome after a timeout."
+      ],
+      "walkthrough": [
+        {
+          "title": "Propose order update",
+          "detail": "The application sends an approved write with a stable operation key."
+        },
+        {
+          "title": "Write with operation key",
+          "detail": "The remote API records its outcome even if the response is lost."
+        },
+        {
+          "title": "Record outcome",
+          "detail": "After a timeout, the application reconciles the receipt before retrying."
+        }
+      ],
+      "decisions": [
+        "Use a stable operation identity and verify the remote result before a retry."
+      ],
+      "failureModes": [
+        "A blind retry can duplicate a side effect.",
+        "An unknown remote result requires reconciliation or intervention."
+      ],
+      "takeaways": [
+        "Use a stable operation identity and verify the remote result before a retry."
+      ],
+      "references": [
+        {
+          "title": "Stripe, Idempotent requests",
+          "url": "https://docs.stripe.com/api/idempotent_requests"
+        },
+        {
+          "title": "Amazon S3, Conditional requests",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-requests.html"
+        }
+      ],
+      "scope": "Illustrative workflow."
+    }
   }
 ]
