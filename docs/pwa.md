@@ -71,12 +71,12 @@ remove its partial cache. The previous active worker and complete cache remain
 available. Publish the complete verified `dist/` artifact together through the
 existing GitHub Actions workflow.
 
-An update waits while the previous app is in use. The worker does not call
-`skipWaiting`, which would replace an active library during a reading session.
-Close the app and its other open tabs, then reopen it online to allow a waiting
-update to activate. Activation removes obsolete caches only for the same base
-path. Another application or another Diagram Desk deployment must keep its own
-caches.
+A complete update activates when the page detects a waiting worker and the
+previous page is already controlled. The existing page reloads once after the
+new worker takes control, so it reads the matching cached release. The first
+installation does not reload the page when it gains its initial controller.
+Activation removes obsolete caches only for the same base path. Another
+application or another Diagram Desk deployment keeps its own caches.
 
 To roll back, revert the faulty source change and rebuild through the normal
 workflow. Previously cached clients receive the rollback as another update.
@@ -108,10 +108,13 @@ finished.
    unvisited article, topic page, companion, standalone reader, and native JSON
    URL. Follow both legacy UUID URL forms. Reload an article directly. Exercise
    reader zoom and an embedded reader with its query parameters.
-6. Publish or locally serve a changed build while the old app remains open.
-   Confirm the old app continues to read its complete version. Close all clients,
-   reopen online, and confirm the new content and current cache version. Repeat
-   with a deliberately failed download and confirm the old library still opens.
+6. Keep a page from release A open, then serve or publish release B at the same
+   origin and base. Confirm the page remains usable while B downloads, then
+   reloads once when B takes control and shows B content. Confirm first install
+   does not reload. Corrupt one B asset and confirm A remains available offline;
+   restore B, trigger update discovery, and confirm clients converge on B. Repeat
+   with a rollback build. `npm run test:update -- <dist> <base>` automates these
+   release transitions against local production builds.
 
 Report local automated results, browser behavior, device installation, and live
 publication separately. A successful static build is not evidence that an app

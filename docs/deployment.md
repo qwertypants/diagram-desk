@@ -17,11 +17,12 @@ database, API, credentials, or CMS.
 
 The workflow installs Node 24 dependencies from the lockfile, audits packages,
 checks content and types, and builds and verifies both root and Pages output.
-The final content checks expect 17 articles, 17 companion pages, 17 standalone
-readers, and all 36 legacy redirect routes. It then browser-checks the prefixed
-output at desktop and phone widths, including companion navigation, canvas-only
-reader navigation, every embedded reader, and legacy redirects. Only the
-verified Pages output is uploaded. Pull requests do not upload or deploy.
+The static checker derives route coverage from the current catalog and legacy
+ID list, so adding lessons does not require updating a fixed count in this guide.
+CI browser-checks the prefixed output at desktop and phone widths, including
+companion navigation, canvas-only reader navigation, every embedded reader,
+legacy redirects, and PWA update transitions. Only the verified Pages output is
+uploaded. Pull requests do not upload or deploy.
 The deploy job alone receives Pages write and OIDC permissions. No personal
 access token or repository secret is required.
 
