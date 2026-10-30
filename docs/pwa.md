@@ -113,8 +113,8 @@ finished.
    reloads once when B takes control and shows B content. Confirm first install
    does not reload. Corrupt one B asset and confirm A remains available offline;
    restore B, trigger update discovery, and confirm clients converge on B. Repeat
-   with a rollback build. `npm run test:update -- <dist> <base>` automates these
-   release transitions against local production builds.
+   with a rollback build. These two-release transitions require manual acceptance;
+   the current single-build checks do not automate upgrade or rollback coverage.
 
 Report local automated results, browser behavior, device installation, and live
 publication separately. A successful static build is not evidence that an app
