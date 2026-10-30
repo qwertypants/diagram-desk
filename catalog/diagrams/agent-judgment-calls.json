@@ -1,0 +1,50 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "When an agent chooses the analysis",
+    "output": "catalog/diagrams/agent-judgment-calls.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "control", "label": "Study control" },
+    { "id": "agent", "label": "AI agent" },
+    { "id": "analyst", "label": "Analyst" }
+  ],
+  "nodes": [
+    { "id": "coin", "lane": "control", "col": 0, "type": "external", "label": "Hidden coin flip", "sublabel": "new lean per decision", "tag": "study control" },
+    { "id": "preference", "lane": "agent", "col": 1, "type": "backend", "label": "Assigned preference", "sublabel": "one of two defensible options" },
+    { "id": "argument", "lane": "agent", "col": 3, "type": "backend", "label": "Make the honest case", "sublabel": "agent argues for its lean" },
+    { "id": "choice", "lane": "analyst", "col": 0, "type": "external", "label": "Open analysis choices", "sublabel": "measure · compare · include · weight", "tag": "four decisions" },
+    { "id": "select", "lane": "analyst", "col": 3, "type": "backend", "label": "Choose analysis", "sublabel": "agent lean may shift the choice", "tag": "86% matched lean" },
+    { "id": "estimate", "lane": "analyst", "col": 4, "type": "backend", "label": "Estimate program effect", "sublabel": "chosen assumptions shape result" },
+    { "id": "recommend", "lane": "analyst", "col": 5, "type": "backend", "label": "Recommend action", "sublabel": "registered effect: 17 pp", "tag": "not significant" }
+  ],
+  "edges": [
+    { "id": "randomize", "from": "coin", "to": "preference", "label": "sets this decision's lean", "variant": "dashed" },
+    { "id": "voice", "from": "preference", "to": "argument", "label": "argues for option", "variant": "emphasis" },
+    { "id": "options", "from": "choice", "to": "select", "label": "same data, defensible choices", "variant": "default" },
+    { "id": "influence", "from": "argument", "to": "select", "label": "random lean can shift choice", "variant": "emphasis" },
+    { "id": "analysis", "from": "select", "to": "estimate", "label": "sets analysis path", "variant": "default" },
+    { "id": "decision", "from": "estimate", "to": "recommend", "label": "apply threshold", "variant": "default" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Study result",
+      "items": [
+        "50 analysts used Claude Code with Claude Opus 4.8 at High effort.",
+        "The assigned lean shifted four analysis choices; chance baseline was 50%."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Evidence boundary",
+      "items": [
+        "One fictional task, one model setup, and deliberately voiced preferences.",
+        "The final recommendation effect was smaller and uncertain."
+      ]
+    }
+  ]
+}

@@ -1300,5 +1300,55 @@
       ],
       "scope": "Illustrative workflow."
     }
+  },
+  {
+    "slug": "agent-judgment-calls",
+    "type": "workflow",
+    "title": "When an agent chooses the analysis",
+    "file": "diagrams/agent-judgment-calls.json",
+    "original": [],
+    "lesson": {
+      "summary": "A randomized agent preference can shape analysis choices before a human makes the final recommendation.",
+      "problem": "A final human sign-off may not independently check assumptions already shaped by an AI agent.",
+      "objectives": [
+        "Trace how an agent's preference can affect analytic choices.",
+        "Distinguish a measured effect from what one study cannot establish."
+      ],
+      "walkthrough": [
+        {
+          "title": "Assign a lean",
+          "detail": "A hidden coin flip gives the agent one of two defensible options at each choice."
+        },
+        {
+          "title": "Choose the analysis",
+          "detail": "The agent argues its preference while the analyst chooses measurement and comparison assumptions."
+        },
+        {
+          "title": "Follow the result",
+          "detail": "The choices shape an estimate before the analyst recommends an action."
+        }
+      ],
+      "decisions": [
+        "Record the human's key assumptions before agent advice when independent judgment matters."
+      ],
+      "failureModes": [
+        "Checking only the final arithmetic can miss an agent's influence on the analysis path.",
+        "A deliberately voiced preference in one fictional task does not estimate ordinary real-world deference."
+      ],
+      "takeaways": [
+        "A human sign-off is not an independent check when the agent has already shaped the assumptions under review."
+      ],
+      "references": [
+        {
+          "title": "Who's Aligned to Whom? How AI Agents Shape Experts' Research Judgment Calls",
+          "url": "https://www-cdn.anthropic.com/519c17a5d23a794e8b6d50a854048d0b61e0d73a.pdf"
+        },
+        {
+          "title": "How AI agents shape experts' judgment calls",
+          "url": "https://www.anthropic.com/research/agents-judgment-calls"
+        }
+      ],
+      "scope": "Summary of one randomized study with 50 analysts, one fictional task, and one model setup."
+    }
   }
 ]

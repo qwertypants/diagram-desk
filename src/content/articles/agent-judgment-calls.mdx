@@ -1,0 +1,55 @@
+---
+title: "When an agent chooses the analysis"
+description: "A randomized study shows how an AI preference can shape an expert's analysis before the final recommendation."
+pubDate: "2026-10-30"
+topic: "AI systems"
+tags: ["human oversight", "research", "evaluation"]
+difficulty: "intermediate"
+objectives: ["Trace how an agent's preference can affect choices before a final decision.", "Separate a measured effect from what one study cannot establish."]
+takeaways: ["A human sign-off is not an independent check when the agent has already shaped the assumptions under review."]
+diagram: "agent-judgment-calls"
+legacyIds: []
+related: ["reader-data-or-better-teacher", "when-a-cyber-test-reached-real-people"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Can a human sign-off independently check an AI-assisted analysis if the agent helped choose what the analysis measures? A randomized study suggests that the agent's preferences can influence those earlier choices, before anyone reaches the final recommendation.
+
+On October 27, 2026, Anthropic published a study in which 50 professional causal-inference analysts worked with Claude Code on a fictional farming cooperative's data. The paper, *Who's Aligned to Whom?*, assigned the agent a hidden preference by coin flip at each decision. Analysts did not know those preferences were random.
+
+## Follow the choices before the conclusion
+
+The cooperative wanted to know whether an advisory program improved farm productivity enough to justify expansion. The data did not dictate one analysis. Analysts had to choose how to measure productivity, how to compare enrolled and non-enrolled farms, which farms counted, and whether to weight every farm equally.
+
+<DiagramEmbed slug="agent-judgment-calls" title="When an agent chooses the analysis" heading="Trace the agent's influence before the final call" cue="Start at the hidden coin flip. Follow the assigned preference through the agent's argument and the analyst's choices into the estimate and recommendation." />
+
+The study's control was the coin flip. It randomly set which of two defensible options the agent would favor. The agent then made the strongest honest case for that option. Because the assigned preference was random, the researchers could compare choices across analysts whose agents leaned in opposite directions.
+
+Across the four analytical choices, analysts chose the option their agent favored 86% of the time. If the random lean had no effect, the expected share would be 50%. This does not mean 86% of experts always obey AI. It estimates how choices shifted in this task, with this model and these instructions.
+
+The study also measured how earlier choices carried into the final decision. The agent's assigned lean had a smaller effect on the recommendation itself. The registered primary estimate was a 17 percentage point shift and did not meet the conventional threshold for statistical significance (p = .069). An exploratory, in-sample model predicted 82% of the recommendations from the four intermediate leans, versus 61% for always guessing the most common recommendation. That prediction is not the same as a significant direct effect on the final answer.
+
+## Make the human check independent
+
+In an AI-assisted review, a person can inspect the final number and still miss the agent's influence. The agent may already have steered the choice of metric, comparison, or population. If those choices affect the estimate, checking only the arithmetic does not independently check the analysis.
+
+For work where judgment matters, record the key choices before the agent weighs in. Then ask it to make the strongest case for the other defensible option and record why the team kept or changed its view. This is a practical safeguard to evaluate, not an intervention tested by the study. A useful audit asks whether the reviewer can explain the assumptions in their own words and whether those assumptions changed after seeing the agent's argument.
+
+When a task has a fixed answer and a reliable test, a simpler check may be better: set the metric and acceptance threshold in advance, then run the test. The study *When Do Humans Heed AI Agents' Advice?* illustrates a different setting. In repeated Connect Four games, researchers could compare human and agent moves with an oracle and give players feedback. That kind of objective feedback changes how people can judge advice; it is missing from many open-ended research choices.
+
+## Keep the claim within the experiment
+
+This was one fictional farming task, one model setup, and 50 analysts who used the agent. The researchers deliberately made the agent hold and state a preference, so the experiment could measure its effect. They note that real agents may express weaker preferences, and experts who know the domain may hold stronger views of their own. The study does not show how often ordinary AI systems sway real research or policy decisions.
+
+The direct result is narrower and useful: an agent's randomly assigned lean changed which analysis choices these participants made. A final human signature alone cannot show whether those choices came from the person or the tool. To evaluate independent oversight, inspect the decisions that shape the result, not only the result at the end.
+
+As of October 2026, the paper and its accompanying Anthropic research article are dated October 27, 2026. This lesson summarizes that single experiment; it is not an independent replication.
+
+## Sources
+
+- Herdağdelen, Joren, and Tamkin, [*Who's Aligned to Whom? How AI Agents Shape Experts' Research Judgment Calls*](https://www-cdn.anthropic.com/519c17a5d23a794e8b6d50a854048d0b61e0d73a.pdf), Anthropic, October 27, 2026.
+- Herdağdelen, Joren, and Tamkin, [*How AI agents shape experts' judgment calls*](https://www.anthropic.com/research/agents-judgment-calls), Anthropic Research, October 27, 2026.
+- Dunning, Fischhoff, and Davis, [*When Do Humans Heed AI Agents' Advice? When Should They?*](https://journals.sagepub.com/doi/full/10.1177/00187208231190459), *Human Factors*, 2024.
+
+The diagram compresses the study into its decision path. It omits the statistical model and uncertainty intervals; the article distinguishes the registered estimate from the exploratory prediction.
