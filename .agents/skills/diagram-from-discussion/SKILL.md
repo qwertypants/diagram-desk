@@ -5,8 +5,8 @@ description: Use when someone wants to discuss an issue and author or substantia
 
 # Diagram from Discussion
 
-Turn the user's description of an issue into a native Archify diagram and MDX
-lesson in this static repository. The former in-browser editor and save API are
+Turn an issue, supplied brief, or bounded batch assignment into native Archify
+diagrams and MDX lessons in this static repository. The former in-browser editor and save API are
 retired. Follow the repository workflow in [CONTRIBUTING.md](../../../CONTRIBUTING.md)
 and the publication standard in [Editorial standards](../../../docs/editorial-standards.md).
 
@@ -31,20 +31,32 @@ substitute another version or a retired API.
 
 ## Stage 0 — Commission
 
-Start by inviting the user to describe the issue in their own words. Ask one
-focused question per turn. Use a concrete recent example when it helps.
+Choose the entry path from the user's request:
 
-Clarify only what the article must represent accurately: the people or systems
-involved, what triggers the issue, the important steps and dependencies,
-decisions, effects, failure behavior, and the outcome the reader should
-understand. Ask for non-goals when the scope could sprawl.
+- **Discussion:** invite a description of the issue and ask one focused question
+  at a time, only where an answer affects accuracy or scope.
+- **Supplied brief:** read it and the repository first. Reuse decisions already
+  present; ask only for missing information that blocks research or would change
+  the diagram's meaning. Make reversible assumptions explicit rather than
+  restarting discovery.
+- **Batch:** create a [batch manifest](references/batch-manifest.md) before
+  researching individual lessons. Give each proposed article a distinct reader
+  decision, example, diagram argument, and nearest existing lesson. Review
+  overlap across the batch and against the library. Do not repeat the same
+  discovery interview for every entry when the brief already answers it.
+- **Scheduled assignment:** follow the supplied assignment, schedule, and
+  authorization. Do not invent eligibility rules or timing. If the topic or
+  publication authorization is missing, prepare only the authorized local work
+  and report the unresolved gate.
 
-Write the brief with [the commissioning template](references/commissioning-brief.md).
+For every lesson, complete the commissioning template at
+[references/commissioning-brief.md](references/commissioning-brief.md).
 
-**Gate:** the brief names the reader problem, the promised takeaway, at least
-three candidate primary sources, and the nearest existing article. Stop and ask
-if the topic duplicates an existing lesson, has no primary evidence, or reduces
-to "this is important."
+**Gate:** each brief names the reader problem, promised takeaway, at least three
+candidate primary sources, and nearest existing article. Stop that lesson if it
+duplicates existing coverage, has no primary evidence, or reduces to "this is
+important." A failed lesson does not silently invalidate unrelated batch items;
+record it and continue only where the assignment permits.
 
 For a substantial revision, read the existing article, companion, and diagram
 first, and state what will change and what must be preserved.
@@ -96,7 +108,9 @@ and failure paths faithful to the discussion and the diagram.
 - Do not set `reviewed` or `reviewBy` until an independent review has happened.
 
 **Gate:** the article satisfies the content contract in the editorial standards,
-and every label in the prose matches the diagram JSON.
+and every label in the prose matches the diagram JSON. For a batch, also check
+that each entry in the manifest has its own reader decision and that no shared
+example, outline, or companion was copied across entries.
 
 ## Stage 4 — Self-review
 
@@ -120,8 +134,10 @@ Ask a reviewer who did not write the draft to check:
 - the diagram's fidelity to the article.
 
 Reviews separate **blocking** findings from **suggestions**. Resolve or
-explicitly accept each blocking finding with a reason. If no independent reviewer
-is available, say so; do not claim the article is reviewed and do not set
+explicitly accept each blocking finding with a reason. For a batch, ask the
+reviewer to compare lessons for overlap, distinct takeaways, prerequisites, and
+consistent links between related topics. If no independent reviewer is
+available, say so; do not claim the article is reviewed and do not set
 `reviewed` or `reviewBy`.
 
 ## Stage 6 — Verify
@@ -141,8 +157,9 @@ has been checked.
 ## Stage 7 — Publish and maintain
 
 Show the rendered draft and ask whether it represents the issue correctly. Apply
-requested changes and preview again. Get approval before committing or
-publishing.
+requested changes and preview again. Use any supplied approval and publication boundaries. Get approval when the
+requested action would exceed them, and always before an unrequested commit or
+publication.
 
 Commit the article, companion, diagram JSON, and catalog entry together. Preserve
 existing legacy IDs and unrelated source work. Update `related` links and the
