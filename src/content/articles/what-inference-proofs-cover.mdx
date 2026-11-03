@@ -1,0 +1,61 @@
+---
+title: "What does a proof of AI inference cover?"
+description: "Read a model-inference proof as a precise claim: which weights, arithmetic, tokens, and moment in the response it checks."
+pubDate: "2026-11-03"
+topic: "AI systems"
+tags: ["security", "verification", "cryptography"]
+difficulty: "intermediate"
+objectives: ["Trace how a model commitment and a post-hoc inference proof are checked.", "Separate processed-token throughput from the tokens actually covered by a proof."]
+takeaways: ["Before relying on an inference proof, check its exact statement, token coverage, model and arithmetic, verifier, and timing."]
+diagram: "what-inference-proofs-cover"
+legacyIds: []
+related: ["ai-evaluation"]
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A cryptographic proof can establish that a specific computation produced a specific token. It cannot establish more than the statement encoded in that proof. So when someone says a model response is “verified,” first ask: which weights, which arithmetic, which tokens, and when did the proof arrive?
+
+Anthropic released FlashProve on November 2, 2026, as an open-source research prototype. It demonstrates a fast way to prove part of an inference run, but its headline rate can hide a crucial detail: the default measurement processes a 1,024-token request window while each proof checks one token, the first generated token after the prompt.
+
+## Follow the proof, then find its edge
+
+<DiagramEmbed slug="what-inference-proofs-cover" title="What does a proof of AI inference cover?" heading="Trace what the verifier actually checks" cue="Start at the model commitment. Follow the prompt and immediately served reply, then the finished transcript into post-hoc proof generation. Check which token reaches the verifier." />
+
+The provider first publishes a commitment: a short fingerprint bound to one exact set of model weights, while the weights stay hidden. A verifier still needs a trustworthy way to know that this is the expected model's fingerprint. A proof can bind a response to the committed weights; it cannot decide whether those are the weights the user meant to ask for.
+
+In FlashProve, the reply reaches the user before the proof is generated. A separate prover later reads the finished transcript and recomputes the committed integer model. In the default setup, the resulting proof says that the first generated token was the model's greedy choice for that prompt. The verifier checks the proof using the commitment, prompt, and checked token.
+
+Now imagine a 1,024-token request where the server's first token is correct but a later sentence is changed. A proof for only the first token can still pass. If the job is to protect the whole response, the verifier needs coverage of every reply token, or a different stated guarantee. The diagram's boundary is deliberate: the request was processed across 1,024 positions, but the default proof checks only one output token.
+
+## Read the throughput numerator
+
+Anthropic reports a batch of 24 requests took about 223 seconds on one H100 GPU and 24 CPU cores. Each proof was 18.78 MB; checking it took about 17 seconds on a 24-thread CPU. The report calls this 110 tokens per second because it counts every processed position, including positions the proof does not check. When the team tried checking every output token in each reply, it reported 39.1 checked tokens per second. The technical report says it was AI-generated and not reviewed in detail, so treat that figure as a preliminary report result, not an independently audited benchmark.
+
+Those are measurements from one vendor's prototype on a 400B-parameter, 4-bit quantized Llama 4 Maverick model, not a production service guarantee. The report also compares GPU time with vLLM, but the model representation and proving workload differ. For another example of why scope matters, SASH's separate September 2026 prototype reports proving every prompt and answer token for quantized Llama 3.1 8B took 1.0 to 1.5 hours on one H100. That is a different system and model, not a direct speed comparison; it shows why “tokens per second” is incomplete without the claim each token belongs to.
+
+## Check the contract before you rely on it
+
+An inference proof is useful when the verifier needs to distrust the server doing the computation. Before accepting one as evidence, write down five things:
+
+1. **The statement:** Which model commitment, exact prompt, and output are bound together? How does the expected model name map to that commitment?
+2. **The coverage:** Is the proof for one token, a sample, or every token in the response? Does it cover the whole prompt and the relevant context?
+3. **The arithmetic:** Is the claim about an integer-quantized model with greedy decoding, a floating-point implementation, or sampled decoding? They may not produce identical tokens.
+4. **The verifier:** Can the verifier reject a false claim, and has the executable verifier been checked against the formally specified protocol?
+5. **The timing and record:** Does the proof arrive before the response is used? If it is post-hoc, does the log faithfully preserve exactly what the user received?
+
+These questions separate several guarantees that can otherwise blur together. A valid proof does not show that an answer is true, safe, or useful. It shows only the computation specified by the proof. The report distinguishes the prover from the verifier: it says the GPU prover and fast C++ verifier are AI-generated and not formally proved equivalent to the Lean specification. A prover mistake can prevent an honest proof from working or undermine the claimed hiding of weights; soundness instead depends on the verifier accepting only true statements. The C++ verifier is not formally guaranteed to match Lean, though Anthropic says both agreed on every proof it tested; the slower Lean verifier is an option when stronger assurance is needed. A reply from floating-point or sampled inference may also diverge from the integer greedy model the proof checks. These are disclosed limits of the research prototype, not evidence that a particular proof was forged.
+
+Because FlashProve is post-hoc, a server can deliver a bad response before a missing or invalid proof reveals a mismatch. That may work for later auditing, where catching a change matters. It is not enough when a risky action must wait for verification. A signed server log is simpler when the organization already trusts the service operator; a cryptographic proof matters when an independent verifier must check a specific computation without access to the weights or provider's hardware.
+
+As of November 2026, Anthropic describes FlashProve as interim research and the public code repository labels the artifact a research prototype that is not maintained. A peer-reviewed alternative, DeepProve, states a different scope: it verifies every generated token, with separate results for GPT-2 and Gemma 3. Its measurements should not be compared directly with FlashProve's: the models, systems, hardware, and token coverage differ.
+
+## Sources
+
+- Rinberg et al., [*Progress on provable inference for large language models*](https://www.anthropic.com/research/provable-inference), Anthropic, November 2, 2026.
+- Rinberg et al., [*FlashProve: an open-source library for provable inference*](https://assets.claude.com/a492b1fea80e6dcfe4e908ed77bd44961f8c02c2.pdf), technical report, November 2026. The authors say the AI-generated report was not reviewed in detail; its PDF metadata lists creation at November 1, 2026, 19:00 EST.
+- Anthropic, [FlashProve source repository](https://github.com/anthropics/FlashProve), initial public release commit dated October 30, 2026.
+- SASH, [*Towards Proving Frontier-Scale LLM Inference*](https://www.aisafety.sg/research/what-proving-llm-inference-actually-costs-research-note), September 2026. A distinct prototype and measurement; not an apples-to-apples benchmark comparison.
+- Gailly et al., [*DeepProve: Verifiable End-to-End Large Language Model Inference*](https://eprint.iacr.org/2026/1112), IACR Cryptology ePrint 2026/1112. The archive lists CCS 2026 and a minor revision, received May 30 and approved June 2, 2026.
+
+The diagram shows the request and verification path, but not the proof system's cryptographic construction or the code-to-formal-specification gap. The article explains those limits; its performance figures are vendor-reported prototype measurements, not an independent replication.

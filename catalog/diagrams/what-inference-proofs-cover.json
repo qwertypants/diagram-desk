@@ -1,0 +1,59 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "What does a proof of AI inference cover?",
+    "output": "catalog/diagrams/what-inference-proofs-cover.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "provider", "label": "Model provider" },
+    { "id": "client", "label": "Client" },
+    { "id": "verifier", "label": "Verifier" }
+  ],
+  "phases": [
+    { "id": "identity", "label": "Pin the model", "fromCol": 0, "toCol": 1 },
+    { "id": "service", "label": "Serve the answer", "fromCol": 2, "toCol": 2, "variant": "emphasis" },
+    { "id": "proof", "label": "Prove after serving", "fromCol": 3, "toCol": 4, "variant": "dashed" }
+  ],
+  "mainPath": ["prompt", "serve", "reply"],
+  "nodes": [
+    { "id": "weights", "lane": "provider", "col": 0, "type": "database", "label": "Model weights" },
+    { "id": "commitment", "lane": "provider", "col": 1, "type": "security", "label": "Publish commitment", "sublabel": "weights fingerprint", "tag": "offline" },
+    { "id": "prompt", "lane": "client", "col": 1, "type": "external", "label": "Send prompt" },
+    { "id": "serve", "lane": "provider", "col": 2, "type": "backend", "label": "Serve response" },
+    { "id": "reply", "lane": "client", "col": 2, "type": "external", "label": "Receive reply", "sublabel": "before proof", "tag": "post-hoc" },
+    { "id": "transcript", "lane": "provider", "col": 3, "type": "database", "label": "Finished transcript", "sublabel": "prompt + reply" },
+    { "id": "prove", "lane": "provider", "col": 4, "type": "security", "label": "Recompute and prove", "sublabel": "committed integer model", "tag": "first of 1,024 tokens" },
+    { "id": "verify", "lane": "verifier", "col": 4, "type": "security", "label": "Verify the claim", "sublabel": "ID + prompt + token" }
+  ],
+  "edges": [
+    { "id": "commit-weights", "from": "weights", "to": "commitment", "label": "bind this weight set", "variant": "security" },
+    { "id": "request", "from": "prompt", "to": "serve", "label": "send request", "variant": "default" },
+    { "id": "serve-reply", "from": "serve", "to": "reply", "label": "return answer now", "variant": "emphasis" },
+    { "id": "record", "from": "serve", "to": "transcript", "label": "record request + reply", "variant": "dashed" },
+    { "id": "replay", "from": "transcript", "to": "prove", "label": "replay after serving", "variant": "dashed" },
+    { "id": "proof-prompt", "from": "prompt", "to": "verify", "label": "original prompt", "variant": "default", "fromSide": "bottom", "toSide": "bottom", "route": "bottom-channel" },
+    { "id": "proof-input", "from": "reply", "to": "verify", "label": "checked token", "variant": "default", "fromSide": "bottom", "toSide": "top" },
+    { "id": "proof-check", "from": "prove", "to": "verify", "label": "proof file", "variant": "security", "fromSide": "right", "toSide": "right", "route": "outside-right" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "What the default proof says",
+      "items": [
+        "The first generated token is the committed integer model's greedy choice for this prompt.",
+        "Later tokens and answer truth are outside this single-token claim."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Read the measurement carefully",
+      "items": [
+        "110 processed positions/s counts all positions. The AI-generated report, not reviewed in detail, says 39.1 checked reply tokens/s when checking every reply token.",
+        "The reply is served first. Verification needs an accurate transcript and a trusted expected model ID."
+      ]
+    }
+  ]
+}

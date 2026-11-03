@@ -1350,5 +1350,68 @@
       ],
       "scope": "Summary of one randomized study with 50 analysts, one fictional task, and one model setup."
     }
+  },
+  {
+    "slug": "what-inference-proofs-cover",
+    "type": "workflow",
+    "title": "What does a proof of AI inference cover?",
+    "file": "diagrams/what-inference-proofs-cover.json",
+    "original": [],
+    "lesson": {
+      "summary": "An inference proof is only as broad as its stated model, arithmetic, token coverage, and verification timing.",
+      "problem": "A throughput headline can make a one-token proof look like a guarantee about a whole AI response.",
+      "objectives": [
+        "Trace a model commitment and post-hoc inference proof.",
+        "Separate processed-token throughput from proof coverage."
+      ],
+      "walkthrough": [
+        {
+          "title": "Commit the model",
+          "detail": "The provider publishes a fingerprint bound to one exact set of weights; the verifier must know this is the expected model."
+        },
+        {
+          "title": "Serve and record",
+          "detail": "The prompt gets an immediate reply, then the finished transcript feeds a separate prover."
+        },
+        {
+          "title": "Prove a narrow claim",
+          "detail": "The default proof checks the first generated token after the prompt against the committed integer model."
+        },
+        {
+          "title": "Verify the boundary",
+          "detail": "The verifier checks the commitment, prompt, checked token, and proof; later tokens and answer truth are not established."
+        }
+      ],
+      "decisions": [
+        "Before relying on a proof, record its exact statement, token coverage, arithmetic, model identity, verifier, and timing."
+      ],
+      "failureModes": [
+        "A later reply token can be changed while a proof for only the first generated token still passes.",
+        "A response delivered before post-hoc verification may cause harm before a mismatch is detected.",
+        "An integer greedy model proof may not match floating-point or sampled output, and fast executable code is not formally guaranteed to match the Lean specification."
+      ],
+      "takeaways": [
+        "A passing inference proof establishes only the computation and tokens named by its statement; it does not establish that the answer is true."
+      ],
+      "references": [
+        {
+          "title": "Progress on provable inference for large language models",
+          "url": "https://www.anthropic.com/research/provable-inference"
+        },
+        {
+          "title": "FlashProve: an open-source library for provable inference",
+          "url": "https://assets.claude.com/a492b1fea80e6dcfe4e908ed77bd44961f8c02c2.pdf"
+        },
+        {
+          "title": "Towards Proving Frontier-Scale LLM Inference",
+          "url": "https://www.aisafety.sg/research/what-proving-llm-inference-actually-costs-research-note"
+        },
+        {
+          "title": "DeepProve: Verifiable End-to-End Large Language Model Inference",
+          "url": "https://eprint.iacr.org/2026/1112"
+        }
+      ],
+      "scope": "Anthropic's reported FlashProve prototype workflow; not a general architecture or production guarantee."
+    }
   }
 ]

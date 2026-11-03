@@ -1,0 +1,17 @@
+---
+title: "Which tokens does the proof cover?"
+description: "A model-inference proof is a specific claim about committed weights, a prompt, and the output tokens it checks."
+diagram: "what-inference-proofs-cover"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A proof of AI inference can show that a particular model computation produced a particular token. It does not automatically certify an entire answer. In FlashProve's default measurement, each 1,024-token request has a proof for the first generated token after the prompt.
+
+<DiagramEmbed slug="what-inference-proofs-cover" title="What does a proof of AI inference cover?" heading="Trace the claim from model commitment to verifier" cue="Follow the model fingerprint, prompt, and reply. Notice that the reply arrives before a separate proof service checks just the first generated token." companion={true} />
+
+The provider commits to exact weights, serves the response, then recomputes the finished transcript and makes a proof. The verifier needs the expected model commitment, prompt, checked token, and proof. The server has already delivered the reply by then, so this is a post-hoc check.
+
+Anthropic reports 110 processed positions per second for a batch, but the default proof checks one output token per request. Its technical report says checking every reply token reached 39.1 checked tokens per second; the report was AI-generated and not reviewed in detail. A passing single-token proof says nothing about later tokens or whether the answer is true.
+
+Read the [full lesson](../../articles/what-inference-proofs-cover/) for the model, arithmetic, code, and timing limits.
