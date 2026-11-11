@@ -1413,5 +1413,71 @@
       ],
       "scope": "Anthropic's reported FlashProve prototype workflow; not a general architecture or production guarantee."
     }
+  },
+  {
+    "slug": "test-if-vision-is-load-bearing",
+    "type": "workflow",
+    "title": "Does an AI agent really need to see the file?",
+    "file": "diagrams/test-if-vision-is-load-bearing.json",
+    "original": [],
+    "lesson": {
+      "summary": "A matched tool ablation reveals whether image viewing changes an agent's quality or only its route to an answer.",
+      "problem": "A multimodal benchmark may be solvable by OCR or code without genuine visual understanding.",
+      "objectives": [
+        "Design a matched ablation that tests whether visual input is load-bearing.",
+        "Read quality and effort changes without generalizing beyond the tested task set."
+      ],
+      "walkthrough": [
+        {
+          "title": "Freeze the setup",
+          "detail": "Keep Gemini 4 Carbon, the task set, Stirrup's 250-turn limit, tools, and rubric fixed except for direct image viewing."
+        },
+        {
+          "title": "Run matched conditions",
+          "detail": "Compare image-on and image-off trials on both MKA and GDPval; code, OCR, web search, and computer-vision libraries remain available in the ablation."
+        },
+        {
+          "title": "Measure quality and effort",
+          "detail": "Grade both outputs with the same rubric and compare weighted satisfaction, turns, and tokens per benchmark."
+        },
+        {
+          "title": "Bound the interpretation",
+          "detail": "MKA loses quality and costs more effort without view_image, while GDPval changes little; this is evidence about these task sets and this model setup."
+        }
+      ],
+      "decisions": [
+        "Remove one capability at a time while preserving reasonable alternatives.",
+        "Track both rubric failures and the extra work spent on workarounds.",
+        "State the tested model, harness, task set, remaining tools, and metric beside the result."
+      ],
+      "failureModes": [
+        "A high score on image-containing tasks may reflect text or code workarounds rather than visual perception.",
+        "Removing several tools at once makes it unclear which capability caused a result change.",
+        "A workaround can preserve score on clean schematics while spending more tokens and still missing subtle visual details.",
+        "Weighted rubric satisfaction is not the percentage of whole tasks completed successfully."
+      ],
+      "takeaways": [
+        "Use a matched image-on/image-off ablation and compare quality and effort within each benchmark before claiming that visual input matters."
+      ],
+      "references": [
+        {
+          "title": "MKA: Evaluating Multimodal Knowledge Agents on end-to-end professional tasks",
+          "url": "https://storage.googleapis.com/deepmind-media/papers/mka_tech_paper.pdf"
+        },
+        {
+          "title": "Introducing the Multimodal Knowledge Agent benchmark",
+          "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/multimodal-knowledge-agent-benchmark/"
+        },
+        {
+          "title": "MKA 10 Showcase Examples",
+          "url": "https://huggingface.co/datasets/google/multimodal-knowledge-agent"
+        },
+        {
+          "title": "Multimodal Knowledge Agent benchmark and methodology",
+          "url": "https://artificialanalysis.ai/evaluations/mka"
+        }
+      ],
+      "scope": "Google DeepMind's November 2026 Gemini 4 Carbon vision ablation on MKA and GDPval; not a general result for all models or visual work."
+    }
   }
 ]

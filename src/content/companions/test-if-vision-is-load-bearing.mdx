@@ -1,0 +1,15 @@
+---
+title: "Does an AI agent really need to see the file?"
+description: "A matched tool ablation shows when image viewing changes an agent's answer and when it only changes the route."
+diagram: "test-if-vision-is-load-bearing"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A benchmark can include pictures without requiring visual understanding. To find out whether image access matters, compare the same model and task setup with image viewing available and removed. Keep other tools, such as code and OCR, so the test reveals whether the agent can work around the missing capability.
+
+<DiagramEmbed slug="test-if-vision-is-load-bearing" title="Does an AI agent really need to see the file?" heading="Follow the matched comparison" cue="Trace each benchmark through image-on and image-off runs; compare both quality and the work needed to get there." companion={true} />
+
+In the November 2026 MKA report, removing Gemini 4 Carbon's image-viewing tool lowered its harder-criteria score by 5.94 percentage points on MKA and increased output tokens by 1.40×. On GDPval, the score changed by only +0.08 percentage points, with uncertainty that includes no change. That contrast suggests image viewing was useful for MKA's visually demanding tasks, while the tested GDPval tasks could be handled through other routes.
+
+The caveat is scope: this was one model in a particular harness, and the 200 MKA evaluation tasks are private. The experiment does not establish how every model performs or whether an agent can do professional work reliably. Read the full [lesson on testing whether vision is load-bearing](../../articles/test-if-vision-is-load-bearing/) for the metric definitions, workaround examples, and evaluation checklist.

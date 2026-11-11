@@ -1,0 +1,66 @@
+---
+title: "Does an AI agent really need to see the file?"
+description: "Use a controlled tool ablation to test whether visual input changes an agent's quality or only its route to the answer."
+pubDate: "2026-11-11"
+topic: "AI systems"
+tags: ["evaluation", "multimodal", "benchmarks"]
+difficulty: "intermediate"
+objectives: ["Design a matched ablation that tests whether visual input is load-bearing.", "Read quality and effort changes without generalizing beyond the tested task set."]
+takeaways: ["Keep the model and evaluation fixed, remove one visual tool, and compare both rubric outcomes and workaround effort."]
+diagram: "test-if-vision-is-load-bearing"
+legacyIds: []
+related: ["ai-evaluation", "trace-driven-evaluation"]
+reviewed: "2026-11-11"
+reviewBy: "2027-05-11"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A benchmark can contain images without actually testing visual understanding. If an agent can extract the useful information with OCR or code, a high score may say little about its ability to read a diagram, scan, or photograph. One useful check is to run the same tasks with image viewing turned off, keep the rest of the setup fixed, and measure both the answer and the effort it takes to produce it.
+
+Google DeepMind’s November 2026 MKA report gives a concrete example. With Gemini 4 Carbon, removing the image-viewing tool lowered scores on MKA and made the agent work harder. On a different benchmark, GDPval, the same removal barely changed either result. The lesson is not that every task needs vision. It is that the task set determines what a benchmark score can tell you.
+
+<DiagramEmbed slug="test-if-vision-is-load-bearing" title="Does an AI agent really need to see the file?" heading="Compare the matched image-on and image-off runs" cue="Start with the frozen model and harness. Follow both runs through the two task sets, then compare quality and effort separately." />
+
+## Change one capability at a time
+
+An ablation removes one part of a system to see whether the result depends on it. In the MKA experiment, the researchers used the same Gemini 4 Carbon model and the same 250-turn Stirrup agent setup, but withheld its `view_image` tool in one run. The agent still had code execution, web search, OCR, file parsers, and computer-vision libraries. So the experiment asked whether direct image viewing helped beyond those alternatives; it did not turn the agent into a text-only system.
+
+The team repeated that comparison on MKA and GDPval. MKA contains 200 tasks built around visually dense, multi-file professional work. GDPval is a broader knowledge-work benchmark whose task-critical information, in the tested subset, could be reached through spreadsheets and machine-readable text. Within each benchmark, the study used the same agent judge and task-specific rubric to score both image-on and image-off outputs.
+
+The diagram follows that comparison. Keep the model, task, harness, and grading fixed. Then compare rubric quality and trajectory effort for each benchmark. That order matters: a score alone can hide an agent that reaches a similar result only by taking a much more expensive route.
+
+## What changed when the tool disappeared
+
+On MKA, removing direct image viewing reduced the harder-criteria score, called Climb-WSR, by **5.94 percentage points**. Overall weighted rubric satisfaction fell by **4.58 points**. The agent also used **1.28× as many turns**, **1.40× as many output tokens**, and **1.85× as many input tokens**. These are reported averages for this model and setup, not a general multiplier for image-disabled agents.
+
+On GDPval, the score changed by only **+0.08 percentage points**, with a 95% confidence interval from **−0.62 to +0.78 percentage points**. That interval includes zero, so the reported result does not show a meaningful score change. The agent used about the same effort: turns were 0.95× and output tokens 1.05× the image-enabled run. For those tasks, image viewing was not doing measurable work.
+
+**Climb-WSR is not the percentage of tasks solved.** The benchmark groups individual rubric checks into harder “climb” criteria and baseline “regression” criteria. It computes weighted satisfaction within each task, then averages task scores. A result near 54% means that roughly that share of weighted climb criteria were met on average; it does not mean the agent completed 54% of jobs successfully.
+
+The contrast is the useful finding: MKA's task-critical visual details made image viewing load-bearing for this agent, while the tested GDPval tasks offered enough nonvisual routes that turning off the image tool changed little. It is evidence about these benchmark setups, not a universal ranking of vision models.
+
+## A workaround can hide the missing capability
+
+When direct viewing was unavailable, Gemini 4 Carbon sometimes generated ASCII or Braille-like image renderings in its terminal, or wrote OpenCV scripts to inspect image geometry. Those workarounds recovered some information from clean schematics, but cost more turns and tokens and could miss fine clearance hazards. The report also describes large drops on photographs and medical images despite heavier computation.
+
+That is why the tool-off run should keep reasonable alternative tools available. If you remove vision, OCR, code, and file access all at once, you cannot tell which capability mattered. Conversely, if the agent rebuilds a crude view using a script, a nearly unchanged score does not prove that visual perception was unnecessary; check the extra effort and inspect the actual failures.
+
+## Use the ablation to bound your own claim
+
+For a product evaluation, preserve one task set and rubric, then compare two otherwise identical runs: one with the visual tool and one without it. Use the same model snapshot, prompts, turn limits, and grading process. Record which fallback tools remain available. Compare per-task rubric failures, not just the aggregate, and track turns, tokens, or latency so workarounds do not disappear into a single score.
+
+If quality drops when the visual tool is removed, you have evidence that it matters for those tasks and that system configuration. If quality stays stable, inspect whether the inputs were already machine-readable and whether the agent spent more effort reconstructing visual information. Then add cases from the actual images your users depend on. A simpler text-only evaluation is enough when the real task's important evidence is already structured text or tables; otherwise, test the modality your users actually need.
+
+The MKA study is a substantial test set, but its 200 evaluation tasks are private; its public showcase is a separate set of 10 examples. The paper is authored by the benchmark's developer, and the reported ablation covers Gemini 4 Carbon, not every model on its leaderboard. Artificial Analysis operates the public evaluation independently and documents a current leaderboard, but that is not an independent replication of this specific vision ablation. Treat the result as a useful method demonstration, not proof that an agent can do professional work in general.
+
+As of November 2026, the practical check is straightforward: keep the benchmark fixed, disable one capability, and ask what changed in both outcomes and work. The conclusion should name the task set, model, harness, remaining tools, and metric—never just say “the model can see.”
+
+## Sources
+
+- Singh et al., [*MKA: Evaluating Multimodal Knowledge Agents on end-to-end professional tasks*](https://storage.googleapis.com/deepmind-media/papers/mka_tech_paper.pdf), Google DeepMind technical report, November 10, 2026. See §§2–4.3 for task design, metrics, and the controlled vision ablation.
+- Google DeepMind, [*Introducing the Multimodal Knowledge Agent benchmark*](https://blog.google/innovation-and-ai/models-and-research/gemini-models/multimodal-knowledge-agent-benchmark/), November 10, 2026.
+- Google, [MKA 10 Showcase Examples](https://huggingface.co/datasets/google/multimodal-knowledge-agent), published with the November 10 benchmark release. These ten open tasks are separate from the private 200-task evaluation suite.
+- Artificial Analysis, [Multimodal Knowledge Agent benchmark and methodology](https://artificialanalysis.ai/evaluations/mka), accessed November 11, 2026. It operates the public leaderboard; its current scores may change and are not the fixed scores reported in the paper.
+
+The diagram compresses the matched experiment into two benchmarks and two tool settings; it does not show every rubric, task, or failed artifact. The full report contains those details. The GDPval comparison is a counterexample to treating vision as universally necessary, while the private MKA test set limits external reproduction.

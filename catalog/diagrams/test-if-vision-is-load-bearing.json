@@ -1,0 +1,63 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Does an AI agent really need to see the file?",
+    "output": "catalog/diagrams/test-if-vision-is-load-bearing.html",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "evaluator", "label": "Evaluator" },
+    { "id": "harness", "label": "Fixed harness" },
+    { "id": "agent", "label": "Agent trial" },
+    { "id": "grader", "label": "Scoring" }
+  ],
+  "phases": [
+    { "id": "prepare", "label": "Prepare the comparison", "fromCol": 0, "toCol": 2 },
+    { "id": "run", "label": "Run the matched trials", "fromCol": 3, "toCol": 4, "variant": "emphasis" },
+    { "id": "interpret", "label": "Read results by benchmark", "fromCol": 5, "toCol": 5, "variant": "dashed" }
+  ],
+  "mainPath": ["model", "suite", "harness", "paired_runs", "score", "interpret_results"],
+  "nodes": [
+    { "id": "model", "lane": "evaluator", "col": 0, "width": 116, "type": "backend", "label": "Set the model", "sublabel": "Gemini 4 Carbon" },
+    { "id": "suite", "lane": "evaluator", "col": 1, "width": 116, "type": "database", "label": "Choose tasks", "sublabel": "MKA + GDPval" },
+    { "id": "harness", "lane": "harness", "col": 2, "width": 142, "type": "security", "label": "Freeze the harness", "sublabel": "Stirrup · 250 turns" },
+    { "id": "paired_runs", "lane": "agent", "col": 3, "width": 142, "type": "backend", "label": "Pair tool runs", "sublabel": "view_image on / off" },
+    { "id": "score", "lane": "grader", "col": 4, "width": 146, "type": "backend", "label": "Grade + measure", "sublabel": "same rubric · turns · tokens" },
+    { "id": "interpret_results", "lane": "evaluator", "col": 5, "width": 146, "type": "security", "label": "Bound each result", "sublabel": "specific benchmark + setup" }
+  ],
+  "edges": [
+    { "from": "model", "to": "suite", "label": "same model" },
+    { "from": "suite", "to": "harness", "label": "same tasks" },
+    { "from": "harness", "to": "paired_runs", "label": "hold other tools fixed" },
+    { "from": "paired_runs", "to": "score", "label": "compare both outputs" },
+    { "from": "score", "to": "interpret_results", "label": "read within each set" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "MKA: visual access matters here",
+      "items": [
+        "Without view_image, Climb-WSR fell 5.94 percentage points.",
+        "Turns rose to 1.28× and output tokens to 1.40×."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "GDPval: the result barely moved",
+      "items": [
+        "Overall WSR changed by +0.08 percentage points; its confidence interval includes zero.",
+        "Turns were 0.95× and output tokens 1.05× the image-on run."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Keep the claim narrow",
+      "items": [
+        "OCR, code, web search, and computer-vision libraries remained available in the image-off condition.",
+        "WSR is weighted rubric satisfaction averaged per task, not the fraction of tasks solved.",
+        "This is one model's result on two task sets, not a universal rule about vision."
+      ]
+    }
+  ]
+}
