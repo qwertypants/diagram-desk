@@ -1352,6 +1352,71 @@
     }
   },
   {
+    "slug": "what-ai-checked-code-proves",
+    "type": "workflow",
+    "title": "What an AI-checked code proof actually proves",
+    "file": "diagrams/what-ai-checked-code-proves.json",
+    "original": [],
+    "lesson": {
+      "summary": "AI agents can build large proofs about compiled software, but the guarantee is limited by the approved theorem and trusted model.",
+      "problem": "A proof that passes a checker can be mistaken for a broad claim that an application is secure.",
+      "objectives": [
+        "Trace the specification, binary, semantics, and proof checker in an AI-assisted verification workflow.",
+        "Separate a checked theorem from a broader product-security claim."
+      ],
+      "walkthrough": [
+        {
+          "title": "Approve the theorem",
+          "detail": "A spec-writing agent drafts Lean statements; human researchers review and approve the exact target before proofs begin."
+        },
+        {
+          "title": "Bind it to the binary",
+          "detail": "The unmodified Rust library is compiled to an AArch64 executable and interpreted through a formal machine model."
+        },
+        {
+          "title": "Check the proof",
+          "detail": "Untrusted AI agents produce proof terms; Lean's kernel checks them and a comparator checks the target against the held-out approved statement."
+        },
+        {
+          "title": "Read the guarantee's edge",
+          "detail": "The result remains conditional on the theorem, modeled environment, trusted contracts, and cryptographic assumptions."
+        }
+      ],
+      "decisions": [
+        "Read the theorem and every assumption in plain language before relying on a passed proof.",
+        "Confirm which exact binary, machine semantics, external contracts, and adversary model the result covers.",
+        "Test specification strength with concrete executions and known-bug mutations where possible."
+      ],
+      "failureModes": [
+        "A valid proof of a weak or overly restrictive theorem can fail to capture the intended security guarantee.",
+        "A proof term for a changed or unapproved theorem must be rejected by the kernel/comparator gate.",
+        "Behavior outside the modeled binary, execution environment, and assumptions is not established by the theorem."
+      ],
+      "takeaways": [
+        "The checker validates the proof; people must judge whether the approved theorem and its assumptions say enough."
+      ],
+      "references": [
+        {
+          "title": "AlphaProof Code: Verifying Signal’s Security at the Machine-Code Level",
+          "url": "https://deepmind.google/documents/36/Formal_Verification_of_Signal_4.pdf"
+        },
+        {
+          "title": "AlphaProof Code proof and specification artifacts",
+          "url": "https://github.com/google-deepmind/code-verification"
+        },
+        {
+          "title": "The Lean Language Reference",
+          "url": "https://lean-lang.org/doc/reference/latest/"
+        },
+        {
+          "title": "Signal PQXDH specification",
+          "url": "https://signal.org/docs/specifications/pqxdh/"
+        }
+      ],
+      "scope": "Google DeepMind's November 2026 verification of selected one-to-one libsignal properties in a CLI harness; not a proof that every Signal application or device is secure."
+    }
+  },
+  {
     "slug": "what-inference-proofs-cover",
     "type": "workflow",
     "title": "What does a proof of AI inference cover?",

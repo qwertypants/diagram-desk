@@ -1,0 +1,75 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "What an AI-checked code proof actually proves",
+    "output": "catalog/diagrams/what-ai-checked-code-proves.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "specification", "label": "Human-approved specification" },
+    { "id": "implementation", "label": "Implementation and machine model" },
+    { "id": "proof", "label": "AI proof and independent checks" },
+    { "id": "outcome", "label": "Accepted claim or rejection" }
+  ],
+  "phases": [
+    { "id": "define", "label": "Define the claim", "fromCol": 0, "toCol": 2 },
+    { "id": "connect", "label": "Bind it to this binary", "fromCol": 3, "toCol": 4, "variant": "emphasis" },
+    { "id": "check", "label": "Check before accepting", "fromCol": 5, "toCol": 5, "variant": "security" }
+  ],
+  "mainPath": ["specWriter", "reviewers", "approvedSpec", "proofAgents", "proofTerms", "gatekeeper", "theorem"],
+  "semanticChecks": {
+    "allowedRoots": ["specWriter", "rustSource", "assumptions"],
+    "allowedTerminals": ["theorem", "rejected"]
+  },
+  "nodes": [
+    { "id": "specWriter", "lane": "specification", "col": 0, "type": "backend", "label": "Spec agent", "sublabel": "Lean draft" },
+    { "id": "reviewers", "lane": "specification", "col": 1, "type": "external", "label": "Reviewers", "sublabel": "human approval" },
+    { "id": "approvedSpec", "lane": "specification", "col": 2, "type": "security", "label": "Approved spec", "sublabel": "pinned target" },
+    { "id": "assumptions", "lane": "specification", "col": 3, "type": "security", "label": "Assumptions", "sublabel": "contracts + crypto" },
+    { "id": "rustSource", "lane": "implementation", "col": 0, "type": "external", "label": "Unmodified Rust", "sublabel": "libsignal 0.105.4" },
+    { "id": "compiler", "lane": "implementation", "col": 1, "type": "backend", "label": "Stock compiler", "sublabel": "pinned rustc" },
+    { "id": "binary", "lane": "implementation", "col": 2, "type": "backend", "label": "AArch64 binary", "sublabel": "CLI executable" },
+    { "id": "semantics", "lane": "implementation", "col": 3, "type": "security", "label": "AArch64 model", "sublabel": "execution rules" },
+    { "id": "proofAgents", "lane": "proof", "col": 3, "type": "backend", "label": "Proof agents", "sublabel": "untrusted" },
+    { "id": "proofTerms", "lane": "proof", "col": 4, "type": "backend", "label": "Proof terms", "sublabel": "about 6.5M lines" },
+    { "id": "gatekeeper", "lane": "proof", "col": 5, "type": "security", "label": "Lean + comparator", "sublabel": "kernel + match" },
+    { "id": "theorem", "lane": "outcome", "col": 5, "type": "security", "label": "Checked theorem", "sublabel": "scoped result" },
+    { "id": "rejected", "lane": "outcome", "col": 4, "type": "security", "label": "Rejected", "sublabel": "check failed" }
+  ],
+  "edges": [
+    { "id": "draft-spec", "from": "specWriter", "to": "reviewers", "label": "draft spec", "variant": "default" },
+    { "id": "approve-spec", "from": "reviewers", "to": "approvedSpec", "label": "approve target", "variant": "security" },
+    { "id": "compile-source", "from": "rustSource", "to": "compiler", "label": "compile Rust", "variant": "default" },
+    { "id": "produce-binary", "from": "compiler", "to": "binary", "label": "build ELF", "variant": "default" },
+    { "id": "model-binary", "from": "binary", "to": "semantics", "label": "model bytes", "variant": "security" },
+    { "id": "target-theorem", "from": "approvedSpec", "to": "proofAgents", "label": "prove theorem", "variant": "emphasis" },
+    { "id": "target-binary", "from": "binary", "to": "proofAgents", "label": "binary target", "variant": "default" },
+    { "id": "target-semantics", "from": "semantics", "to": "proofAgents", "label": "execution model", "variant": "default" },
+    { "id": "generate-terms", "from": "proofAgents", "to": "proofTerms", "label": "generate proof terms", "variant": "dashed" },
+    { "id": "check-terms", "from": "proofTerms", "to": "gatekeeper", "label": "kernel checks", "variant": "security" },
+    { "id": "compare-target", "from": "approvedSpec", "to": "gatekeeper", "label": "match approved theorem", "variant": "security", "role": "branch" },
+    { "id": "accept-theorem", "from": "gatekeeper", "to": "theorem", "label": "all checks pass", "variant": "emphasis" },
+    { "id": "reject-proof", "from": "gatekeeper", "to": "rejected", "label": "check fails", "variant": "default", "role": "error" },
+    { "id": "conditions", "from": "assumptions", "to": "theorem", "label": "depends on", "variant": "dashed", "role": "branch" }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Where trust remains",
+      "items": [
+        "The kernel checks proof terms; it cannot decide whether people chose a strong, accurate theorem.",
+        "The security claim also depends on the AArch64 model, trusted routine contracts, cryptographic assumptions, and the modeled environment."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Scope of this case study",
+      "items": [
+        "The paper analyzes selected one-to-one libsignal properties in a command-line harness.",
+        "It does not prove every Signal application, group message, device, or runtime behavior."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+---
+title: "What an AI-checked code proof actually proves"
+description: "Trace an AI-generated proof from a human-approved theorem to a compiled binary, and see which assumptions still carry the security claim."
+pubDate: "2026-11-16"
+topic: "AI systems"
+tags: ["formal verification", "security", "AI agents"]
+difficulty: "intermediate"
+objectives: ["Trace the specification, binary, semantics, and proof checker in an AI-assisted verification workflow.", "Separate a checked theorem from a broader product-security claim."]
+takeaways: ["A proof checker validates the theorem it is given; people still have to judge whether that theorem and its assumptions capture the intended security guarantee."]
+diagram: "what-ai-checked-code-proves"
+legacyIds: []
+related: ["what-inference-proofs-cover", "structured-output-boundary"]
+reviewed: "2026-11-16"
+reviewBy: "2027-05-16"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+If an AI-generated proof passes Lean's checker, what can you claim? You can claim that the checked proof establishes a particular theorem about a particular program model, under its stated assumptions. The checker does not decide whether the theorem captures the guarantee your users care about.
+
+Google DeepMind's November 10, 2026 AlphaProof Code paper makes that boundary concrete. The team used AI agents to prove selected security properties of `libsignal` after compiling it to AArch64 machine code. The important question is not how many lines of proof the agents wrote. It is how the approved theorem, compiled program, machine model, assumptions, and checker fit together.
+
+## Follow the claim into the checker
+
+Start with two inputs: the human-approved theorem and the compiled binary. The binary is interpreted under the machine model; the theorem and modeled program meet at the proof agents. Then follow their output to the gatekeeper. Lean checks the proof term, and a comparator checks that it targets the specification humans approved. Only then does the result support the named theorem.
+
+<DiagramEmbed slug="what-ai-checked-code-proves" title="What an AI-checked code proof actually proves" heading="Trace the theorem to its trusted boundary" cue="Start with the approved specification and compiled binary. Follow both into the proof gate, then read the assumptions attached to the result." />
+
+In AlphaProof Code, a specification-writing agent works with researchers to translate security properties into Lean statements. Reviewer agents critique those statements, and a human approves the target before the proof campaign begins. Separately, the unmodified Rust library is compiled into an AArch64 executable and interpreted using a Lean model of machine behavior. Proof agents then try to show that the executable satisfies the approved statements.
+
+The proof agents are not trusted to get the logic right. They generate proof terms; Lean's small kernel checks those terms. A comparator also checks the theorem and every definition it depends on against a held-out copy of the approved specification. If the proof is malformed or targets a theorem that differs from the approved copy without an approved amendment, the gatekeeper rejects it. A plausible explanation from an agent is not enough to pass this boundary.
+
+## The theorem still needs a good question
+
+A checker can confirm a weak theorem just as faithfully as a useful one. Suppose a specification accidentally rules out the attacks that matter, or assumes away a realistic environment. The proof may pass while saying little about that real threat. That is why the paper describes human review of the specification, proof checks for contradictory assumptions, and mutation tests that reintroduced two previously fixed `libsignal` bugs. The resulting proofs showed those buggy binaries violated the symbolic security theorems.
+
+The scale is striking, but line counts are not a security score. The paper reports about 6.5 million lines of machine-checked Lean proofs, resting on roughly 26,000 lines of trusted specifications and AArch64 semantics. Its team of five worked for four weeks, running agents continuously across their own workstations. Those figures describe one research project; they are not a controlled comparison showing how quickly another team or codebase would be verified.
+
+The trusted boundary also includes the theorem's definitions, Lean's kernel, the modeled AArch64 behavior, contracts for routines outside the proof, and cryptographic assumptions. Hardware and the operating-system kernel are not themselves formal objects in this work. A proof about one compiled command-line harness does not automatically cover Signal's full applications, group messaging, another build, or every device and runtime.
+
+This is a different kind of proof from a cryptographic proof of an AI model's inference. An inference proof asks whether a response followed a specified model computation; this lesson asks whether a specified security property follows for a particular binary under a formal model. In both cases, “verified” is incomplete until you can name exactly what was checked.
+
+## A practical review before relying on a proof
+
+For a high-assurance change, inspect the target theorem and its definitions, the exact binary it refers to, the modeled environment, and every trusted contract or cryptographic assumption. Then ask whether a known bad implementation violates the theorem, as the AlphaProof Code authors did with historical bugs. If you cannot explain the theorem in plain language or identify what it excludes, stop short of making a broader security claim.
+
+Formal verification adds real specification and review work. For ordinary low-risk application code, tests, static analysis, and code review may be a better fit. Formal proofs are most useful when the property is important enough to state precisely and the team can maintain the specification as the code changes.
+
+As of November 2026, AlphaProof Code is evidence that AI agents can help construct very large, kernel-checked proofs about one real cryptographic implementation. It is not evidence that AI can prove arbitrary software secure, or that Signal as a complete product has no vulnerabilities.
+
+## Sources
+
+- Chaudhuri et al., [*AlphaProof Code: Verifying Signal’s Security at the Machine-Code Level*](https://deepmind.google/documents/36/Formal_Verification_of_Signal_4.pdf), Google DeepMind and Google, November 10, 2026.
+- Google DeepMind, [AlphaProof Code proof and specification artifacts](https://github.com/google-deepmind/code-verification), released with the paper; repository contents and pinned toolchain accessed November 16, 2026.
+- Lean, [The Lean Language Reference](https://lean-lang.org/doc/reference/latest/), version 4.36.0-rc2, accessed November 16, 2026. The released AlphaProof Code repository pins Lean 4.34.0.
+- Signal, [PQXDH Key Agreement Protocol specification](https://signal.org/docs/specifications/pqxdh/) and [Double Ratchet specification](https://signal.org/docs/specifications/doubleratchet/), accessed November 16, 2026.
+
+The diagram condenses a large formal development into its trust boundary. It does not show the cryptographic games, all modeled executions, or every excluded case; the paper and linked artifacts are needed to judge those details.

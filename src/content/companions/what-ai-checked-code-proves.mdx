@@ -1,0 +1,15 @@
+---
+title: "What does an AI-checked code proof establish?"
+description: "See why a passing proof checker still depends on the approved theorem, program model, and assumptions."
+diagram: "what-ai-checked-code-proves"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A proof checker can confirm that a proof follows from a formal statement. People still have to decide whether that statement captures the security property they intended.
+
+Google DeepMind's AlphaProof Code study used AI agents to prove selected properties of a compiled `libsignal` binary. Researchers reviewed and approved the Lean specification. Proof agents generated proof terms, then Lean's kernel and a comparator checked the proof against that approved target. A wrong or mismatched proof is rejected; a weak specification can still produce a valid proof of a limited claim.
+
+<DiagramEmbed slug="what-ai-checked-code-proves" title="What an AI-checked code proof actually proves" heading="Follow the approved target through the proof gate" cue="Read the specification and binary lanes into the gatekeeper, then note the assumptions attached to the theorem." companion={true} />
+
+The paper reports about 6.5 million lines of checked proof code, but the proof applies only to the stated model and assumptions. It covers selected properties of a one-to-one `libsignal` command-line build, not every Signal application or device behavior. Read the [full lesson](../../articles/what-ai-checked-code-proves/) for the exact boundary and limits.
