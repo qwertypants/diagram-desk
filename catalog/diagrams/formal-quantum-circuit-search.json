@@ -1,0 +1,74 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "How AI agents search quantum circuits beyond simulation",
+    "output": "catalog/diagrams/formal-quantum-circuit-search.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "research", "label": "Researcher-defined target" },
+    { "id": "agents", "label": "Agent-team search" },
+    { "id": "verification", "label": "Formal proof and cost gate" },
+    { "id": "result", "label": "Verified result and boundary" }
+  ],
+  "phases": [
+    { "id": "specify", "label": "Specify the task", "fromCol": 0, "toCol": 1 },
+    { "id": "search", "label": "Propose circuits", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "prove", "label": "Prove the target", "fromCol": 4, "toCol": 5, "variant": "security" }
+  ],
+  "mainPath": ["researchers", "specification", "team", "candidate", "lean", "comparator", "verified", "estimate", "interpretation"],
+  "semanticChecks": {
+    "allowedRoots": ["researchers"],
+    "allowedTerminals": ["interpretation", "revise"]
+  },
+  "nodes": [
+    { "id": "researchers", "lane": "research", "col": 0, "type": "external", "label": "Researchers", "sublabel": "choose the problem" },
+    { "id": "specification", "lane": "research", "col": 1, "type": "security", "label": "Frozen specification", "sublabel": "correctness + cost" },
+    { "id": "team", "lane": "agents", "col": 2, "type": "backend", "label": "Gemini 4 Carbon teams", "sublabel": "search in parallel" },
+    { "id": "candidate", "lane": "agents", "col": 3, "type": "backend", "label": "Circuit candidate", "sublabel": "program + proof" },
+    { "id": "revise", "lane": "agents", "col": 4, "type": "messagebus", "label": "Revise candidate", "sublabel": "use failure feedback", "yOffset": 85 },
+    { "id": "lean", "lane": "verification", "col": 4, "type": "security", "label": "Lean checks", "sublabel": "correctness + Q × T" },
+    { "id": "comparator", "lane": "verification", "col": 5, "type": "security", "label": "Independent comparator", "sublabel": "target + definitions + axioms" },
+    { "id": "rejected", "lane": "verification", "col": 5, "type": "security", "label": "Reject", "sublabel": "proof or target mismatch", "yOffset": 85 },
+    { "id": "verified", "lane": "result", "col": 5, "type": "security", "label": "Verified circuit", "sublabel": "formal claim only", "yOffset": -70 },
+    { "id": "wiki", "lane": "result", "col": 4, "type": "database", "label": "Shared verified wiki", "sublabel": "best circuit + lemmas" },
+    { "id": "estimate", "lane": "result", "col": 5, "type": "backend", "label": "Resource estimate", "sublabel": "logical qubits × T gates", "yOffset": 70 },
+    { "id": "interpretation", "lane": "result", "col": 5, "type": "external", "label": "Human interpretation", "sublabel": "check hardware gap", "yOffset": 145 }
+  ],
+  "edges": [
+    { "id": "choose-task", "from": "researchers", "to": "specification", "label": "define correctness + cost", "variant": "security" },
+    { "id": "launch-search", "from": "specification", "to": "team", "label": "launch against fixed target", "variant": "emphasis" },
+    { "id": "propose", "from": "team", "to": "candidate", "label": "propose circuit", "variant": "default" },
+    { "id": "submit", "from": "candidate", "to": "lean", "label": "submit candidate + proof", "variant": "default" },
+    { "id": "check-target", "from": "lean", "to": "comparator", "label": "check theorem + cost", "variant": "security" },
+    { "id": "accept", "from": "comparator", "to": "verified", "label": "matches frozen target", "variant": "emphasis" },
+    { "id": "write-wiki", "from": "verified", "to": "wiki", "label": "record verified result", "variant": "dashed" },
+    { "id": "seed-team", "from": "wiki", "to": "team", "label": "share best result + lemmas", "variant": "dashed", "role": "return" },
+    { "id": "failed-proof", "from": "lean", "to": "rejected", "label": "proof or cost fails", "variant": "security", "role": "error" },
+    { "id": "target-changed", "from": "comparator", "to": "rejected", "label": "spec, definition, or axiom changed", "variant": "security", "role": "error" },
+    { "id": "feedback", "from": "rejected", "to": "revise", "label": "return failure details", "variant": "dashed", "role": "return" },
+    { "id": "retry", "from": "revise", "to": "candidate", "label": "try a corrected circuit", "variant": "default", "role": "return" },
+    { "id": "count-resources", "from": "verified", "to": "estimate", "label": "compare under Q × T", "variant": "default" },
+    { "id": "human-check", "from": "estimate", "to": "interpretation", "label": "compare with hardware assumptions", "variant": "security" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "What the proof gate establishes",
+      "items": [
+        "The circuit satisfies the frozen formal correctness and resource statements.",
+        "The comparator checks that submitted definitions and allowed axioms still match the reviewed target."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "What remains a human question",
+      "items": [
+        "Is the task specification faithful to the science people want to do?",
+        "Does the cost model include the error-correction code, routing, physical layout, and hardware limits that matter?"
+      ]
+    }
+  ]
+}

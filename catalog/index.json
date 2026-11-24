@@ -1544,5 +1544,66 @@
       ],
       "scope": "Google DeepMind's November 2026 Gemini 4 Carbon vision ablation on MKA and GDPval; not a general result for all models or visual work."
     }
+  },
+  {
+    "slug": "formal-quantum-circuit-search",
+    "type": "workflow",
+    "title": "How AI agents search quantum circuits beyond simulation",
+    "file": "diagrams/formal-quantum-circuit-search.json",
+    "original": [],
+    "lesson": {
+      "summary": "A frozen specification and independent proof checks let AI teams search quantum circuits beyond classical simulation, while leaving task choice and hardware feasibility as human responsibilities.",
+      "problem": "How can an AI system compare a quantum circuit that a classical computer cannot fully simulate?",
+      "objectives": [
+        "Trace a quantum-program candidate through task specification, proof checks, and shared results.",
+        "Distinguish a formally verified resource estimate from a physical-hardware result."
+      ],
+      "walkthrough": [
+        {
+          "title": "Freeze correctness and cost",
+          "detail": "Researchers specify the program's required behavior, assumptions, and resource metric before launching the search."
+        },
+        {
+          "title": "Search for a circuit",
+          "detail": "Gemini 4 Carbon agent teams propose quantum programs and proof terms, using classical simulation where it is tractable."
+        },
+        {
+          "title": "Verify before sharing",
+          "detail": "Lean checks the formal correctness and cost claims; an independent comparator checks that definitions and axioms still match the frozen specification."
+        },
+        {
+          "title": "Compare the estimate with hardware",
+          "detail": "A passing candidate can enter a shared verified-results wiki, but Q × T is a model-based logical resource proxy rather than elapsed time or a physical-hardware result."
+        }
+      ],
+      "decisions": [
+        "Read the correctness theorem, definitions, assumptions, input bounds, and error target before trusting a verified result.",
+        "Compare the new algorithm with a baseline under the same resource metric.",
+        "Check which error-correction, routing, layout, and physical-hardware costs are outside the formal model."
+      ],
+      "failureModes": [
+        "A candidate can appear to pass by weakening a theorem, changing a definition, or adding an axiom; the external comparator rejects a mismatch with the frozen target.",
+        "A correct proof can still answer the wrong scientific question if the human-written specification is incomplete.",
+        "A lower logical Q × T estimate does not demonstrate a workload running on a real quantum computer or fit for early hardware."
+      ],
+      "takeaways": [
+        "Formal verification can make search over unsimulatable quantum programs checkable, but the fixed specification and cost model determine what a verified improvement means."
+      ],
+      "references": [
+        {
+          "title": "Discovering formally verified quantum programs with AI",
+          "url": "https://arxiv.org/abs/2611.09822"
+        },
+        {
+          "title": "Finding faster quantum algorithms with agents and formal verification",
+          "url": "https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/"
+        },
+        {
+          "title": "Formal quantum computation in Lean 4",
+          "url": "https://github.com/google-deepmind/formal-quantum-computation"
+        }
+      ],
+      "scope": "Google DeepMind's November 2026 Lean-verified quantum-program discovery study; not a demonstration of practical quantum advantage on hardware."
+    }
   }
 ]

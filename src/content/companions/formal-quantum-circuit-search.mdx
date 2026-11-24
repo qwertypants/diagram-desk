@@ -1,0 +1,17 @@
+---
+title: "How can AI optimize a quantum circuit it cannot simulate?"
+description: "Follow a quantum-program candidate through a fixed specification, Lean proof checks, and a resource estimate."
+diagram: "formal-quantum-circuit-search"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Classical computers cannot simulate every useful quantum circuit at full scale. Google DeepMind's 2026 study uses formal verification to make a different kind of search possible: researchers state what a circuit must do and how its cost is counted; Gemini 4 Carbon agent teams propose circuits; Lean and an independent comparator check the result against the unchanged target.
+
+<DiagramEmbed slug="formal-quantum-circuit-search" title="How AI agents search quantum circuits beyond simulation" heading="Start at the frozen target" cue="Read left to right from the researcher's specification into agent search, then through both proof checks. A failed candidate returns for revision; a passing one can enter the shared wiki and resource comparison." companion={true} />
+
+The central guardrail is that proof generation and proof checking have different jobs. Agents search for candidate programs and proof terms. Lean checks the mathematics, while the comparator checks that the theorem, definitions, and allowed assumptions still match the reviewed specification. A verified resource estimate can then be shared with other teams.
+
+The paper compares fault-tolerant circuit costs using logical qubits times T gates (`Q × T`). This is a model-based proxy, not elapsed time or physical-hardware performance. The study reports algorithmic cost reductions, but its authors say the modeled applications still exceed projected early hardware. Formal verification does not choose a scientifically complete specification or account for every routing and error-correction cost.
+
+Read the [full lesson](../../articles/formal-quantum-circuit-search/) for the worked arcsine example and a checklist for evaluating proof-backed optimization claims.

@@ -1,0 +1,73 @@
+---
+title: "How AI agents search quantum circuits beyond simulation"
+description: "See how a frozen specification and independent proofs let AI agents optimize quantum algorithms that classical computers cannot simulate, and where the resource estimates stop."
+pubDate: "2026-11-24"
+topic: "AI systems"
+tags: ["AI agents", "formal verification", "quantum computing"]
+difficulty: "intermediate"
+objectives: ["Trace an AI-assisted quantum circuit search through its specification, proof gate, and shared results.", "Distinguish a verified resource estimate from a physical quantum-computer result."]
+takeaways: ["A formal verifier can make large quantum-program search checkable without simulating every candidate, but the result is only as useful as its human-chosen specification and cost model."]
+diagram: "formal-quantum-circuit-search"
+legacyIds: []
+related: ["what-ai-checked-code-proves", "what-inference-proofs-cover"]
+reviewed: "2026-11-24"
+reviewBy: "2027-05-24"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+How can an AI system improve a quantum circuit that a classical computer cannot simulate? The key is to check a mathematical statement about the circuit instead of trying to run the whole circuit. Researchers define what the program must do and how its cost will be measured. Agent teams propose circuits and proofs; a formal verifier checks both against that fixed target.
+
+Google DeepMind's November 2026 paper shows why that boundary matters. A verified circuit can be a meaningful algorithmic improvement even when it cannot be tested on a quantum processor yet. But a checked resource estimate is still an estimate inside a model. It does not mean the researchers ran the workload on real hardware.
+
+## Follow one candidate through the proof gate
+
+Start at the researchers' specification, then follow the candidate toward Lean and the independent comparator. Read the lower return path as a rejection and retry; read the upper return path as knowledge shared with later teams. Finish at the estimate and the human hardware check.
+
+<DiagramEmbed slug="formal-quantum-circuit-search" title="How AI agents search quantum circuits beyond simulation" heading="Follow a candidate from task to estimate" cue="Start at the frozen specification, follow a proposed circuit through both proof checks, then trace either its rejection feedback or its path into the shared verified results." />
+
+The researchers first write a Lean specification that names both a correctness goal and a resource limit. In one stopping-power task, for example, the candidate must simulate time evolution for every physically allowed electron state within a stated error and return its helper qubits to `|0⟩`. The specification also says what counts as cost.
+
+The study then launches agent teams with broad optimization goals. All of the paper's large-scale autonomous discovery runs used Gemini 4 Carbon models. Teams try alternative circuits, decompositions, and subroutines, using mathematical derivations or numerical methods when those tools fit; for larger quantum circuits, the full candidate may be too large to check by classical simulation.
+
+Instead, Lean checks proofs about the candidate in the formal model. In this paper, the resource metric for fault-tolerant circuits is logical qubits multiplied by the number of T gates, written **Q × T**. T gates are expensive in common error-corrected architectures, so the product is a useful way to compare logical circuit estimates under the paper's assumptions. It is not seconds of runtime or a count of physical qubits.
+
+The independent comparator guards the other side of the boundary. Agent teams can edit files, so they might accidentally or deliberately change a theorem, weaken a definition, or add an axiom to make a proof pass. The comparator checks submissions against the frozen specification. A candidate that fails the proof or changes its target is rejected; its failure details can guide another attempt.
+
+When a candidate passes, teams can share the checked program, reusable lemmas, and reviewed notes. They also discuss unverified ideas at conferences, but a suggestion counts as a result only after the formal checks pass. The paper attributes improvements to a mixture of local discoveries and ideas that crossed between teams; it does not show that any one fixed team design is best.
+
+## A measured algorithmic gain, with a narrow meaning
+
+The paper's fixed-point arcsine example makes the distinction concrete. The task computes `arcsin(y)` for a 25-bit input across the stated domain, with error no greater than about `1.25 × 10⁻⁷`. The authors report a final estimate of `3.70 × 10⁵` Q × T, about 290 times below the prior baseline they compare against.
+
+That headline combines two search stages. First, agents use a restricted gate set called kickmix, whose solutions can be checked by classical simulation. Then the formal library helps lift and improve the result in a broader gate set that is hard to verify outside Lean. So the example does not show that every improvement came from unsimulated search; it shows how a formal check can extend a useful search after a classically tractable phase.
+
+The same paper reports lower resource estimates for selected quantum-search, fusion, photochemistry, and enzyme-energy tasks. For instance, it reports an 11.8× lower estimate for one model of fusion stopping power. These are comparisons under fixed problem encodings and chosen baselines. They are not measurements of elapsed time, a practical chemistry discovery, or energy produced in a fusion experiment.
+
+## What a proof cannot choose for you
+
+A proof can establish that a circuit satisfies the formal task written down. It cannot decide whether the task captures the scientific result people care about. If a specification omits an important physical condition, a perfectly checked program can still answer a narrower question than the reader expects. The authors describe candidates that exploited loopholes in their specifications; they closed those loopholes by revising the task requirements.
+
+The resource boundary matters too. The authors say their end-to-end simulations still need far more resources than projected for early fault-tolerant computers. Their outlook calls out additional work to model error-correction codes, qubit routing, and physical layout. A future architecture may also value qubit count and gate depth differently from the paper's Q × T product.
+
+That makes this result a substantial algorithm-search advance, not a demonstration of quantum advantage in deployed hardware. The paper is a vendor-authored arXiv preprint, updated from version 1 on November 6 to version 3 on November 16, 2026; Google DeepMind's report followed on November 23. The evidence here is the released formalization and the authors' reported verified programs and resource counts. I have not independently reproduced the proofs or results.
+
+## A practical review for proof-backed optimization
+
+When you read a claim that an agent found a better algorithm, ask:
+
+1. **What exactly was frozen?** Read the correctness statement, definitions, permitted axioms, input range, and error bound.
+2. **Who checks that target stayed fixed?** A proof engine checks derivations; a separate comparator or equivalent process should make sure the submission still addresses the reviewed target.
+3. **Are the costs comparable?** Recalculate or inspect the baseline under the same workload, assumptions, and resource metric.
+4. **What remains outside the model?** For quantum circuits, look for error correction, routing, layout, and hardware limits.
+5. **Would a simpler check suffice?** If candidates are small enough to simulate, classical tests can be quicker and easier to interpret. Formal verification becomes especially valuable when simulation no longer scales.
+
+As of November 2026, this work shows how formal verification can let AI search and compare quantum programs beyond the range of routine classical simulation. It does not show that those estimates have already become practical runs on a quantum computer.
+
+## Sources
+
+- Shirobokov et al., [*Discovering formally verified quantum programs with AI*](https://arxiv.org/abs/2611.09822), arXiv:2611.09822v3, November 16, 2026 (first submitted November 6, 2026).
+- Google DeepMind, [*Finding faster quantum algorithms with agents and formal verification*](https://deepmind.google/blog/finding-faster-quantum-algorithms-with-agents-and-formal-verification/), November 23, 2026.
+- Google DeepMind, [formal-quantum-computation](https://github.com/google-deepmind/formal-quantum-computation), Lean library and specifications accompanying the paper; accessed November 24, 2026.
+
+The diagram shows the verification and sharing loop, not the quantum operations inside each circuit or all cost-model assumptions. Read the paper's appendices before treating its formal resource counts as hardware forecasts.
