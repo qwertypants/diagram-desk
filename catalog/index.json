@@ -1605,5 +1605,70 @@
       ],
       "scope": "Google DeepMind's November 2026 Lean-verified quantum-program discovery study; not a demonstration of practical quantum advantage on hardware."
     }
+  },
+  {
+    "slug": "when-agent-use-counts-as-progress",
+    "type": "workflow",
+    "title": "When does agent use count as research progress?",
+    "file": "diagrams/when-agent-use-counts-as-progress.json",
+    "original": [],
+    "lesson": {
+      "summary": "An evidence ladder separates agent adoption, task outcomes, research activity, capability trends, and causal attribution.",
+      "problem": "Do rising agent usage and research activity establish that AI accelerated research?",
+      "objectives": [
+        "Place an AI productivity claim on the right rung: adoption, task results, activity, capability outcomes, or causal attribution.",
+        "Choose a next measurement that can distinguish more agent use from better research outcomes."
+      ],
+      "walkthrough": [
+        {
+          "title": "Measure agent use",
+          "detail": "Spend and runtime indicate adoption but do not tell whether tasks succeeded or research improved."
+        },
+        {
+          "title": "Check task outcomes",
+          "detail": "No-intervention success varies by task, and the kinds of tasks delegated can change over time."
+        },
+        {
+          "title": "Separate activity from outcomes",
+          "detail": "Experiment and code counts track research activity, not necessarily useful progress."
+        },
+        {
+          "title": "Measure capability and attribution",
+          "detail": "Benchmark trends add outcome evidence, but other inputs and incomplete public methods limit causal conclusions."
+        }
+      ],
+      "decisions": [
+        "Track usage, task quality, human intervention, activity, and outcome measures as separate series.",
+        "Keep task mix and success criteria stable when comparing agent performance across time.",
+        "Use a credible comparison and account for compute, people, data, algorithms, and workload selection before attributing a trend to AI."
+      ],
+      "failureModes": [
+        "Combining rising spend and experiment counts into a claim of faster research skips task quality and research outcomes.",
+        "An average task-success rate can rise when the delegated mix shifts toward easier work.",
+        "A benchmark trend does not show that AI caused it or that the same change applies to less-measurable real-world work."
+      ],
+      "takeaways": [
+        "Usage and activity show that work changed; task-level outcomes and capability measures strengthen the evidence, but none alone proves that AI caused faster research progress."
+      ],
+      "references": [
+        {
+          "title": "Research acceleration: The jagged frontier",
+          "url": "https://openai.com/index/research-acceleration-jagged-frontier/"
+        },
+        {
+          "title": "Independent Assessment of AI R&D Acceleration at Anthropic in October 2026",
+          "url": "https://metr.org/blog/2026-11-05-anthropic-ai-rd-acceleration-assessment/"
+        },
+        {
+          "title": "ECI methodology",
+          "url": "https://epoch.ai/data/eci-documentation/methodology"
+        },
+        {
+          "title": "Research acceleration: The view inside OpenAI",
+          "url": "https://openai.com/index/research-acceleration-view-inside-openai/"
+        }
+      ],
+      "scope": "A measurement lesson based on company-specific 2026 reports; it does not estimate a general causal effect of AI use on research progress."
+    }
   }
 ]

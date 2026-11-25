@@ -1,0 +1,79 @@
+---
+title: "When does agent use count as research progress?"
+description: "Separate agent adoption, task success, research activity, capability trends, and causal evidence before saying AI sped up research."
+pubDate: "2026-11-25"
+topic: "Agentic Engineering"
+tags: ["AI agents", "evaluation", "research productivity"]
+difficulty: "intermediate"
+objectives:
+  - "Place an AI productivity claim on the right rung: adoption, task results, activity, capability outcomes, or causal attribution."
+  - "Choose a next measurement that can distinguish more agent use from better research outcomes."
+takeaways:
+  - "Usage and activity show that work changed; task-level outcomes and capability measures strengthen the evidence, but none alone proves that AI caused faster research progress."
+diagram: "when-agent-use-counts-as-progress"
+legacyIds: []
+related: ["agent-judgment-calls", "trace-driven-evaluation", "coordinated-research"]
+reviewed: "2026-11-25"
+reviewBy: "2027-05-25"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+If your team's agent spend doubled and its researchers ran more experiments, would that prove AI accelerated research? No. Those figures show that agents are being used and that work volume changed. To make a stronger claim, you need evidence at each step from agent use to task results, research outputs, and measured capability changes—and then a way to separate AI's contribution from other causes.
+
+That distinction matters in current reports about AI research itself. OpenAI's November 2026 report tracks inputs, workflow changes, research activity, and model benchmark trends. METR's separate assessment of Anthropic combines benchmark trends with interviews and internal evidence, but it also explains how company-controlled redactions limit what readers can inspect. These reports offer useful signals, not a universal estimate of AI's effect on research.
+
+## Read the evidence one rung at a time
+
+Start at **Agent use** and follow the top row from left to right. At every rung, read the matching lower note before accepting the next claim. The chart shows an evidence ladder, not a causal pipeline: an arrow means “ask for this stronger measurement next,” not “the earlier measure caused the later one.”
+
+<DiagramEmbed slug="when-agent-use-counts-as-progress" title="When does agent use count as research progress?" heading="Move from usage to attribution" cue="Start at Agent use. Follow the upper row toward a capability outcome, then read each lower claim limit. The last gate asks what changed besides AI." />
+
+### Adoption is an input, not an outcome
+
+OpenAI reports that, at API list prices, median agent use among its researchers reached about $2,400 per day in October, while the 90th percentile reached $23,000. Its 2026 series also shows agent workdays rising from 0.5 to 5.7 per researcher per day; one “agent workday” means eight hours of agent runtime. The workday measure better tracks time agents spend running than money spent, but it omits model capability and pricing changes and generally counts interactive use rather than all automations.
+
+These are measures of adoption and runtime. They do not tell you how many tasks finished correctly, how much human repair they needed, or whether a research result improved. Even the spend series can move when prices, model choices, or the harness change. The report notes that a temporary harness-efficiency change coincided with a sharp drop in input-token use, showing how a tooling change can alter a usage proxy without establishing a change in research quality.
+
+### Task success depends on what gets delegated
+
+The report estimates that no-human-intervention success rose from 23% to 46% for tasks estimated to take a person two to four hours, and from 13% to 35% for four-to-eight-hour tasks, between March and October 2026. But it also says the types of tasks researchers chose to delegate may have changed within each duration group.
+
+The task-level estimates make the variation visible. For August 1 through October 18, the report puts success at 79% for monitoring training runs, 35% for launching them, and 25% for writing inference and serving code. These are the report's estimates for its own research organization, not a public benchmark or a prediction for your team. A rise in the average can reflect improved models, a change in task mix, or both. Record the task category and difficulty, whether a person intervened, and the quality bar alongside any success rate.
+
+### More activity does not necessarily mean more progress
+
+OpenAI reports that logged experiments per active experimenter averaged 1.68 times its 2025 baseline in the four weeks ending October 18. It also tracks lines of code changed. These are useful throughput signals, but more code or experiments can mean more useful exploration, more discarded work, or simply a changed logging or workflow process. The report explicitly cautions that increases in research activity do not necessarily imply faster research progress.
+
+A concrete failure is a dashboard that combines “agent spend up” with “experiments up” and labels the result “AI accelerated research.” Those metrics skip both task quality and the outcome being accelerated. Repair the dashboard by keeping adoption, task-level success, intervention rate, activity, and research outcomes as separate series. For a first practical check, compare a stable sample of similar tasks and record accepted results and human correction time; if the tasks or success rubric changed, mark the comparison as non-equivalent.
+
+### Capability trends add outcome evidence, not causal attribution
+
+OpenAI's report also charts an internal OpenAI ECI, a composite built from public and internal benchmarks. It estimates a frontier increase of 16.4 points per year since August 2025. A composite index can summarize performance across benchmarks, but it is still a measure of benchmark results. Epoch AI's published ECI methodology explains how benchmark difficulty, slope, and model performance are combined; it does not measure research productivity. OpenAI itself notes that its benchmark mixture differs from Epoch's, which affects comparisons between the two indices.
+
+An improving benchmark trend is stronger outcome evidence than higher spend or experiment counts. It still does not answer what caused the improvement. Compute, data, algorithms, hiring, task choice, and agent use can change at the same time. Nor does a benchmark composite establish equivalent gains on messy, less measurable work.
+
+METR's November assessment is a useful independent example of the attribution problem. It estimated that Anthropic's benchmark trend had accelerated 1.9 times since October 2025, with a 95% interval from 1.5 to 2.8 times and robustness analyses from 1.1 to 2.9. METR also says the public report's most informative evidence was substantially redacted, Anthropic could deny information requests, and attributing the trend to AI involved substantial uncertainty. This is a carefully bounded estimate about one organization, not a controlled estimate that transfers to all AI labs.
+
+## A measurement plan for your own team
+
+Before using a phrase such as “AI increased our research productivity,” write down the claim and its denominator. Then check the evidence in order:
+
+1. **Adoption:** What share of eligible work used the agent, and how much runtime or spend did it consume?
+2. **Task results:** On a stable task set, what passed the same quality rubric without human intervention? How much correction was needed?
+3. **Workflow and activity:** Did the agent change cycle time, experiment count, or code volume? Did the work remain useful after review?
+4. **Outcomes:** Did a relevant result or capability measure improve, using a stable definition and versioned evaluation?
+5. **Attribution:** What else changed—compute, people, data, algorithms, workload selection—and what comparison helps estimate the contribution of AI?
+
+If all you need is to decide whether a coding assistant is worth keeping, a matched sample of routine tasks with quality and correction-time measures may be enough. You do not need a frontier-capability index. A broader claim about research acceleration needs more measurement and a credible comparison that addresses competing causes.
+
+As of November 2026, the public evidence supports a careful conclusion: frontier labs report rising agent use, heterogeneous task success, and increasing research activity; separate benchmark reports estimate capability trends. These measures are useful for monitoring where to investigate. They do not, by themselves, establish a general causal law that more AI use makes research progress faster.
+
+## Sources
+
+- OpenAI, [*Research acceleration: The jagged frontier*](https://openai.com/index/research-acceleration-jagged-frontier/), November 18, 2026. Company-reported internal usage, task success, research activity, capability measures, and stated limitations.
+- OpenAI, [*Research acceleration: The view inside OpenAI*](https://openai.com/index/research-acceleration-view-inside-openai/), September 6, 2026. Earlier measurement framework and cautions about interpreting activity and compute.
+- METR, [*Independent Assessment of AI R&D Acceleration at Anthropic in October 2026*](https://metr.org/blog/2026-11-05-anthropic-ai-rd-acceleration-assessment/), November 5, 2026. External assessment with explicit access, redaction, and attribution limitations.
+- Epoch AI, [ECI methodology](https://epoch.ai/data/eci-documentation/methodology), updated November 4, 2026 and checked November 25, 2026. Explains the benchmark-based composite and uncertainty model.
+
+The diagram organizes measures by the strength of the claim they can support. It does not display the private task denominators, full benchmark mix, redacted evidence, or counterfactuals behind the reports.

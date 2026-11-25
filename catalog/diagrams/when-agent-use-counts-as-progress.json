@@ -1,0 +1,66 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "When does agent use count as research progress?",
+    "output": ".archify/when-agent-use-counts-as-progress/reader.html",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "measures", "label": "Measured evidence" },
+    { "id": "claim_limits", "label": "What the evidence supports", "variant": "exception" }
+  ],
+  "phases": [
+    { "id": "observed", "label": "Observe use and work", "fromCol": 0, "toCol": 2 },
+    { "id": "outcomes", "label": "Measure outcomes", "fromCol": 3, "toCol": 3, "variant": "emphasis" },
+    { "id": "attribution", "label": "Test the explanation", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "mainPath": ["usage", "tasks", "activity", "capability", "counterfactual", "bounded_claim"],
+  "nodes": [
+    { "id": "usage", "lane": "measures", "col": 0, "type": "database", "label": "Agent use", "sublabel": "spend / runtime" },
+    { "id": "tasks", "lane": "measures", "col": 1, "type": "backend", "label": "Task results", "sublabel": "success + intervention" },
+    { "id": "activity", "lane": "measures", "col": 2, "type": "backend", "label": "Research activity", "sublabel": "experiments / code" },
+    { "id": "capability", "lane": "measures", "col": 3, "type": "database", "label": "Capability trend", "sublabel": "benchmark outcomes" },
+    { "id": "counterfactual", "lane": "measures", "col": 4, "type": "security", "label": "Attribution check", "sublabel": "what else changed?" },
+    { "id": "bounded_claim", "lane": "measures", "col": 5, "type": "external", "label": "Bounded estimate", "sublabel": "state uncertainty" },
+    { "id": "use_limit", "lane": "claim_limits", "col": 0, "type": "security", "label": "Adoption only", "sublabel": "not productivity" },
+    { "id": "task_limit", "lane": "claim_limits", "col": 1, "type": "security", "label": "Task mix shifts", "sublabel": "hold tasks steady" },
+    { "id": "activity_limit", "lane": "claim_limits", "col": 2, "type": "security", "label": "Activity ≠ impact", "sublabel": "check quality" },
+    { "id": "capability_limit", "lane": "claim_limits", "col": 3, "type": "security", "label": "Index ≠ cause", "sublabel": "benchmarks are partial" },
+    { "id": "other_inputs", "lane": "claim_limits", "col": 4, "type": "security", "label": "Other inputs", "sublabel": "compute / people / data" },
+    { "id": "claim_limit", "lane": "claim_limits", "col": 5, "type": "security", "label": "No general law", "sublabel": "evidence is organization-specific" }
+  ],
+  "edges": [
+    { "from": "usage", "to": "tasks", "label": "test tasks", "variant": "emphasis" },
+    { "from": "tasks", "to": "activity", "label": "track work", "variant": "emphasis" },
+    { "from": "activity", "to": "capability", "label": "measure outcome", "variant": "emphasis" },
+    { "from": "capability", "to": "counterfactual", "label": "ask what caused it?", "variant": "security" },
+    { "from": "counterfactual", "to": "bounded_claim", "label": "report limits", "variant": "emphasis" },
+    { "from": "usage", "to": "use_limit", "label": "claim ceiling", "variant": "dashed" },
+    { "from": "tasks", "to": "task_limit", "label": "claim ceiling", "variant": "dashed" },
+    { "from": "activity", "to": "activity_limit", "label": "claim ceiling", "variant": "dashed" },
+    { "from": "capability", "to": "capability_limit", "label": "claim ceiling", "variant": "dashed" },
+    { "from": "counterfactual", "to": "other_inputs", "label": "check confounders", "variant": "dashed" },
+    { "from": "bounded_claim", "to": "claim_limit", "label": "state scope", "variant": "dashed" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Read the series separately",
+      "items": [
+        "Agent spend and runtime measure adoption",
+        "Task outcomes need a stable mix and human-intervention record",
+        "Activity and capability outcomes answer different questions"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Attribution needs a comparison",
+      "items": [
+        "Compute, data, staffing, and task choice can change alongside AI use",
+        "An internal trend is not a controlled estimate",
+        "Keep the conclusion specific to the organization and evidence"
+      ]
+    }
+  ]
+}

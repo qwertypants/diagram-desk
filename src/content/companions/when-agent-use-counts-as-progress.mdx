@@ -1,0 +1,17 @@
+---
+title: "When does agent use count as research progress?"
+description: "An evidence ladder for separating agent adoption from research outcomes and causal claims."
+diagram: "when-agent-use-counts-as-progress"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+Agent spend can tell you whether people use an AI tool. It cannot show by itself that the tool improved research. To make that stronger claim, follow separate evidence steps: task results, research activity, capability outcomes, and an attribution check for other changes.
+
+<DiagramEmbed slug="when-agent-use-counts-as-progress" title="When does agent use count as research progress?" heading="Start with the measure, then its claim limit" cue="Read the upper row from agent use toward attribution. At every step, check the lower note before making the stronger claim." companion={true} />
+
+OpenAI's November 2026 report gives a concrete example: its task-level estimates range from 79% success for monitoring training runs to 25% for writing inference and serving code. One overall success rate can hide that difference, and the kinds of tasks people delegate can change over time. Experiment counts and code volume add evidence about activity, but activity is not the same as useful progress.
+
+The final gate is difficult. Benchmark trends show measured outcomes, but not whether AI caused them instead of changes in compute, data, algorithms, staffing, or task selection. METR's separate Anthropic assessment reports a capability trend while also describing important redactions and uncertainty in causal attribution.
+
+Read the [full lesson](../../articles/when-agent-use-counts-as-progress/) for source details and a practical checklist. The evidence ladder summarizes public reports; it cannot show their private denominators or the counterfactual needed for a general causal estimate.
