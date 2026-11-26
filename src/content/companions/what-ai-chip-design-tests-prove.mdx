@@ -1,0 +1,15 @@
+---
+title: "What does an AI chip-design benchmark prove?"
+description: "A quick guide to the distance between passing RTL tests and evidence about production silicon."
+diagram: "what-ai-chip-design-tests-prove"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+An AI-written processor can pass a benchmark without proving that it is ready to manufacture. OpenAI's November 2026 report evaluated two tasks: improving existing RISC-V RTL and designing a core from written requirements. Both paths used simulation checks, an area cutoff, hidden workloads, and a Yosys clock estimate to produce a relative throughput score.
+
+Those checks establish something useful but specific: a design passed the reported tests and scored well under that evaluation's rules. Simulation covers the cases that ran. The clock figure is an estimate, and the score is normalized to the best result within each core's setup. A specification can also omit features that the existing core already supports.
+
+<DiagramEmbed slug="what-ai-chip-design-tests-prove" title="What an AI chip-design test actually proves" heading="Follow the benchmark gates" cue="Compare the two benchmark starting points, then trace their shared gates to a relative score. The separate Jalapeño lane summarizes a company-reported silicon result." companion={true} />
+
+The report separately says model-proposed Jalapeño block changes reduced standard-cell area and were proven during silicon bring-up. That evidence applies to those blocks; it is not proof that the benchmarked RISC-V designs became chips. For the full checklist and source-by-source limits, read the [complete lesson](../../articles/what-ai-chip-design-tests-prove/).

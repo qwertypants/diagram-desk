@@ -1,0 +1,240 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "What an AI chip-design test actually proves",
+    "quality_profile": "showcase",
+    "output": "catalog/diagrams/what-ai-chip-design-tests-prove.html",
+    "locale": "en"
+  },
+  "lanes": [
+    {
+      "id": "benchmark",
+      "label": "Open-core benchmark"
+    },
+    {
+      "id": "limits",
+      "label": "Claim ceilings",
+      "variant": "exception"
+    },
+    {
+      "id": "production",
+      "label": "Separate production example"
+    }
+  ],
+  "phases": [
+    {
+      "id": "task",
+      "label": "Choose task form",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "measure",
+      "label": "Check and score RTL",
+      "fromCol": 2,
+      "toCol": 4,
+      "variant": "emphasis"
+    }
+  ],
+  "mainPath": [
+    "existing_core",
+    "model_rtl",
+    "sim_area",
+    "throughput_proxy",
+    "relative_score"
+  ],
+  "nodes": [
+    {
+      "id": "existing_core",
+      "lane": "benchmark",
+      "col": 0,
+      "yOffset": -38,
+      "type": "database",
+      "label": "Existing RTL",
+      "sublabel": "PicoRV32 / Ibex"
+    },
+    {
+      "id": "written_spec",
+      "lane": "benchmark",
+      "col": 0,
+      "yOffset": 38,
+      "type": "external",
+      "label": "Written spec",
+      "sublabel": "feature requirements"
+    },
+    {
+      "id": "model_rtl",
+      "lane": "benchmark",
+      "col": 1,
+      "type": "backend",
+      "label": "Model RTL",
+      "sublabel": "edit or generate"
+    },
+    {
+      "id": "sim_area",
+      "lane": "benchmark",
+      "col": 2,
+      "type": "security",
+      "label": "Sim gate",
+      "sublabel": "fails or >16× => 0"
+    },
+    {
+      "id": "throughput_proxy",
+      "lane": "benchmark",
+      "col": 3,
+      "type": "backend",
+      "label": "Throughput",
+      "sublabel": "hidden IPC × clk"
+    },
+    {
+      "id": "relative_score",
+      "lane": "benchmark",
+      "col": 4,
+      "type": "database",
+      "label": "Relative score",
+      "sublabel": "best = 1.0"
+    },
+    {
+      "id": "finite_check",
+      "lane": "limits",
+      "col": 2,
+      "type": "security",
+      "label": "Finite checks",
+      "sublabel": "limited cases"
+    },
+    {
+      "id": "estimated_clock",
+      "lane": "limits",
+      "col": 3,
+      "type": "security",
+      "label": "Yosys clock",
+      "sublabel": "estimate only"
+    },
+    {
+      "id": "relative_only",
+      "lane": "limits",
+      "col": 4,
+      "type": "security",
+      "label": "Relative only",
+      "sublabel": "this setup only"
+    },
+    {
+      "id": "jalapeno_change",
+      "lane": "production",
+      "col": 0,
+      "type": "backend",
+      "label": "Jalapeño RTL",
+      "sublabel": "model proposals"
+    },
+    {
+      "id": "silicon_bringup",
+      "lane": "production",
+      "col": 2,
+      "type": "backend",
+      "label": "Bring-up",
+      "sublabel": "silicon reported"
+    },
+    {
+      "id": "block_area",
+      "lane": "production",
+      "col": 4,
+      "type": "database",
+      "label": "13% / 10% area",
+      "sublabel": "vector / matrix"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edit-task",
+      "from": "existing_core",
+      "to": "model_rtl",
+      "label": "optimize existing RTL",
+      "variant": "default",
+      "fromSide": "top",
+      "toSide": "top"
+    },
+    {
+      "id": "spec-task",
+      "from": "written_spec",
+      "to": "model_rtl",
+      "label": "generate from requirements",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "bottom"
+    },
+    {
+      "id": "rtl-to-check",
+      "from": "model_rtl",
+      "to": "sim_area",
+      "label": "check proposed design",
+      "variant": "emphasis"
+    },
+    {
+      "id": "check-to-proxy",
+      "from": "sim_area",
+      "to": "throughput_proxy",
+      "label": "passing variants",
+      "variant": "emphasis"
+    },
+    {
+      "id": "proxy-to-score",
+      "from": "throughput_proxy",
+      "to": "relative_score",
+      "label": "normalize within task",
+      "variant": "emphasis"
+    },
+    {
+      "from": "sim_area",
+      "to": "finite_check",
+      "label": "claim ceiling",
+      "variant": "dashed"
+    },
+    {
+      "from": "throughput_proxy",
+      "to": "estimated_clock",
+      "label": "claim ceiling",
+      "variant": "dashed"
+    },
+    {
+      "from": "relative_score",
+      "to": "relative_only",
+      "label": "claim ceiling",
+      "variant": "dashed"
+    },
+    {
+      "id": "bringup",
+      "from": "jalapeno_change",
+      "to": "silicon_bringup",
+      "label": "reported silicon proof",
+      "variant": "default"
+    },
+    {
+      "id": "block-result",
+      "from": "silicon_bringup",
+      "to": "block_area",
+      "label": "selected block result",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "The task definition matters",
+      "items": [
+        "The report compares edits to existing RTL with generation from written requirements.",
+        "A spec-generated design may omit features found in the original core.",
+        "Require feature parity and task-relevant tests before reading a higher score as a better processor."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Do not transfer evidence between paths",
+      "items": [
+        "Open-core results use simulation checks and a Yosys clock estimate.",
+        "Jalapeño block results are separate company-reported silicon claims.",
+        "Neither path establishes a general result for all chips or AI systems."
+      ]
+    }
+  ]
+}

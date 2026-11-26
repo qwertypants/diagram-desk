@@ -1670,5 +1670,74 @@
       ],
       "scope": "A measurement lesson based on company-specific 2026 reports; it does not estimate a general causal effect of AI use on research progress."
     }
+  },
+  {
+    "slug": "what-ai-chip-design-tests-prove",
+    "type": "workflow",
+    "title": "What an AI chip-design test actually proves",
+    "file": "diagrams/what-ai-chip-design-tests-prove.json",
+    "original": [],
+    "lesson": {
+      "summary": "An AI-written RTL benchmark score is bounded by its task, simulation gates, area rule, and estimated throughput metric.",
+      "problem": "A relative score for AI-generated processor code can be mistaken for proof that a complete chip is production-ready.",
+      "objectives": [
+        "Trace the two benchmark task inputs through the shared scoring path.",
+        "Separate simulation and synthesis estimates from physical signoff and silicon evidence."
+      ],
+      "walkthrough": [
+        {
+          "title": "Compare the task inputs",
+          "detail": "The evaluation asks models either to optimize an existing PicoRV32 or Ibex design, or to create a processor from written requirements; a written spec may omit existing features."
+        },
+        {
+          "title": "Pass the benchmark gates",
+          "detail": "A design must pass simulation checks and the area cutoff before its hidden-workload IPC is combined with a Yosys-estimated maximum clock."
+        },
+        {
+          "title": "Read the relative score",
+          "detail": "The best observed result for each core and setup is normalized to 1.0, so the score is comparative rather than an absolute chip specification."
+        },
+        {
+          "title": "Keep production evidence separate",
+          "detail": "OpenAI reports silicon bring-up evidence for specific Jalapeño blocks; the RISC-V benchmark does not show those benchmark designs were physically built."
+        }
+      ],
+      "decisions": [
+        "Ask which task was used and whether the design retained required features.",
+        "Identify the tested cases, area constraint, timing model, workload, and score baseline.",
+        "Do not call a benchmark score production signoff without physical and silicon evidence for that design."
+      ],
+      "failureModes": [
+        "A specification-generated core can score well while omitting features present in the reference core.",
+        "Finite simulation and estimated clock frequency do not establish every behavior or physical timing result.",
+        "Evidence from Jalapeño blocks must not be transferred to the separate open-core benchmark or generalized to all chips."
+      ],
+      "takeaways": [
+        "A passing benchmark establishes success under its stated tests and scoring recipe; stronger hardware claims require evidence from the actual implementation."
+      ],
+      "references": [
+        {
+          "title": "Advancing chip design with OpenAI models",
+          "url": "https://openai.com/index/advancing-chip-design-with-our-models/"
+        },
+        {
+          "title": "Jalapeño's first results show industry-leading speed and efficiency in AI inference",
+          "url": "https://openai.com/index/jalapeno-first-results/"
+        },
+        {
+          "title": "OpenAI and Synopsys Announce GPT-Synopsys",
+          "url": "https://investor.synopsys.com/news/news-details/2026/OpenAI-and-Synopsys-Announce-GPT-Synopsys-Frontier-Intelligence-to-Revolutionize-Chip-Design/default.aspx"
+        },
+        {
+          "title": "Yosys ABC synthesis documentation",
+          "url": "https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/synthesis/abc.rst"
+        },
+        {
+          "title": "Ibex verification overview",
+          "url": "https://ibex-core.readthedocs.io/en/latest/01_overview/verification_overview.html"
+        }
+      ],
+      "scope": "OpenAI’s November 2026 benchmark and its separately reported Jalapeño block results; not evidence that the benchmarked RISC-V cores were manufactured or that AI-designed chips generally are production-ready."
+    }
   }
 ]
