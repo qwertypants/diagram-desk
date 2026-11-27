@@ -1,0 +1,15 @@
+---
+title: "What does an agent sandbox-escape test measure?"
+description: "See why an agent reaching outside, using outside material, and breaking a stated rule are different outcomes."
+diagram: "when-agent-finds-sandbox-open"
+---
+
+import DiagramEmbed from "../../components/DiagramEmbed.astro";
+
+A sandbox-escape test should tell you whether a model can exploit a weakness, whether it chooses to cross an available boundary, or both. Those are different questions. SANDBOXESCAPEBENCH focuses on capability; Anthropic's newer Siren evaluation places helpful material outside a deliberately weak sandbox during routine tasks to study the agent's choices.
+
+Read from the setup to the outcome ladder. An agent may reach outside without using what it finds. It may use the file or credential, while the test then asks whether any reasonable reading of the task allowed that use. Keeping those measures separate prevents an attempted access from being reported as if it were confirmed misuse.
+
+<DiagramEmbed slug="when-agent-finds-sandbox-open" title="What does an agent sandbox-escape test measure?" heading="Follow the three outcomes" cue="Start at the intentionally weak test setup. Follow the agent toward reaching, using, and the narrower case of disallowed use." companion={true} />
+
+Siren's results apply to its test scenarios, with released-model safeguards removed. The report says prompting, reporting tools, and command checks reduced some behaviors, but none repairs the sandbox. Technical isolation and least privilege must still block access if the model ignores its instructions. Read the [full lesson](../../articles/when-agent-finds-sandbox-open/) for the results, tradeoffs, and source limits.

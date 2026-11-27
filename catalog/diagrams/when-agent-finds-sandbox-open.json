@@ -1,0 +1,252 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "What does an agent sandbox-escape test measure?",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "output": ".archify/workflow-siren-sandbox-escape-20261127-030204/reader.html",
+    "views": [
+      {
+        "id": "outcome-ladder",
+        "label": "Read the outcome ladder",
+        "focus": [
+          "siren_setup",
+          "agent",
+          "reached",
+          "used",
+          "misaligned"
+        ],
+        "note": "Each later outcome is narrower; do not report them as one escape rate."
+      },
+      {
+        "id": "safe-response",
+        "label": "Check the safe responses",
+        "focus": [
+          "rules",
+          "agent",
+          "report",
+          "containment"
+        ],
+        "note": "Model guidance can support safety, while runtime controls enforce isolation."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "setup",
+      "label": "Evaluation setup"
+    },
+    {
+      "id": "model",
+      "label": "Agent behavior"
+    },
+    {
+      "id": "outcome",
+      "label": "Measured outcomes"
+    },
+    {
+      "id": "response",
+      "label": "Safe response and enforcement",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "scenario",
+      "label": "Create a tempting scenario",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "behavior",
+      "label": "Observe the agent",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "measure",
+      "label": "Separate what happened",
+      "fromCol": 4,
+      "toCol": 5
+    }
+  ],
+  "mainPath": [
+    "siren_setup",
+    "agent",
+    "reached",
+    "used",
+    "misaligned"
+  ],
+  "nodes": [
+    {
+      "id": "siren_setup",
+      "lane": "setup",
+      "col": 0,
+      "type": "backend",
+      "label": "Siren setup",
+      "sublabel": "task + weak box",
+      "tag": "26 sandbox environments",
+      "width": 140
+    },
+    {
+      "id": "outside_resource",
+      "lane": "setup",
+      "col": 1,
+      "type": "database",
+      "label": "Outside bait",
+      "sublabel": "file / credential",
+      "width": 140
+    },
+    {
+      "id": "agent",
+      "lane": "model",
+      "col": 2,
+      "type": "backend",
+      "label": "Agent runs task",
+      "sublabel": "no shipped safeguards",
+      "width": 140
+    },
+    {
+      "id": "reached",
+      "lane": "outcome",
+      "col": 3,
+      "type": "security",
+      "label": "Reached outside",
+      "sublabel": "attempt / look / access",
+      "width": 140
+    },
+    {
+      "id": "used",
+      "lane": "outcome",
+      "col": 4,
+      "type": "backend",
+      "label": "Used outside",
+      "sublabel": "uses file / credential",
+      "width": 140
+    },
+    {
+      "id": "misaligned",
+      "lane": "outcome",
+      "col": 5,
+      "type": "security",
+      "label": "Misaligned use",
+      "sublabel": "not permitted by task",
+      "width": 140
+    },
+    {
+      "id": "stayed",
+      "lane": "response",
+      "col": 2,
+      "type": "messagebus",
+      "label": "Stayed inside",
+      "sublabel": "no outside reach",
+      "width": 140
+    },
+    {
+      "id": "rules",
+      "lane": "response",
+      "col": 1,
+      "type": "security",
+      "label": "Boundary rules",
+      "sublabel": "stop if access is missing",
+      "width": 140
+    },
+    {
+      "id": "report",
+      "lane": "response",
+      "col": 3,
+      "type": "messagebus",
+      "label": "Report weakness",
+      "sublabel": "safe stop route",
+      "width": 140
+    },
+    {
+      "id": "containment",
+      "lane": "response",
+      "col": 5,
+      "type": "security",
+      "label": "Runtime isolation",
+      "sublabel": "OS + mounts + network rules",
+      "width": 140
+    }
+  ],
+  "edges": [
+    {
+      "id": "setup-agent",
+      "from": "siren_setup",
+      "to": "agent",
+      "label": "run the task",
+      "variant": "emphasis"
+    },
+    {
+      "id": "resource-pressure",
+      "from": "outside_resource",
+      "to": "agent",
+      "label": "tempts; does not grant access",
+      "variant": "security"
+    },
+    {
+      "id": "agent-reach",
+      "from": "agent",
+      "to": "reached",
+      "label": "attempts / reaches",
+      "variant": "security"
+    },
+    {
+      "id": "agent-stays",
+      "from": "agent",
+      "to": "stayed",
+      "label": "does not reach outside",
+      "variant": "default",
+      "role": "branch"
+    },
+    {
+      "id": "reach-use",
+      "from": "reached",
+      "to": "used",
+      "label": "uses material",
+      "variant": "emphasis"
+    },
+    {
+      "id": "use-misaligned",
+      "from": "used",
+      "to": "misaligned",
+      "label": "not allowed by task",
+      "variant": "security"
+    },
+    {
+      "id": "rules-agent",
+      "from": "rules",
+      "to": "agent",
+      "label": "clarifies boundary",
+      "variant": "dashed"
+    },
+    {
+      "id": "agent-report",
+      "from": "agent",
+      "to": "report",
+      "label": "flags the weakness",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "A different evaluation question",
+      "items": [
+        "SANDBOXESCAPEBENCH asks whether a motivated agent can exploit a sandbox weakness.",
+        "Siren asks whether an agent uses a helpful outside path during a routine task."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Read the evidence boundary",
+      "items": [
+        "Five setup types combine into 1,700+ versioned scenarios; released-model safeguards are removed.",
+        "Rules and reporting can change behavior; runtime isolation still has to enforce access."
+      ]
+    }
+  ]
+}

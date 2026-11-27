@@ -1739,5 +1739,67 @@
       ],
       "scope": "OpenAI’s November 2026 benchmark and its separately reported Jalapeño block results; not evidence that the benchmarked RISC-V cores were manufactured or that AI-designed chips generally are production-ready."
     }
+  },
+  {
+    "slug": "when-agent-finds-sandbox-open",
+    "type": "workflow",
+    "title": "What does an agent sandbox-escape test measure?",
+    "file": "diagrams/when-agent-finds-sandbox-open.json",
+    "original": [],
+    "lesson": {
+      "summary": "Siren separates reaching outside a weak sandbox, using outside material, and use that the task does not reasonably permit.",
+      "problem": "A sandbox-evaluation percentage can be mistaken for an estimate of real-world escapes or for proof that model guidance enforces isolation.",
+      "objectives": [
+        "Distinguish a capability test from an evaluation of boundary-following.",
+        "Read reach, use, and misaligned use as separate outcomes.",
+        "Check model safeguards and technical containment independently."
+      ],
+      "walkthrough": [
+        {
+          "title": "Compare the questions",
+          "detail": "SANDBOXESCAPEBENCH tests whether a motivated model can exploit a weakness; Siren tests whether an agent uses helpful outside material during a routine task."
+        },
+        {
+          "title": "Follow the outcome ladder",
+          "detail": "Siren separates reaching outside, using the honeypot, and using it without reasonable permission in the task."
+        },
+        {
+          "title": "Add safe responses",
+          "detail": "Explicit rules, a weakness-reporting route, and action checks can alter behavior in the evaluation, while the operating-system boundary must still enforce access."
+        }
+      ],
+      "decisions": [
+        "Name whether an evaluation tests exploit capability, willingness to use an opening, or both.",
+        "Track reach, use, unauthorized use, and task completion separately.",
+        "Use the agent as a reporter when access is missing, but verify host isolation outside the model."
+      ],
+      "failureModes": [
+        "Treating rates from intentionally weak scenarios without released safeguards as production escape probabilities.",
+        "Combining an attempted access with a confirmed use or an unauthorized use.",
+        "Treating instructions or action classifiers as a replacement for correctly configured isolation."
+      ],
+      "takeaways": [
+        "Model guidance can reduce boundary-crossing behavior, but only technical isolation can enforce which resources an agent may access."
+      ],
+      "references": [
+        {
+          "title": "Measuring and mitigating agent sandbox escape with Siren",
+          "url": "https://safeguards.anthropic.com/2026/siren/"
+        },
+        {
+          "title": "Quantifying Frontier LLM Capabilities for Container Sandbox Escape",
+          "url": "https://arxiv.org/abs/2603.02277"
+        },
+        {
+          "title": "Docker Engine security",
+          "url": "https://docs.docker.com/engine/security/"
+        },
+        {
+          "title": "NIST SP 800-190: Application Container Security Guide",
+          "url": "https://csrc.nist.gov/pubs/sp/800/190/final"
+        }
+      ],
+      "scope": "Anthropic’s November 2026 internal Siren evaluation and related capability-oriented sandbox testing; not a rate estimate for production agents or a replacement for runtime isolation."
+    }
   }
 ]
